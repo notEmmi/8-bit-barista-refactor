@@ -10,4 +10,5 @@
 
 # Project Member Names
 Emrana Begum,
-Arthur Zheng
+Arthur Zheng,
+Kevin Lin
