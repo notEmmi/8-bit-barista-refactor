@@ -9,3 +9,4 @@
 7. After everyone confirms you all see all of the updates, have **1** person remove these steps from the README, commit the change, and push it back.
 
 # Project Member Names
+Arthur Zheng
