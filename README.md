@@ -12,4 +12,5 @@
 Emrana Begum,
 Arthur Zheng,
 Kevin Lin,
-Darren Chiu
+Darren Chiu,
+Jacob Szczudlik
