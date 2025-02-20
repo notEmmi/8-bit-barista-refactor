@@ -1,4 +1,6 @@
 import pygame
+from pygame import mixer
+from Music import Music
 
 # Initialize Pygame
 pygame.init()
@@ -23,14 +25,28 @@ username_box = pygame.Rect(200, 100, 200, 40)
 password_box = pygame.Rect(200, 160, 200, 40)
 login_button = pygame.Rect(175, 230, 150, 50)
 
+######################## BACKGROUND IMAGES ###################################
+
+
 BACKGROUND=pygame.image.load("images/sky.png").convert_alpha()
 BACKGROUND = pygame.transform.scale(BACKGROUND, (WIDTH, HEIGHT))
+
+TREE_LEFT = pygame.image.load("images/tree.png")
+TREE_LEFT = pygame.transform.scale(TREE_LEFT, (150,150))
+                                               
 
 # Input variables
 username = ""
 password = ""
 active_box = None  # Track which box is active
 password_hidden = True  # Hide password input
+
+
+## PLAY LOG IN SCREEN TRACK #############
+
+mixer.init()
+mixer.music.load("Tracks/LogInTrack.mp3")
+mixer.music.play()
 
 running = True
 while running:
@@ -74,8 +90,10 @@ while running:
                     password += event.unicode
     
 
+    
     #DRAW BACKGROUND
     screen.blit(BACKGROUND, (0,0))
+    screen.blit(TREE_LEFT, (0,250))
 
     # Draw input boxes
     pygame.draw.rect(screen, LIGHT_PURPLE if active_box == "username" else GRAY, username_box, 2)
