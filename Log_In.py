@@ -21,6 +21,10 @@ GRAY = (180, 180, 180)
 font = pygame.font.Font(None, 36)
 
 # Input box positions
+title_box = pygame.Rect(200, 40, 200, 40)
+title_box_background = pygame.image.load("images/woodPanel.png")
+title_box_background = pygame.transform.scale(title_box_background, (200,40))
+
 username_box = pygame.Rect(200, 100, 200, 40)
 password_box = pygame.Rect(200, 160, 200, 40)
 login_button = pygame.Rect(175, 230, 150, 50)
@@ -96,15 +100,20 @@ while running:
     screen.blit(TREE_LEFT, (0,250))
 
     # Draw input boxes
+    pygame.draw.rect(screen, LIGHT_PURPLE, title_box, 2 )
     pygame.draw.rect(screen, LIGHT_PURPLE if active_box == "username" else GRAY, username_box, 2)
     pygame.draw.rect(screen, LIGHT_PURPLE if active_box == "password" else GRAY, password_box, 2)
     pygame.draw.rect(screen, DARK_PURPLE, login_button)
 
     # Render text labels
+    title_text = font.render("8-BIT BARISTA", True, BLACK)
     username_text = font.render("Username:", True, BLACK)
     password_text = font.render("Password:", True, BLACK)
     screen.blit(username_text, (50, 110))
     screen.blit(password_text, (50, 170))
+    screen.blit(title_box_background,(200,40))
+    screen.blit(title_text,(212, 45))
+    
 
     # Render user input
     username_surface = font.render(username, True, BLACK)
