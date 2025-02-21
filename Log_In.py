@@ -2,6 +2,8 @@ import pygame
 from pygame import mixer
 from Music import Music
 import sqlite3
+import config
+from config import *
 
 ## create a connection to my user databe aswell as a cursor to execture cmds
 dbConnection = sqlite3.connect("mydatabase.db")
@@ -10,6 +12,12 @@ cursor = dbConnection.cursor()
 def check_username(username):
 
     cursor.execute("SELECT COUNT(*) FROM users WHERE name = ?", (username,))  ## this is safeest way to prevent sql inejction
+    count = cursor.fetchone()[0]  # Fetch the 2nd column of the first row that should have the useranmes
+    return count > 0  # Return True if count > 0, else False
+
+def check_password(password):
+
+    cursor.execute("SELECT COUNT(*) FROM users WHERE password = ?", (password,))  ## this is safeest way to prevent sql inejction
     count = cursor.fetchone()[0]  # Fetch the 2nd column of the first row that should have the useranmes
     return count > 0  # Return True if count > 0, else False
 
@@ -22,19 +30,14 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Login Screen")
 
 # Colors ill use for bowxes 
-WHITE = (255, 255, 255)
-LIGHT_PURPLE = (200, 162, 200)
-DARK_PURPLE = (150, 112, 150)
-BLACK = (0, 0, 0)
-GRAY = (180, 180, 180)
+
 
 # Fonts
 font = pygame.font.Font(None, 36)
 
 # Input box positions
-title_box = pygame.Rect(200, 40, 200, 40)
-title_box_background = pygame.image.load("images/woodPanel.png")
-title_box_background = pygame.transform.scale(title_box_background, (200,40))
+
+
 
 grass = pygame.image.load("images/grass.png")
 grass = pygame.transform.scale(grass,(700, 75))
@@ -46,8 +49,8 @@ login_button = pygame.Rect(175, 230, 150, 50)
 ######################## BACKGROUND IMAGES ###################################
 
 
-BACKGROUND=pygame.image.load("images/sky.png").convert_alpha()
-BACKGROUND = pygame.transform.scale(BACKGROUND, (WIDTH, HEIGHT))
+sky=pygame.image.load("images/sky.png").convert_alpha()
+sky = pygame.transform.scale(sky, (WIDTH, HEIGHT))
 
 TREE_LEFT = pygame.image.load("images/tree.png")
 TREE_LEFT = pygame.transform.scale(TREE_LEFT, (150,150))
@@ -109,7 +112,13 @@ while running:
                         print("username exists!")
                     elif userExists == 0:
                         print("invalid username!")
-
+                    passwordExists = check_password(password)
+                    if passwordExists == 1:
+                        ## go to start screen
+                        print("password exists")
+                    elif passwordExists == 0:
+                        print("invalid password!")
+                            
 
                     
                 else:
@@ -118,25 +127,28 @@ while running:
 
     
     #DRAW BACKGROUND
-    screen.blit(BACKGROUND, (0,0))
-    screen.blit(grass,(-25,325) )
+    screen.blit(sky, SKY_LOC)
+    screen.blit(grass,GRASS_LOC)
     screen.blit(TREE_LEFT, (0,250))
 
     # Draw input boxes
-    pygame.draw.rect(screen, LIGHT_PURPLE, title_box, 2 )
+   
     pygame.draw.rect(screen, LIGHT_PURPLE if active_box == "username" else GRAY, username_box, 2)
     pygame.draw.rect(screen, LIGHT_PURPLE if active_box == "password" else GRAY, password_box, 2)
     pygame.draw.rect(screen, DARK_PURPLE, login_button)
 
     # Render text labels
-    title_text = font.render("8-BIT BARISTA", True, BLACK)
-    username_text = font.render("Username:", True, BLACK)
-    password_text = font.render("Password:", True, BLACK)
-    screen.blit(username_text, (50, 110))
-    screen.blit(password_text, (50, 170))
-    screen.blit(title_box_background,(200,40))
-    screen.blit(title_text,(212, 45))
-    screen.blit(grass,(-25,325) )
+    title_text = pygame.image.load("images/title.png")
+    title_text = pygame.transform.scale(title_text, (150,40))
+    username_text = pygame.image.load("images/username.png")
+    username_text = pygame.transform.scale(username_text, (150,40))
+    password_text = pygame.image.load("images/password.png")
+    password_text = pygame.transform.scale(password_text, (150,40))
+    screen.blit(username_text, USERNAME_TEXT_LOC)
+    screen.blit(password_text, PASSWORD_TEXT_LOC )
+   
+    screen.blit(title_text,TITLE_TEXT_LOC)
+    
     
 
     # Render user input
