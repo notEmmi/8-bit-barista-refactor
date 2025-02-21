@@ -36,6 +36,9 @@ title_box = pygame.Rect(200, 40, 200, 40)
 title_box_background = pygame.image.load("images/woodPanel.png")
 title_box_background = pygame.transform.scale(title_box_background, (200,40))
 
+grass = pygame.image.load("images/grass.png")
+grass = pygame.transform.scale(grass,(700, 75))
+
 username_box = pygame.Rect(200, 100, 200, 40)
 password_box = pygame.Rect(200, 160, 200, 40)
 login_button = pygame.Rect(175, 230, 150, 50)
@@ -116,6 +119,7 @@ while running:
     
     #DRAW BACKGROUND
     screen.blit(BACKGROUND, (0,0))
+    screen.blit(grass,(-25,325) )
     screen.blit(TREE_LEFT, (0,250))
 
     # Draw input boxes
@@ -132,6 +136,7 @@ while running:
     screen.blit(password_text, (50, 170))
     screen.blit(title_box_background,(200,40))
     screen.blit(title_text,(212, 45))
+    screen.blit(grass,(-25,325) )
     
 
     # Render user input
