@@ -1,6 +1,17 @@
 import pygame
 from pygame import mixer
 from Music import Music
+import sqlite3
+
+## create a connection to my user databe aswell as a cursor to execture cmds
+dbConnection = sqlite3.connect("mydatabase.db")
+cursor = dbConnection.cursor()
+
+def check_username(username):
+
+    cursor.execute("SELECT COUNT(*) FROM users WHERE name = ?", (username,))  ## this is safeest way to prevent sql inejction
+    count = cursor.fetchone()[0]  # Fetch the 2nd column of the first row that should have the useranmes
+    return count > 0  # Return True if count > 0, else False
 
 # Initialize Pygame
 pygame.init()
@@ -90,6 +101,14 @@ while running:
                 elif event.key == pygame.K_RETURN:
                     print(f"Logging in with:\nUsername: {username}\nPassword: {password}")
                     # Add authentication logic here
+                    userExists = check_username(username)
+                    if userExists == 1:
+                        print("username exists!")
+                    elif userExists == 0:
+                        print("invalid username!")
+
+
+                    
                 else:
                     password += event.unicode
     
