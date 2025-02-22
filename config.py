@@ -1,0 +1,6 @@
+### colors ####
+WHITE = (255, 255, 255)
+LIGHT_PURPLE = (200, 162, 200)
+DARK_PURPLE = (150, 112, 150)
+BLACK = (0, 0, 0)
+GRAY = (180, 180, 180)

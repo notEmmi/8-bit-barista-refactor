@@ -1,4 +1,6 @@
 import pygame
+import config
+from config import *
 
 # Initialize Pygame
 pygame.init()
@@ -14,7 +16,7 @@ WHITE = (255, 255, 255)
 # Game loop
 running = True
 while running:
-    screen.fill(WHITE)  # Fill screen with white
+    screen.fill(LIGHT_PURPLE)  # Fill screen with white
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
