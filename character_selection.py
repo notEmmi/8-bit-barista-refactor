@@ -15,7 +15,7 @@ WHITE = (255, 255, 255)
 BROWN = (101, 67, 56)
 
 # UI Element Sizes
-AVATAR_SIZE = 100
+AVATAR_SIZE = 120  # Increased from 100 to 120
 PREVIEW_SIZE = 200
 INPUT_BOX_WIDTH = 300
 INPUT_BOX_HEIGHT = 40
@@ -61,6 +61,12 @@ class CharacterSelector:
         self.input_active = False
         self.font = pygame.font.Font(None, 32)
         self.selected_character = "boy1"  # Default to the first character
+        self.highlight_color = (101, 67, 56)  # Brown color for highlight
+
+        self.grid_top_margin = 50
+        self.grid_bottom_margin = 50
+        self.grid_height = 3 * AVATAR_SIZE + 2 * 30  # 3 rows of avatars with 30px spacing
+        self.grid_y_offset = (WINDOW_HEIGHT - self.grid_height - self.grid_top_margin - self.grid_bottom_margin) // 2 + self.grid_top_margin
 
     def draw_border(self):
         # Draw outer border
@@ -76,8 +82,10 @@ class CharacterSelector:
                 index = row * 2 + col
                 if index < len(characters):
                     character = characters[index]
-                    x = 50 + col * (AVATAR_SIZE + 20)
-                    y = 50 + row * (AVATAR_SIZE + 20)
+                    x = 50 + col * (AVATAR_SIZE + 30)  # Increased spacing from 20 to 30
+                    y = self.grid_y_offset + row * (AVATAR_SIZE + 30)  # Increased spacing from 20 to 30
+                    if character == self.selected_character:
+                        pygame.draw.rect(self.screen, self.highlight_color, (x-5, y-5, AVATAR_SIZE+10, AVATAR_SIZE+10), 3)
                     pygame.draw.rect(self.screen, WHITE, (x, y, AVATAR_SIZE, AVATAR_SIZE))
                     self.screen.blit(self.character_images[character][0], (x, y))
                     # Check for mouse click to select character
@@ -88,8 +96,8 @@ class CharacterSelector:
 
     def draw_preview(self):
         # Draw large character preview
-        preview_x = WINDOW_WIDTH - PREVIEW_SIZE - 150
-        preview_y = 50
+        preview_x = WINDOW_WIDTH - PREVIEW_SIZE - 100
+        preview_y = (WINDOW_HEIGHT - PREVIEW_SIZE) // 2 - 50
         pygame.draw.circle(self.screen, WHITE, 
                          (preview_x + PREVIEW_SIZE//2, preview_y + PREVIEW_SIZE//2), 
                          PREVIEW_SIZE//2)
@@ -108,7 +116,7 @@ class CharacterSelector:
     def draw_input_field(self):
         # Draw name input field
         input_x = WINDOW_WIDTH - INPUT_BOX_WIDTH - 50
-        input_y = 300
+        input_y = (WINDOW_HEIGHT - INPUT_BOX_HEIGHT) // 2 + 100
         pygame.draw.rect(self.screen, (230, 220, 211), 
                         (input_x, input_y, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT))
         
@@ -123,7 +131,7 @@ class CharacterSelector:
     def draw_ok_button(self):
         # Draw OK button
         button_x = WINDOW_WIDTH - BUTTON_WIDTH - 50
-        button_y = WINDOW_HEIGHT - BUTTON_HEIGHT - 50
+        button_y = (WINDOW_HEIGHT - BUTTON_HEIGHT) // 2 + 200
         pygame.draw.rect(self.screen, BROWN, 
                         (button_x, button_y, BUTTON_WIDTH, BUTTON_HEIGHT))
         
