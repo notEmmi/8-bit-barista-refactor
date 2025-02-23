@@ -1,6 +1,6 @@
 import pygame
 import config
-
+import math
 
 # Initialize Pygame
 pygame.init()
@@ -12,8 +12,12 @@ pygame.display.set_caption("Loading Screen")
 
 clock = pygame.time.Clock()
 
-TIMER_EVENT = pygame.USEREVENT + 1  
-pygame.time.set_timer(TIMER_EVENT, 300)
+TIMER_EVENT_STAR = pygame.USEREVENT + 1  
+TIMER_EVENT_CLOUD = pygame.USEREVENT + 2  
+
+pygame.time.set_timer(TIMER_EVENT_STAR, 150)
+pygame.time.set_timer(TIMER_EVENT_CLOUD, 100)
+
 
 
 
@@ -32,6 +36,10 @@ star = pygame.transform.scale(star, config.STARSIZE )
 loading = pygame.image.load("images/loading.png")
 loading = pygame.transform.scale(loading, config.LOADING_SIZE )
 
+cloud = pygame.image.load("images/cloud.png")
+cloud = pygame.transform.scale(cloud, config.CLOUD_SIZE )
+
+
 # Set up colors
 WHITE = (255, 255, 255)
 
@@ -45,15 +53,21 @@ while running:
             running = False
     
     
-        if event.type == TIMER_EVENT:
-             config.updateStar(config.DX,config.DY)
+        if event.type == TIMER_EVENT_STAR:
+             config.updateStar(config.STARDX,config.STARDY)
+            
+
+        if event.type == TIMER_EVENT_CLOUD:
+            
+             config.updateCloud(config.CLOUD_DX)
     
-    
-    
-    screen.blit(star, (config.X, config.Y))
+    screen.blit(star, (config.STARX, config.STARY))
+    screen.blit(cloud, (config.CLOUDX, config.CLOUDY))
     screen.blit(grass, (config.GRASS_LOC))
     screen.blit(tree, config.TREE_LOC)
     screen.blit(loading, config.LOADING_LOC)
+    
+
     
     
 

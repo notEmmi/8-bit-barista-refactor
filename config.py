@@ -1,3 +1,7 @@
+
+
+
+
 ### colors ####
 WHITE = (255, 255, 255)
 LIGHT_PURPLE = (200, 162, 200)
@@ -9,18 +13,28 @@ GRAY = (180, 180, 180)
 GRASS_LOC = -35,450
 LOADING_LOC = 225, 50
 TREE_LOC = 50, 250
+CLOUD_LOC = 25, 100
 
 
 TREE_SIZE = 250, 350
 GRASS_SIZE = 900, 150
 LOADING_SIZE = 350, 125
+CLOUD_SIZE = 100, 100
 
 ### vars needed for moving star
 
-X ,Y = 100, 300
-DX, DY = 100, -50
+STARX ,STARY = 100, 300
+STARDX, STARDY = 100, -50
 STARSIZE = (50,50)
 
+
+CLOUDX = 25 
+CLOUDY=150
+
+
+AMPLITUDE = 50
+SPEED = 0.005
+CLOUD_DX = 10
 
 
 
@@ -33,16 +47,32 @@ STARSIZE = (50,50)
 
 def updateStar(dx,dy):
     
-    global X, Y  # Access and modify global variables
+    global STARX, STARY  # Access and modify global variables
 
-    if(X >=600):
-        X = 100
-        Y= 300
-    X += dx
-    Y += dy
-    return X, Y  # Return updated values
+    if(STARX >=625):
+        STARX = 100
+        STARY= 300
+    STARX += dx
+    STARY += dy
+    return STARX, STARY  # Return updated values
 
     
+def updateCloud(dx):
+
+    global CLOUDX
+  
+
+    if(CLOUDX >=700):
+        CLOUDX = 25
+
+
+
+    CLOUDX += dx
+ 
+
+    return CLOUDX
+
+
 
 
 
