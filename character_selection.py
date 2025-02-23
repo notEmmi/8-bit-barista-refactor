@@ -67,6 +67,7 @@ class CharacterSelector:
         self.grid_bottom_margin = 50
         self.grid_height = 3 * AVATAR_SIZE + 2 * 30  # 3 rows of avatars with 30px spacing
         self.grid_y_offset = (WINDOW_HEIGHT - self.grid_height - self.grid_top_margin - self.grid_bottom_margin) // 2 + self.grid_top_margin
+        self.input_box_rect = pygame.Rect(WINDOW_WIDTH - INPUT_BOX_WIDTH - 50, (WINDOW_HEIGHT - INPUT_BOX_HEIGHT) // 2 + 100, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT)
 
     def draw_border(self):
         # Draw outer border
@@ -115,10 +116,9 @@ class CharacterSelector:
 
     def draw_input_field(self):
         # Draw name input field
-        input_x = WINDOW_WIDTH - INPUT_BOX_WIDTH - 50
-        input_y = (WINDOW_HEIGHT - INPUT_BOX_HEIGHT) // 2 + 100
-        pygame.draw.rect(self.screen, (230, 220, 211), 
-                        (input_x, input_y, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT))
+        input_x = self.input_box_rect.x
+        input_y = self.input_box_rect.y
+        pygame.draw.rect(self.screen, (230, 220, 211), self.input_box_rect)
         
         # Draw "Name" label
         name_label = self.font.render("Name", True, WHITE)
@@ -148,6 +148,12 @@ class CharacterSelector:
                     pygame.quit()
                     sys.exit()
                     
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.input_box_rect.collidepoint(event.pos):
+                        self.input_active = True
+                    else:
+                        self.input_active = False
+
                 if event.type == pygame.KEYDOWN and self.input_active:
                     if event.key == pygame.K_RETURN:
                         self.input_active = False
