@@ -31,27 +31,27 @@ class CharacterSelector:
         self.character_images = {
             "boy1": [
                 pygame.transform.scale(pygame.image.load("assets/images/character-selection/boy1/boy1_closeup.png"), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.image.load("assets/images/character-selection/boy1/boy1_portrait.png")
+                pygame.transform.scale(pygame.image.load("assets/images/character-selection/boy1/boy1_portrait.png"), (PREVIEW_SIZE, PREVIEW_SIZE))
             ],
             "girl1": [
                 pygame.transform.scale(pygame.image.load("assets/images/character-selection/girl1/girl1_closeup.png"), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.image.load("assets/images/character-selection/girl1/girl1_portrait.png")
+                pygame.transform.scale(pygame.image.load("assets/images/character-selection/girl1/girl1_portrait.png"), (PREVIEW_SIZE, PREVIEW_SIZE))
             ],
             "boy2": [
                 pygame.transform.scale(pygame.image.load("assets/images/character-selection/boy2/boy2_closeup.png"), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.image.load("assets/images/character-selection/boy2/boy2_portrait.png")
+                pygame.transform.scale(pygame.image.load("assets/images/character-selection/boy2/boy2_portrait.png"), (PREVIEW_SIZE, PREVIEW_SIZE))
             ],
             "girl2": [
                 pygame.transform.scale(pygame.image.load("assets/images/character-selection/girl2/girl2_closeup.png"), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.image.load("assets/images/character-selection/girl2/girl2_portrait.png")
+                pygame.transform.scale(pygame.image.load("assets/images/character-selection/girl2/girl2_portrait.png"), (PREVIEW_SIZE, PREVIEW_SIZE))
             ],
             "boy3": [
                 pygame.transform.scale(pygame.image.load("assets/images/character-selection/boy3/boy3_closeup.png"), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.image.load("assets/images/character-selection/boy3/boy3_portrait.png")
+                pygame.transform.scale(pygame.image.load("assets/images/character-selection/boy3/boy3_portrait.png"), (PREVIEW_SIZE, PREVIEW_SIZE))
             ],
             "girl3": [
                 pygame.transform.scale(pygame.image.load("assets/images/character-selection/girl3/girl3_closeup.png"), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.image.load("assets/images/character-selection/girl3/girl3_portrait.png")
+                pygame.transform.scale(pygame.image.load("assets/images/character-selection/girl3/girl3_portrait.png"), (PREVIEW_SIZE, PREVIEW_SIZE))
             ],
             # Add more character images here
         }
@@ -60,7 +60,7 @@ class CharacterSelector:
         self.name_input = ""
         self.input_active = False
         self.font = pygame.font.Font(None, 32)
-        self.selected_character = None
+        self.selected_character = "boy1"  # Default to the first character
 
     def draw_border(self):
         # Draw outer border
@@ -94,8 +94,16 @@ class CharacterSelector:
                          (preview_x + PREVIEW_SIZE//2, preview_y + PREVIEW_SIZE//2), 
                          PREVIEW_SIZE//2)
         if self.selected_character:
-            self.screen.blit(self.character_images[self.selected_character][1], 
-                             (preview_x, preview_y))
+            portrait = self.character_images[self.selected_character][1]
+            portrait = pygame.transform.scale(portrait, (PREVIEW_SIZE, PREVIEW_SIZE))
+            portrait_rect = portrait.get_rect(center=(preview_x + PREVIEW_SIZE//2, preview_y + PREVIEW_SIZE//2))
+            
+            # Create a mask for circular cropping
+            mask = pygame.Surface((PREVIEW_SIZE, PREVIEW_SIZE), pygame.SRCALPHA)
+            pygame.draw.circle(mask, (255, 255, 255, 255), (PREVIEW_SIZE//2, PREVIEW_SIZE//2), PREVIEW_SIZE//2)
+            portrait.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+            
+            self.screen.blit(portrait, portrait_rect)
 
     def draw_input_field(self):
         # Draw name input field
