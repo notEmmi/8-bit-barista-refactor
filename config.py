@@ -1,5 +1,5 @@
 
-
+import math
 
 
 ### colors ####
@@ -28,13 +28,8 @@ STARDX, STARDY = 100, -50
 STARSIZE = (50,50)
 
 
-CLOUDX = 25 
-CLOUDY=150
 
 
-AMPLITUDE = 50
-SPEED = 0.005
-CLOUD_DX = 10
 
 
 
@@ -57,20 +52,7 @@ def updateStar(dx,dy):
     return STARX, STARY  # Return updated values
 
     
-def updateCloud(dx):
 
-    global CLOUDX
-  
-
-    if(CLOUDX >=700):
-        CLOUDX = 25
-
-
-
-    CLOUDX += dx
- 
-
-    return CLOUDX
 
 
 

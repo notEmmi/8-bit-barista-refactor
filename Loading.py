@@ -18,7 +18,25 @@ TIMER_EVENT_CLOUD = pygame.USEREVENT + 2
 pygame.time.set_timer(TIMER_EVENT_STAR, 150)
 pygame.time.set_timer(TIMER_EVENT_CLOUD, 100)
 
+CLOUDX = 25 
+CLOUDY=150
 
+
+def updateCloud(dx, dy):
+
+    global CLOUDX
+    global CLOUDY
+
+    if(CLOUDX >=700):
+        CLOUDX = 25
+
+
+
+    CLOUDX += dx
+    CLOUDY +=dy
+ 
+
+    return CLOUDX, CLOUDY
 
 
 ## load images ########
@@ -51,18 +69,25 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+        
     
     
         if event.type == TIMER_EVENT_STAR:
              config.updateStar(config.STARDX,config.STARDY)
+
+        time = pygame.time.get_ticks()
+
+        CLOUD_DX = 10
+        CLOUD_DY = math.trunc(math.sin(time) *20)
             
 
         if event.type == TIMER_EVENT_CLOUD:
             
-             config.updateCloud(config.CLOUD_DX)
+             updateCloud(CLOUD_DX, CLOUD_DY)
     
     screen.blit(star, (config.STARX, config.STARY))
-    screen.blit(cloud, (config.CLOUDX, config.CLOUDY))
+    screen.blit(cloud, (CLOUDX, CLOUDY))
     screen.blit(grass, (config.GRASS_LOC))
     screen.blit(tree, config.TREE_LOC)
     screen.blit(loading, config.LOADING_LOC)
@@ -76,3 +101,7 @@ while running:
     clock.tick(30)
 # Quit Pygame
 pygame.quit()
+
+
+
+
