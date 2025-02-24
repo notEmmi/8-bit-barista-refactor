@@ -1,6 +1,7 @@
 import pygame
 import config
 import math
+import samplestartscreen
 
 # Initialize Pygame
 pygame.init()
@@ -83,7 +84,7 @@ while running:
         time = pygame.time.get_ticks()
 
         CLOUD_DX = 10
-        CLOUD_DY = math.trunc(math.sin(time) *20)
+        CLOUD_DY = math.trunc(math.sin(time) *10)
             
 
         if event.type == TIMER_EVENT_CLOUD:
@@ -93,7 +94,8 @@ while running:
 
         if event.type == TIMER_EVENT_FADEOUT:
              ## ADD LOGIC TO MOVE TO APPROPRATE SCREEN WHEN POSSILBE ####
-             pass
+             samplestartscreen.runSampleStartScreen()
+             running = False
     
     screen.blit(star, (config.STARX, config.STARY))
     screen.blit(cloud, (CLOUDX, CLOUDY))
