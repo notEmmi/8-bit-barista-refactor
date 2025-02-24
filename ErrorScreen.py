@@ -1,4 +1,5 @@
 import pygame
+from pygame import mixer
 
 # Initialize Pygame
 pygame.init()
@@ -17,20 +18,37 @@ pygame.display.set_caption("Error Screen")
 # Load font
 font = pygame.font.Font(None, FONT_SIZE)
 
-rain = pygame.image.load("images/rain.png")
-rain = pygame.transform.scale(rain, (WIDTH, HEIGHT))
+darkbg = pygame.image.load("images/darkbg.png")
+darkbg = pygame.transform.scale(darkbg, (WIDTH, HEIGHT))
+
+errorsign = pygame.image.load("images/errorsign_transparent.png")
+errorsign = pygame.transform.scale(errorsign, (250, 400))
+
+cloud = pygame.image.load("images/rain_transparent.png")
+cloud = pygame.transform.scale(cloud, (100, 100))
+
+
 # Error message
-error_message = "An error has occurred. Press ENTER TO RETURN TO LOG-IN."
+
+mixer.init()
+mixer.music.load("Tracks/8-bit-arcade-mode-158814.mp3")
+mixer.music.play()
+
 
 running = True
 while running:
       # Set background to red
     
     # Render error message
-    text_surface = font.render(error_message, True, BLACK)
-    text_rect = text_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-    screen.blit(rain, (0,0))
-    screen.blit(text_surface, text_rect)
+   
+    screen.blit(darkbg, (0,0))
+    screen.blit(errorsign, ((WIDTH/2)-125,(HEIGHT/2)-100))
+    screen.blit(cloud, (((WIDTH/2)-50),(HEIGHT/2)-250))
+    screen.blit(cloud, (((WIDTH/2)-250),(HEIGHT/2)-250))
+    screen.blit(cloud, (((WIDTH/2)+150),(HEIGHT/2)-250))
+
+
+   
 
     # Event handling
     for event in pygame.event.get():
