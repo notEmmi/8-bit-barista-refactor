@@ -1,5 +1,6 @@
 import pygame
 from pygame import mixer
+import samplestartscreen
 
 # Initialize Pygame
 pygame.init()
@@ -14,6 +15,9 @@ FONT_SIZE = 40
 # Setup display
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Error Screen")
+clock = pygame.time.Clock()
+TIMER_CHANGE_SCREEN = pygame.USEREVENT + 1
+pygame.time.set_timer(TIMER_CHANGE_SCREEN, 5000)
 
 # Load font
 font = pygame.font.Font(None, FONT_SIZE)
@@ -31,7 +35,7 @@ cloud = pygame.transform.scale(cloud, (100, 100))
 # Error message
 
 mixer.init()
-mixer.music.load("Tracks/8-bit-arcade-mode-158814.mp3")
+mixer.music.load("Tracks/error.mp3")
 mixer.music.play()
 
 
@@ -57,7 +61,11 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:  # Exit on ESC key
                 running = False
-
+            elif event.key == pygame.K_RETURN:
+             samplestartscreen.runSampleStartScreen()  # Call function from screen2.py
+             running = False
+               
+    clock.tick(30)
     pygame.display.flip()  # Update the screen
 
 pygame.quit()
