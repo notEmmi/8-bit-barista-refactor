@@ -14,9 +14,11 @@ clock = pygame.time.Clock()
 
 TIMER_EVENT_STAR = pygame.USEREVENT + 1  
 TIMER_EVENT_CLOUD = pygame.USEREVENT + 2  
+TIMER_EVENT_FADEOUT = pygame.USEREVENT + 3
 
 pygame.time.set_timer(TIMER_EVENT_STAR, 150)
 pygame.time.set_timer(TIMER_EVENT_CLOUD, 100)
+pygame.time.set_timer(TIMER_EVENT_FADEOUT, 5000)
 
 CLOUDX = 25 
 CLOUDY=150
@@ -34,6 +36,8 @@ def updateCloud(dx, dy):
 
     CLOUDX += dx
     CLOUDY +=dy
+
+    print("cloud x pos = ", CLOUDX, "\n", "cloud y pos =", CLOUDY)
  
 
     return CLOUDX, CLOUDY
@@ -85,9 +89,15 @@ while running:
         if event.type == TIMER_EVENT_CLOUD:
             
              updateCloud(CLOUD_DX, CLOUD_DY)
+
+
+        if event.type == TIMER_EVENT_FADEOUT:
+             ## ADD LOGIC TO MOVE TO APPROPRATE SCREEN WHEN POSSILBE ####
+             pass
     
     screen.blit(star, (config.STARX, config.STARY))
     screen.blit(cloud, (CLOUDX, CLOUDY))
+
     screen.blit(grass, (config.GRASS_LOC))
     screen.blit(tree, config.TREE_LOC)
     screen.blit(loading, config.LOADING_LOC)
