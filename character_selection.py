@@ -63,6 +63,7 @@ class CharacterSelector:
         self.font = pygame.font.Font(None, 32)
         self.selected_character = "boy1"  # Default to the first character
         self.highlight_color = (101, 67, 56)  # Brown color for highlight
+        self.error_message = ""
 
         self.grid_top_margin = 50
         self.grid_bottom_margin = 50
@@ -128,6 +129,11 @@ class CharacterSelector:
         # Draw input text
         text_surface = self.font.render(self.name_input, True, (0, 0, 0))
         self.screen.blit(text_surface, (input_x + 5, input_y + 5))
+        
+        # Draw error message if any
+        if self.error_message:
+            error_surface = self.font.render(self.error_message, True, (255, 0, 0))
+            self.screen.blit(error_surface, (input_x, input_y + INPUT_BOX_HEIGHT + 10))
 
     def draw_ok_button(self):
         # Draw OK button
@@ -146,8 +152,16 @@ class CharacterSelector:
         if pygame.mouse.get_pressed()[0]:
             mouse_x, mouse_y = pygame.mouse.get_pos()
             if button_x < mouse_x < button_x + BUTTON_WIDTH and button_y < mouse_y < button_y + BUTTON_HEIGHT:
-                loading_screen = LoadingScreen()
-                loading_screen.run()
+                if self.name_input.strip() == "":
+                    self.error_message = "Enter a name."
+                elif len(self.name_input) > 20:
+                    self.error_message = "Max 20 chars."
+                elif not self.name_input.isalpha():
+                    self.error_message = "Only letters."
+                else:
+                    self.error_message = ""
+                    loading_screen = LoadingScreen()
+                    loading_screen.run()
 
     def run(self):
         while True:
@@ -167,8 +181,12 @@ class CharacterSelector:
                         self.input_active = False
                     elif event.key == pygame.K_BACKSPACE:
                         self.name_input = self.name_input[:-1]
-                    else:
+                    elif len(self.name_input) < 20 and event.unicode.isalpha():
                         self.name_input += event.unicode
+                    elif not event.unicode.isalpha():
+                        self.error_message = "Only letters."
+                    elif len(self.name_input) >= 20:
+                        self.error_message = "Max 20 chars."
 
             # Draw all elements
             self.screen.fill(BACKGROUND_COLOR)
