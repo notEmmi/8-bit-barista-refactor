@@ -1,5 +1,6 @@
 import pygame
 import sys
+from loading_screen import LoadingScreen  # Import the loading screen
 
 # Initialize Pygame
 pygame.init()
@@ -140,6 +141,13 @@ class CharacterSelector:
         text_rect = button_text.get_rect(center=(button_x + BUTTON_WIDTH//2, 
                                                button_y + BUTTON_HEIGHT//2))
         self.screen.blit(button_text, text_rect)
+
+        # Check for mouse click to navigate to loading screen
+        if pygame.mouse.get_pressed()[0]:
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            if button_x < mouse_x < button_x + BUTTON_WIDTH and button_y < mouse_y < button_y + BUTTON_HEIGHT:
+                loading_screen = LoadingScreen()
+                loading_screen.run()
 
     def run(self):
         while True:
