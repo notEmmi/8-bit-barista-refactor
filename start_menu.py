@@ -1,8 +1,6 @@
 import pygame
 import sys
-import character_selection
-import options  
-import credits  
+#import character_selection
 
 # Initialize Pygame
 pygame.init()
@@ -109,16 +107,17 @@ def show_menu():
 # Main Loop
 running = True
 while running:
+    events = pygame.event.get()
     screen.fill(LIGHT_BROWN)
 
-    for event in pygame.event.get():
+    for event in events:
         if event.type == pygame.QUIT:
             running = False
 
     # Handle screen transitions
     if current_screen == MENU:
         show_menu()
-        for event in pygame.event.get():
+        for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for button in buttons:
                     if button.is_clicked(pygame.mouse.get_pos()):
@@ -128,12 +127,19 @@ while running:
                             running = False
                         print(f"{button.text} button clicked!")
 
-    elif current_screen == CHARACTER_SELECTION:
-        current_screen = character_selection.show_character_selection(screen)
+    #elif current_screen == CHARACTER_SELECTION:
+        #current_screen = character_selection.show_character_selection(screen)
     elif current_screen == OPTIONS:
-        current_screen = options.show_options(screen)
+      import options  
+      new_screen = options.show_options(screen, events)
+      if new_screen == "menu":
+          current_screen = MENU
+
     elif current_screen == CREDITS:
-        current_screen = credits.show_credits(screen)
+        import credits  
+        new_screen = credits.show_credits(screen, events)  # Store return value      
+        if new_screen == "menu":  # If "BACK" is clicked in credits.py
+          current_screen = MENU  # Switch back to start menu
 
     pygame.display.flip()  # Update screen
 

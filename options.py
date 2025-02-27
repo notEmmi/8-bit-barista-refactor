@@ -1,8 +1,4 @@
 import pygame
-import sys
-import controls  # Import Controls Page
-import advanced  # Import Advanced Page
-import start_menu  # Import Start Menu Page
 
 # Initialize Pygame
 pygame.init()
@@ -13,9 +9,9 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("OPTIONS MENU")
 
 # Colors
-LIGHT_BROWN = (99, 55, 44)  # Outer Background
-DARK_BROWN = (38, 35, 34)  # Middle Dark Background
-BROWN = (99, 55, 44)  # Inner Panel Color
+LIGHT_BROWN = (99, 55, 44)
+DARK_BROWN = (38, 35, 34)
+BROWN = (99, 55, 44)
 WHITE = (255, 255, 255)
 GRAY = (100, 100, 100)
 ACTIVE_COLOR = (160, 100, 80)
@@ -23,15 +19,6 @@ ACTIVE_COLOR = (160, 100, 80)
 # Fonts
 title_font = pygame.font.Font(pygame.font.match_font('courier'), 45)
 button_font = pygame.font.Font(pygame.font.match_font('courier'), 18)
-texture_font = pygame.font.Font(pygame.font.match_font('courier'), 22)
-
-# Game State
-MENU = "menu"
-CONTROLS = "controls"
-ADVANCED = "advanced"
-BACK = "back"
-EXIT = "exit"
-current_screen = MENU  # Start on the menu
 
 # Sliders (Volume Controls)
 sliders = {
@@ -87,9 +74,9 @@ def draw_textures():
         text = pygame.font.Font(pygame.font.match_font('courier'), 16).render(texture, True, WHITE)
         screen.blit(text, (x_positions[i] - text.get_width() // 2, 354))
 
-# Function to show the options menu
-def show_options(events):
-    global current_screen, active_slider, selected_texture
+# Function to show options menu
+def show_options(screen, events):
+    global active_slider, selected_texture
 
     screen.fill(LIGHT_BROWN)
 
@@ -110,7 +97,7 @@ def show_options(events):
         y_offset += 50
 
     # Draw Texture Selection
-    texture_text = texture_font.render("TEXTURES", True, WHITE)
+    texture_text = button_font.render("TEXTURES", True, WHITE)
     screen.blit(texture_text, (WIDTH // 2 - texture_text.get_width() // 2, 310))
     draw_textures()
 
@@ -128,12 +115,11 @@ def show_options(events):
             for name, rect in buttons.items():
                 if rect.collidepoint(mouse_pos):
                     if name == "CONTROLS":
-                        current_screen = CONTROLS
+                        return "controls"
                     elif name == "ADVANCED":
-                        current_screen = ADVANCED
+                        return "advanced"
                     elif name == "BACK":
-                        current_screen = BACK  # Back to Start Menu
-                    print(f"{name} button clicked!")
+                        return "menu"
 
             # Check Sliders (`+` and `-` buttons)
             for name, (min_x, max_x, y_pos) in slider_rects.items():
@@ -158,27 +144,4 @@ def show_options(events):
             min_x, max_x, y_pos = slider_rects[active_slider]
             sliders[active_slider] = max(0, min(1, (mouse_pos[0] - min_x) / (max_x - min_x)))
 
-    return current_screen
-
-# Main Loop with Seamless Page Transitions
-running = True
-while running:
-    events = pygame.event.get()
-
-    for event in events:
-        if event.type == pygame.QUIT:
-            running = False
-
-    if current_screen == MENU:
-        current_screen = show_options(events)
-    elif current_screen == CONTROLS:
-        current_screen = controls.show_controls(screen)
-    elif current_screen == ADVANCED:
-        current_screen = advanced.show_advanced(screen)
-    elif current_screen == BACK:
-        current_screen = start_menu.show_start_menu(screen)
-
-    pygame.display.flip()
-
-pygame.quit()
-sys.exit()
+    return "options"
