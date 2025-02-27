@@ -4,7 +4,7 @@ from Music import Music
 import sqlite3
 import config_logIn
 from config_logIn import *
-import error
+import ErrorScreen
 import Loading
 
 def run_logIn():
@@ -123,7 +123,7 @@ def run_logIn():
                             print("password exists")
 
                         elif passwordExists == 0:
-                            error.runError()
+                            ErrorScreen.runError()
                             running = False
                             print("invalid password!")
                                 
