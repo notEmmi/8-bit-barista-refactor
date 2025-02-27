@@ -1,5 +1,6 @@
 import pygame
 import sys
+import os
 #import character_selection
 
 # Initialize Pygame
@@ -71,8 +72,10 @@ buttons = [
 
 # Load Coffee Cup Image
 try:
-    coffee_img = pygame.image.load("assets/coffee.png")
-    coffee_img = pygame.transform.scale(coffee_img, (330, 330))
+    image_path = os.path.join("images", "coffee.png")
+    coffee_img = pygame.image.load(image_path)
+
+    coffee_img = pygame.transform.scale(coffee_img, (235,235))
 except:
     coffee_img = None
 
@@ -101,7 +104,9 @@ def show_menu():
 
     # Draw Coffee Cup
     if coffee_img:
-        screen.blit(coffee_img, (WIDTH - 360, 270))
+      image_x = (WIDTH - coffee_img.get_width()) - 45
+      image_y = (HEIGHT - coffee_img.get_height()) - 60
+      screen.blit(coffee_img, (image_x, image_y))
 
 
 # Main Loop
