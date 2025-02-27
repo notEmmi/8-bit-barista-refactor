@@ -1,6 +1,7 @@
 import pygame
 from pygame import mixer
-import samplestartscreen
+import start_menu
+
 
 # Initialize Pygame
 pygame.init()
@@ -62,7 +63,7 @@ while running:
             if event.key == pygame.K_ESCAPE:  # Exit on ESC key
                 running = False
             elif event.key == pygame.K_RETURN:
-             samplestartscreen.runSampleStartScreen()  # Call function from screen2.py
+             start_menu.runstartMenu()  # Call function from screen2.py
              running = False
                
     clock.tick(30)
