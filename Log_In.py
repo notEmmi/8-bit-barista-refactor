@@ -2,10 +2,10 @@ import pygame
 from pygame import mixer
 from Music import Music
 import sqlite3
-import config
-from config import *
+import config_logIn
+from config_logIn import *
 import error
-import loading
+import Loading
 
 def run_logIn():
 
@@ -119,7 +119,7 @@ def run_logIn():
                         passwordExists = check_password(password)
                         if passwordExists == 1:
                             ## go to start screen
-                            loading.runLoad()
+                            Loading.runLoad()
                             print("password exists")
 
                         elif passwordExists == 0:
