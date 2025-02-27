@@ -14,7 +14,7 @@ manager = pygame_gui.UIManager((WIDTH, HEIGHT))
 
 WHITE = (255, 255, 255)
 
-conn = sqlite3.connect("users.db")
+conn = sqlite3.connect("mydatabase.db")
 cursor = conn.cursor()
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
