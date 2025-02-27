@@ -2,6 +2,7 @@ import pygame
 import config
 import math
 import samplestartscreen
+import start_menu
 
 # Initialize Pygame
 pygame.init()
@@ -38,7 +39,7 @@ def updateCloud(dx, dy):
     CLOUDX += dx
     CLOUDY +=dy
 
-    print("cloud x pos = ", CLOUDX, "\n", "cloud y pos =", CLOUDY)
+    # print("cloud x pos = ", CLOUDX, "\n", "cloud y pos =", CLOUDY)
  
 
     return CLOUDX, CLOUDY
@@ -94,7 +95,7 @@ while running:
 
         if event.type == TIMER_EVENT_FADEOUT:
              ## ADD LOGIC TO MOVE TO APPROPRATE SCREEN WHEN POSSILBE ####
-             samplestartscreen.runSampleStartScreen()
+             start_menu.runStartMenu()
              running = False
     
     screen.blit(star, (config.STARX, config.STARY))
