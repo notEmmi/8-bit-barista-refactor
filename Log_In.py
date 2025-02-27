@@ -6,6 +6,11 @@ import config_logIn
 from config_logIn import *
 import ErrorScreen
 import Loading
+import bcrypt
+
+
+
+
 
 def run_logIn():
 
@@ -15,16 +20,13 @@ def run_logIn():
 
     def check_username(username):
 
-        cursor.execute("SELECT COUNT(*) FROM users WHERE name = ?", (username,))  ## this is safeest way to prevent sql inejction
+        cursor.execute("SELECT COUNT(*) FROM users WHERE username = ?", (username,))  ## this is safeest way to prevent sql inejction
         count = cursor.fetchone()[0]  # Fetch the 2nd column of the first row that should have the useranmes
         return count > 0  # Return True if count > 0, else False
 
-    def check_password(password):
-
-        cursor.execute("SELECT COUNT(*) FROM users WHERE password = ?", (password,))  ## this is safeest way to prevent sql inejction
-        count = cursor.fetchone()[0]  # Fetch the 2nd column of the first row that should have the useranmes
-        return count > 0  # Return True if count > 0, else False
-
+    def check_password(entered_password, stored_hash):
+     """Checks if entered password matches the stored hash."""
+     return bcrypt.checkpw(entered_password.encode(), stored_hash)
     # Initialize Pygame
     pygame.init()
 
@@ -70,7 +72,7 @@ def run_logIn():
     ## PLAY LOG IN SCREEN TRACK #############
 
     mixer.init()
-    mixer.music.load("Tracks/LogInTrack.mp3")
+    mixer.music.load("tracks/LogInTrack.mp3")
     mixer.music.play()
 
     running = True
@@ -116,16 +118,22 @@ def run_logIn():
                             print("username exists!")
                         elif userExists == 0:
                             print("invalid username!")
-                        passwordExists = check_password(password)
-                        if passwordExists == 1:
-                            ## go to start screen
-                            Loading.runLoad()
-                            print("password exists")
+                        cursor.execute("SELECT password FROM users WHERE username = ?", (username,))
+                        result = cursor.fetchone()
+                        print("encrypted password", result)
 
-                        elif passwordExists == 0:
-                            ErrorScreen.runError()
-                            running = False
-                            print("invalid password!")
+                        
+                        if result:
+                            stored_hash = result[0]  # Extract stored hash from the tuple
+                            if check_password(password, stored_hash):  # Convert to bytes
+                               print("Login successful!")
+                               Loading.runLoad()
+                               print("password exists")
+
+                            else:
+                             ErrorScreen.runError()
+                             running = False
+                             print("invalid password!")
                                 
 
                         

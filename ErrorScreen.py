@@ -37,7 +37,7 @@ def runError():
     # Error message
 
     mixer.init()
-    mixer.music.load("Tracks/error.mp3")
+    mixer.music.load("tracks/error.mp3")
     mixer.music.play()
 
 

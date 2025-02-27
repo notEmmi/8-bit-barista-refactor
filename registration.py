@@ -46,6 +46,7 @@ def register_user():
         return
 
     encrypted_password = hash_password(password)
+    
     cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, encrypted_password))
     conn.commit()
 

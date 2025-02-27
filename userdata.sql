@@ -1,7 +1,7 @@
--- CREATE TABLE users (
--- id INTEGER PRIMARY KEY,
--- name TEXT NOT NULL,
--- password TEXT NOT NULL);
+ CREATE TABLE users (
+ id INTEGER PRIMARY KEY,
+ username TEXT NOT NULL,
+ password TEXT NOT NULL);
 
 
 -- useful cmds to remeber --
@@ -19,3 +19,4 @@
 --DELETE FROM users WHERE id = 2;
 
 SELECT * FROM users;
+--DROP TABLE users;
