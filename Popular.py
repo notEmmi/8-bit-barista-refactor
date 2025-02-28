@@ -7,13 +7,6 @@ def runPopular():
 
     # Screen dimensions
     WIDTH, HEIGHT = 800, 600
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Four Rectangles")
-
-    kitchen =pygame.image.load("images/kitchen.png")
-    kitchen =pygame.transform.scale(kitchen,(WIDTH, HEIGHT))
-
-
     # Colors
     WHITE = (255, 255, 255)
     BLUE = (0, 0, 255)
@@ -26,6 +19,26 @@ def runPopular():
     POPULAR_TEXT_WIDTH,POPULAR_TEXT_HEIGHT = 300, 100
     RECT_WIDTH, RECT_HEIGHT = 200, 100
     SPACING = 20
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("Four Rectangles")
+
+    kitchen =pygame.image.load("images/kitchen.png")
+    kitchen =pygame.transform.scale(kitchen,(WIDTH, HEIGHT))
+
+    bagel =pygame.image.load("images/bagel.png")
+    bagel =pygame.transform.scale(bagel,(RECT_WIDTH/2, RECT_HEIGHT/2))
+
+    coffee =pygame.image.load("images/coffee.png")
+    coffee =pygame.transform.scale(coffee,(RECT_WIDTH/2, RECT_HEIGHT/2))
+
+    croisant =pygame.image.load("images/croisant.png")
+    croisant =pygame.transform.scale(croisant,(RECT_WIDTH/2, RECT_HEIGHT/2))
+
+    lock =pygame.image.load("images/lock.png")
+    lock =pygame.transform.scale(lock,(RECT_WIDTH/2, RECT_HEIGHT/2))
+
+
+    
 
     # Calculate center positions
     center_x, center_y = WIDTH // 2, HEIGHT // 2
@@ -51,6 +64,19 @@ def runPopular():
     bottomLeftRect_Surface.fill(LIGHTBROWN)
     bottomRightRect_Surface = pygame.Surface((RECT_WIDTH, RECT_HEIGHT))
     bottomRightRect_Surface.fill(LIGHTBROWN)
+
+    ## positions of images relative to the rectangles there drawn in ##############
+    bagel_x = topLeftRect.x + (topLeftRect.width - bagel.get_width()) // 2
+    bagel_y = topLeftRect.y + (topLeftRect.height - bagel.get_height()) // 2
+
+    coffee_x = topRightRect.x + (topRightRect.width - coffee.get_width()) // 2
+    coffee_y = topRightRect.y + (topRightRect.height - coffee.get_height()) // 2
+
+    croisant_x = bottomLeftRect.x + (bottomLeftRect.width - croisant.get_width()) // 2
+    croisant_y = bottomLeftRect.y + (bottomLeftRect.height - croisant.get_height()) // 2
+
+    lock_x = bottomRightRect.x + (bottomRightRect.width - lock.get_width()) // 2
+    lock_y = bottomRightRect.y + (bottomRightRect.height - lock.get_height()) // 2
 
 
 
@@ -105,15 +131,21 @@ def runPopular():
         # Draw rectangles using screen.blit
         screen.blit(kitchen, (0,0))
         screen.blit(popularTextRect_surface, popularTextRect.topleft)
+        
         screen.blit(topLeftRect_Surface, topLeftRect.topleft)
+        screen.blit(bagel, (bagel_x, bagel_y))
         screen.blit(topRightRect_Surface, topRightRect.topleft)
+        screen.blit(coffee, (coffee_x, coffee_y))
         screen.blit(bottomLeftRect_Surface, bottomLeftRect.topleft)
+        screen.blit(croisant, (croisant_x, croisant_y))
         screen.blit(bottomRightRect_Surface, bottomRightRect.topleft)
+        screen.blit(lock, (lock_x, lock_y))
+
         
         # Draw text centered in each rectangle
         draw_text(screen, "Popular", popularTextRect, popularFont, BLACK)
 
-        
+        ##center_x - RECT_WIDTH - SPACING // 2
         
         pygame.display.flip()
 
