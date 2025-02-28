@@ -1,4 +1,5 @@
 import pygame
+import Popular
 
 # Initialize pygame
 pygame.init()
@@ -7,8 +8,11 @@ pygame.init()
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Four Rectangles")
-recipes =pygame.image.load("images/kitchen.png")
+recipes =pygame.image.load("images/recipes.png")
 recipes =pygame.transform.scale(recipes,(350, 150))
+
+kitchen =pygame.image.load("images/kitchen.png")
+kitchen =pygame.transform.scale(kitchen,(WIDTH, HEIGHT))
 
 # Colors
 WHITE = (255, 255, 255)
@@ -62,6 +66,8 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        
+        ### check for hover over options event start #################
         if topLeftRect.collidepoint(mouse_pos):
             topLeftRect_Surface.fill(SADDLEBROWN)
         
@@ -78,22 +84,26 @@ while running:
 
             bottomRightRect_Surface.fill(SADDLEBROWN)
 
-
-
-        
-        
-        
         else:
             topLeftRect_Surface.fill(LIGHTBROWN)
             topRightRect_Surface.fill(LIGHTBROWN)
             bottomLeftRect_Surface.fill(LIGHTBROWN)
             bottomRightRect_Surface.fill(LIGHTBROWN)
 
+    ### check for hover over options event end#################
+      
+    ## check for click event start to naviagte between pages ###############  
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if topLeftRect.collidepoint(event.pos):   ### if the position of the mousedown event is in the top left rectange postiton.. 
+               Popular.runPopular()
+               running = False
 
+        
              
     
     # Draw rectangles using screen.blit
-    screen.blit(backgroundRect_surface, backgroundRect.topleft)
+    ##screen.blit(backgroundRect_surface, backgroundRect.topleft)
+    screen.blit(kitchen, (0,0))
     screen.blit(recipes, (225,25))
     screen.blit(topLeftRect_Surface, topLeftRect.topleft)
     screen.blit(topRightRect_Surface, topRightRect.topleft)
