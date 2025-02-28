@@ -1,4 +1,5 @@
 import pygame
+import Unlock
 
 # Initialize pygame
 def runPopular():
@@ -36,6 +37,9 @@ def runPopular():
 
     lock =pygame.image.load("images/lock.png")
     lock =pygame.transform.scale(lock,(RECT_WIDTH/2, RECT_HEIGHT/2))
+
+    exclaimationPoint = pygame.image.load("images/exPoint.png")
+    exclaimationPoint = pygame.transform.scale(exclaimationPoint,(30,30))
 
 
     
@@ -81,8 +85,8 @@ def runPopular():
 
 
     # Load font
-    font = pygame.font.Font(pygame.font.match_font("courier"), 24)
-    popularFont = pygame.font.Font(pygame.font.match_font("courier"), 48)
+    font = pygame.font.Font(pygame.font.match_font("Irish Grover"), 24)
+    popularFont = pygame.font.Font(pygame.font.match_font("Irish Grover"), 48)
 
     def draw_text(surface, text, rect, font, color):
         text_surface = font.render(text, True, color)
@@ -126,6 +130,12 @@ def runPopular():
                 bottomRightRect_Surface.fill(LIGHTBROWN)
 
 
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if bottomRightRect.collidepoint(event.pos):   ### if the position of the mousedown event is in the top left rectange postiton.. 
+                 Unlock.runUnlock()
+                 running = False
+
+
                 
         
         # Draw rectangles using screen.blit
@@ -144,6 +154,9 @@ def runPopular():
         
         # Draw text centered in each rectangle
         draw_text(screen, "Popular", popularTextRect, popularFont, BLACK)
+        ##pygame.draw.circle(screen, WHITE, (bottomRightRect.topleft), 16)
+
+        screen.blit(exclaimationPoint, (bottomRightRect.topleft))
 
         ##center_x - RECT_WIDTH - SPACING // 2
         
