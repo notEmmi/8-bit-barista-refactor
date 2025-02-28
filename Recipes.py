@@ -7,12 +7,15 @@ pygame.init()
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Four Rectangles")
+recipes =pygame.image.load("images/recipes.png")
+recipes =pygame.transform.scale(recipes,(350, 150))
 
 # Colors
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
 LIGHTBROWN = (254, 195, 117)
 BACKGROUNDBROWN = (205, 149, 74)
+SADDLEBROWN =(139, 69, 19)
 BLACK = (0, 0, 0)
 
 # Rectangle dimensions
@@ -54,13 +57,44 @@ def draw_text(surface, text, rect, font, color):
 running = True
 while running:
     screen.fill(WHITE)
+    mouse_pos = pygame.mouse.get_pos()
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if topLeftRect.collidepoint(mouse_pos):
+            topLeftRect_Surface.fill(SADDLEBROWN)
+        
+        elif topRightRect.collidepoint(mouse_pos):
+
+            topRightRect_Surface.fill(SADDLEBROWN)
+
+        elif bottomLeftRect.collidepoint(mouse_pos):
+
+            bottomLeftRect_Surface.fill(SADDLEBROWN)
+        
+
+        elif bottomRightRect.collidepoint(mouse_pos):
+
+            bottomRightRect_Surface.fill(SADDLEBROWN)
+
+
+
+        
+        
+        
+        else:
+            topLeftRect_Surface.fill(LIGHTBROWN)
+            topRightRect_Surface.fill(LIGHTBROWN)
+            bottomLeftRect_Surface.fill(LIGHTBROWN)
+            bottomRightRect_Surface.fill(LIGHTBROWN)
+
+
+             
     
     # Draw rectangles using screen.blit
     screen.blit(backgroundRect_surface, backgroundRect.topleft)
+    screen.blit(recipes, (225,25))
     screen.blit(topLeftRect_Surface, topLeftRect.topleft)
     screen.blit(topRightRect_Surface, topRightRect.topleft)
     screen.blit(bottomLeftRect_Surface, bottomLeftRect.topleft)
