@@ -1,6 +1,5 @@
 import pygame
 from pygame import mixer
-import start_menu
 import Log_In
 
 def runError():
