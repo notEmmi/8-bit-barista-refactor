@@ -1,11 +1,10 @@
 import pygame
 from pygame import mixer
-from Music import Music
 import sqlite3
-import config_logIn
 from config_logIn import *
-import scripts.ErrorScreen as ErrorScreen
-import Loading
+import ErrorScreen as ErrorScreen
+from Loading import LoadingScreen
+from start_menu import StartMenu
 import bcrypt
 
 
@@ -45,7 +44,7 @@ def run_logIn():
 
 
 
-    grass = pygame.image.load("images/grass.png")
+    grass = pygame.image.load("assets/images/grass.png")
     grass = pygame.transform.scale(grass,(700, 75))
 
     username_box = pygame.Rect(200, 100, 200, 40)
@@ -55,10 +54,10 @@ def run_logIn():
     ######################## BACKGROUND IMAGES ###################################
 
 
-    sky=pygame.image.load("images/sky.png").convert_alpha()
+    sky=pygame.image.load("assets/images/sky.png").convert_alpha()
     sky = pygame.transform.scale(sky, (WIDTH, HEIGHT))
 
-    TREE_LEFT = pygame.image.load("images/tree.png")
+    TREE_LEFT = pygame.image.load("assets/images/tree.png")
     TREE_LEFT = pygame.transform.scale(TREE_LEFT, (150,150))
                                                 
 
@@ -72,7 +71,7 @@ def run_logIn():
     ## PLAY LOG IN SCREEN TRACK #############
 
     mixer.init()
-    mixer.music.load("tracks/LogInTrack.mp3")
+    mixer.music.load("assets/sounds/LogInTrack.mp3")
     mixer.music.play()
 
     running = True
@@ -127,7 +126,9 @@ def run_logIn():
                             stored_hash = result[0]  # Extract stored hash from the tuple
                             if check_password(password, stored_hash):  # Convert to bytes
                                print("Login successful!")
-                               Loading.runLoad()
+                               start_menu = StartMenu()
+                               loading_screen = LoadingScreen(start_menu.run)
+                               loading_screen.run()
                                print("password exists")
 
                             else:
@@ -154,11 +155,11 @@ def run_logIn():
         pygame.draw.rect(screen, DARK_PURPLE, login_button)
 
         # Render text labels
-        title_text = pygame.image.load("images/title.png")
+        title_text = pygame.image.load("assets/images/title.png")
         title_text = pygame.transform.scale(title_text, (150,40))
-        username_text = pygame.image.load("images/username.png")
+        username_text = pygame.image.load("assets/images/username.png")
         username_text = pygame.transform.scale(username_text, (150,40))
-        password_text = pygame.image.load("images/password.png")
+        password_text = pygame.image.load("assets/images/password.png")
         password_text = pygame.transform.scale(password_text, (150,40))
         screen.blit(username_text, USERNAME_TEXT_LOC)
         screen.blit(password_text, PASSWORD_TEXT_LOC )
