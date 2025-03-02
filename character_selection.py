@@ -25,7 +25,7 @@ BUTTON_WIDTH = 100
 BUTTON_HEIGHT = 40
 
 # Asset directory
-ASSET_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../assets/images/character-selection'))
+ASSET_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'assets/images/character-selection'))
 
 class CharacterSelector:
     def __init__(self):
