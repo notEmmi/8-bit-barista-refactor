@@ -44,7 +44,7 @@ def run_logIn():
 
 
 
-    grass = pygame.image.load("assets/images/grass.png")
+    grass = pygame.image.load("assets/images/others/grass.png")
     grass = pygame.transform.scale(grass,(700, 75))
 
     username_box = pygame.Rect(200, 100, 200, 40)
@@ -54,10 +54,10 @@ def run_logIn():
     ######################## BACKGROUND IMAGES ###################################
 
 
-    sky=pygame.image.load("assets/images/sky.png").convert_alpha()
+    sky=pygame.image.load("assets/images/others/sky.png").convert_alpha()
     sky = pygame.transform.scale(sky, (WIDTH, HEIGHT))
 
-    TREE_LEFT = pygame.image.load("assets/images/tree.png")
+    TREE_LEFT = pygame.image.load("assets/images/others/tree.png")
     TREE_LEFT = pygame.transform.scale(TREE_LEFT, (150,150))
                                                 
 
@@ -155,11 +155,11 @@ def run_logIn():
         pygame.draw.rect(screen, DARK_PURPLE, login_button)
 
         # Render text labels
-        title_text = pygame.image.load("assets/images/title.png")
+        title_text = pygame.image.load("assets/images/others/title.png")
         title_text = pygame.transform.scale(title_text, (150,40))
-        username_text = pygame.image.load("assets/images/username.png")
+        username_text = pygame.image.load("assets/images/others/username.png")
         username_text = pygame.transform.scale(username_text, (150,40))
-        password_text = pygame.image.load("assets/images/password.png")
+        password_text = pygame.image.load("assets/images/others/password.png")
         password_text = pygame.transform.scale(password_text, (150,40))
         screen.blit(username_text, USERNAME_TEXT_LOC)
         screen.blit(password_text, PASSWORD_TEXT_LOC )
