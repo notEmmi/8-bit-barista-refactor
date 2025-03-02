@@ -28,6 +28,5 @@ class PlaceholderScreen:
         sys.exit()
 
 # Example usage
-# if __name__ == "__main__":
-#     placeholder_screen = PlaceholderScreen()
-#     placeholder_screen.run()
+# placeholder_screen = PlaceholderScreen()
+# placeholder_screen.run()

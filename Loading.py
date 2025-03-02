@@ -86,7 +86,7 @@ class LoadingScreen:
         pygame.quit()
 
 # Example usage:
-# loading_screen = LoadingScreen(start_menu.runStartMenu)
+# loading_screen = LoadingScreen(start_menu.run), where start_menu is an instance of StartMenu
 # loading_screen.run()
 
 

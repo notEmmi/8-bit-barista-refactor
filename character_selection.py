@@ -242,6 +242,7 @@ class CharacterSelector:
             
             pygame.display.flip()  # Update the display
 
-if __name__ == "__main__":
-    selector = CharacterSelector()
-    selector.run()
+
+# Example usage
+# selector = CharacterSelector()
+# selector.run()
