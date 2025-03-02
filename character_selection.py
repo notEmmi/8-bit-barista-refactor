@@ -2,6 +2,7 @@ import pygame  # Import the pygame module
 import sys  # Import the sys module
 import os  # Import the os module
 from Loading import LoadingScreen  # Import the LoadingScreen class
+from placeholder_screen import PlaceholderScreen  # Import the PlaceholderScreen class
 
 # Initialize Pygame
 pygame.init()
@@ -179,7 +180,8 @@ class CharacterSelector:
                     self.error_message = "Name required."
                 else:
                     self.error_message = ""  # Clear the error message
-                    loading_screen = LoadingScreen()
+                    placeholder_screen = PlaceholderScreen()
+                    loading_screen = LoadingScreen(placeholder_screen.run)  # Create a loading screen instance
                     loading_screen.run()
 
     def handle_key_press(self, event):
