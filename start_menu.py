@@ -3,6 +3,7 @@ import sys
 import os
 from options import OptionsMenu
 from credits import CreditsScreen
+from character_selection import CharacterSelector  # Import CharacterSelector
 
 class StartMenu:
     def __init__(self):
@@ -109,6 +110,7 @@ class StartMenu:
         running = True
         options_menu = OptionsMenu()  # Create an instance of OptionsMenu
         credits = CreditsScreen()  # Create an instance of CreditsScreen
+        character_selector = CharacterSelector()  # Create an instance of CharacterSelector
         while running:
             events = pygame.event.get()
             self.screen.fill(self.LIGHT_BROWN)
@@ -140,11 +142,15 @@ class StartMenu:
                 if new_screen == "menu":  # If "BACK" is clicked in credits.py
                     self.current_screen = self.MENU  # Switch back to start menu
 
+            elif self.current_screen == self.CHARACTER_SELECTION:
+                character_selector.run()  # Run the character selection screen
+                self.current_screen = self.MENU  # After character selection, return to menu
+
             pygame.display.flip()  # Update screen
 
         pygame.quit()
         sys.exit()
 
 # Example usage
-start_menu = StartMenu()
-start_menu.run()
+# start_menu = StartMenu()
+# start_menu.run()
