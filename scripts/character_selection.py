@@ -1,6 +1,7 @@
 import pygame  # Import the pygame module
 import sys  # Import the sys module
-from loading_screen import LoadingScreen  # Import the LoadingScreen class
+import os  # Import the os module
+from Loading import LoadingScreen  # Import the LoadingScreen class
 
 # Initialize Pygame
 pygame.init()
@@ -23,6 +24,9 @@ INPUT_BOX_HEIGHT = 40
 BUTTON_WIDTH = 100
 BUTTON_HEIGHT = 40
 
+# Asset directory
+ASSET_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../assets/images/character-selection'))
+
 class CharacterSelector:
     def __init__(self):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))  # Create the game window
@@ -31,28 +35,28 @@ class CharacterSelector:
         # Load and scale character avatars
         self.character_images = {
             "boy1": [
-                pygame.transform.scale(pygame.image.load("assets/images/character-selection/boy1/boy1_closeup.png"), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load("assets/images/character-selection/boy1/boy1_portrait.png"), (PREVIEW_SIZE, PREVIEW_SIZE))
+                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy1/boy1_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
+                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy1/boy1_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
             ],
             "girl1": [
-                pygame.transform.scale(pygame.image.load("assets/images/character-selection/girl1/girl1_closeup.png"), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load("assets/images/character-selection/girl1/girl1_portrait.png"), (PREVIEW_SIZE, PREVIEW_SIZE))
+                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl1/girl1_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
+                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl1/girl1_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
             ],
             "boy2": [
-                pygame.transform.scale(pygame.image.load("assets/images/character-selection/boy2/boy2_closeup.png"), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load("assets/images/character-selection/boy2/boy2_portrait.png"), (PREVIEW_SIZE, PREVIEW_SIZE))
+                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy2/boy2_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
+                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy2/boy2_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
             ],
             "girl2": [
-                pygame.transform.scale(pygame.image.load("assets/images/character-selection/girl2/girl2_closeup.png"), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load("assets/images/character-selection/girl2/girl2_portrait.png"), (PREVIEW_SIZE, PREVIEW_SIZE))
+                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl2/girl2_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
+                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl2/girl2_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
             ],
             "boy3": [
-                pygame.transform.scale(pygame.image.load("assets/images/character-selection/boy3/boy3_closeup.png"), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load("assets/images/character-selection/boy3/boy3_portrait.png"), (PREVIEW_SIZE, PREVIEW_SIZE))
+                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy3/boy3_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
+                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy3/boy3_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
             ],
             "girl3": [
-                pygame.transform.scale(pygame.image.load("assets/images/character-selection/girl3/girl3_closeup.png"), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load("assets/images/character-selection/girl3/girl3_portrait.png"), (PREVIEW_SIZE, PREVIEW_SIZE))
+                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl3/girl3_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
+                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl3/girl3_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
             ],
             # Add more character images here
         }
