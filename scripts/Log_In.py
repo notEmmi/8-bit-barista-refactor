@@ -4,9 +4,10 @@ from Music import Music
 import sqlite3
 import config_logIn as config_logIn
 from config_logIn import *
-from ScreenManager import ScreenManager
 import bcrypt
 import os
+from Loading import LoadingScreen
+from start_menu import StartMenu
 
 class LogInScreen:
     def __init__(self):
@@ -53,8 +54,8 @@ class LogInScreen:
 
         # Play login screen track
         mixer.init()
-        mixer.music.load(os.path.join("assets", "music", "LogInTrack.mp3"))
-        mixer.music.load(os.path.join("assets", "music", "LogInTrack.mp3"))
+        mixer.music.load(os.path.join("assets", "sounds", "LogInTrack.mp3"))
+        mixer.music.set_volume(0.1) # Set volume to 10%
         mixer.music.play()
 
     def check_username(self, username):
@@ -65,6 +66,33 @@ class LogInScreen:
     def check_password(self, entered_password, stored_hash):
         """Checks if entered password matches the stored hash."""
         return bcrypt.checkpw(entered_password.encode(), stored_hash)
+
+    def authenticate_user(self):
+        userExists = self.check_username(self.username)
+        if userExists:
+            print("username exists!")
+            self.cursor.execute("SELECT password FROM users WHERE username = ?", (self.username,))
+            result = self.cursor.fetchone()
+            print("encrypted password", result)
+
+            if result:
+                stored_hash = result[0]
+                if self.check_password(self.password, stored_hash):
+                    print("Login successful!")
+                    start_menu = StartMenu()
+                    loading_screen = LoadingScreen(start_menu.run)
+                    loading_screen.run()
+                    print("password exists")
+                else:
+                    ErrorScreen.runError()
+                    return False
+            else:
+                print("invalid username!")
+                return False
+        else:
+            print("invalid username!")
+            return False
+        return True
 
     def run(self):
         running = True
@@ -83,7 +111,8 @@ class LogInScreen:
                         self.active_box = "password"
                     elif self.login_button.collidepoint(event.pos):
                         print(f"Logging in with:\nUsername: {self.username}\nPassword: {self.password}")
-                        # ...existing code...
+                        if not self.authenticate_user():
+                            running = False
 
                 elif event.type == pygame.KEYDOWN:
                     if self.active_box == "username":
@@ -99,25 +128,8 @@ class LogInScreen:
                             self.password = self.password[:-1]
                         elif event.key == pygame.K_RETURN:
                             print(f"Logging in with:\nUsername: {self.username}\nPassword: {self.password}")
-                            userExists = self.check_username(self.username)
-                            if userExists:
-                                print("username exists!")
-                            else:
-                                print("invalid username!")
-                            self.cursor.execute("SELECT password FROM users WHERE username = ?", (self.username,))
-                            result = self.cursor.fetchone()
-                            print("encrypted password", result)
-
-                            if result:
-                                stored_hash = result[0]
-                                if self.check_password(self.password, stored_hash):
-                                    print("Login successful!")
-                                    Loading.runLoad()
-                                    print("password exists")
-                                else:
-                                    ErrorScreen.runError()
-                                    running = False
-                                    print("invalid password!")
+                            if not self.authenticate_user():
+                                running = False
                         else:
                             self.password += event.unicode
 
@@ -157,6 +169,71 @@ class LogInScreen:
 
             # Update display
             pygame.display.flip()
+
+        pygame.quit()
+
+class ErrorScreen:
+    def __init__(self):
+        # Initialize Pygame
+        pygame.init()
+
+        # Constants
+        self.WIDTH, self.HEIGHT = 800, 600
+        self.RED = (200, 0, 0)
+        self.WHITE = (255, 255, 255)
+        self.BLACK = (0, 0, 0)
+        self.FONT_SIZE = 40
+
+        # Setup display
+        self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
+        pygame.display.set_caption("Error Screen")
+        self.clock = pygame.time.Clock()
+        self.TIMER_CHANGE_SCREEN = pygame.USEREVENT + 1
+        pygame.time.set_timer(self.TIMER_CHANGE_SCREEN, 5000)
+
+        # Load font
+        self.font = pygame.font.Font(None, self.FONT_SIZE)
+
+        self.darkbg = pygame.image.load("assets/images/others/darkbg.png")
+        self.darkbg = pygame.transform.scale(self.darkbg, (self.WIDTH, self.HEIGHT))
+
+        self.errorsign = pygame.image.load("assets/images/others/errorsign_transparent.png")
+        self.errorsign = pygame.transform.scale(self.errorsign, (250, 400))
+
+        self.cloud = pygame.image.load("assets/images/others/rain_transparent.png")
+        self.cloud = pygame.transform.scale(self.cloud, (100, 100))
+
+        # Error message
+        mixer.init()
+        mixer.music.load("assets/sounds/error.mp3")
+        mixer.music.play()
+
+    def run(self):
+        running = True
+        while running:
+            # Set background to red
+            # Render error message
+            self.screen.blit(self.darkbg, (0, 0))
+            self.screen.blit(self.errorsign, ((self.WIDTH / 2) - 125, (self.HEIGHT / 2) - 100))
+            self.screen.blit(self.cloud, (((self.WIDTH / 2) - 50), (self.HEIGHT / 2) - 250))
+            self.screen.blit(self.cloud, (((self.WIDTH / 2) - 250), (self.HEIGHT / 2) - 250))
+            self.screen.blit(self.cloud, (((self.WIDTH / 2) + 150), (self.HEIGHT / 2) - 250))
+
+            # Event handling
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # Close button
+                    running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:  # Exit on ESC key
+                        running = False
+                    elif event.key == pygame.K_RETURN:
+                        # Call function from Log_In.py
+                        log_in_screen = LogInScreen()
+                        log_in_screen.run()
+                        running = False
+
+            self.clock.tick(30)
+            pygame.display.flip()  # Update the screen
 
         pygame.quit()
 
