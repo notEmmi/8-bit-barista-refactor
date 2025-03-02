@@ -4,7 +4,7 @@ from Music import Music
 import sqlite3
 import config_logIn
 from config_logIn import *
-import ErrorScreen
+import scripts.ErrorScreen as ErrorScreen
 import Loading
 import bcrypt
 
