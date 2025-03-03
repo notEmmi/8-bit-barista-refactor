@@ -6,12 +6,13 @@ class Game:
     def __init__(self):
         # Initialize Pygame
         pygame.init()
+        pygame.mixer.init()
 
         # Screen Size
         self.SCREEN_WIDTH, self.SCREEN_HEIGHT = 800, 600
 
-        # Camera Zoom Factor (1.5x Zoom)
-        self.ZOOM_FACTOR = 1.5
+        # Camera Zoom Factor (2x Zoom)
+        self.ZOOM_FACTOR = 2.0
 
         # Adjusted Screen Size for the Camera View
         self.CAMERA_WIDTH = int(self.SCREEN_WIDTH / self.ZOOM_FACTOR)
@@ -24,6 +25,7 @@ class Game:
         self.BASE_DIR = os.path.dirname(__file__)
         self.SPRITE_PATH = os.path.join(self.BASE_DIR, "assets", "sprite")
         self.MAP_PATH = os.path.join(self.BASE_DIR, "assets", "map")
+        self.SOUND_PATH = os.path.join(self.BASE_DIR, "assets", "sounds")
 
         # Load TMX Map
         self.TMX_FILE = os.path.join(self.MAP_PATH, "map.tmx")
@@ -68,6 +70,11 @@ class Game:
 
         # Create a surface for rendering with zoom applied
         self.camera_surface = pygame.Surface((self.CAMERA_WIDTH, self.CAMERA_HEIGHT))
+
+        # Load and play background music
+        self.background_music = os.path.join(self.SOUND_PATH, "1_new_life_master.mp3")
+        pygame.mixer.music.load(self.background_music)
+        pygame.mixer.music.play(-1)  # Play on repeat
 
     def draw_map(self, surface, cam_x, cam_y):
         """Draws the visible portion of the TMX map based on the camera position."""
