@@ -13,7 +13,7 @@ class RegistrationApp:
         pygame.display.set_caption("Pygame GUI Registration")
         self.manager = pygame_gui.UIManager((self.WIDTH, self.HEIGHT))
         self.WHITE = (255, 255, 255)
-        self.conn = sqlite3.connect(os.path.join("assets", "database", "mydatabase.db"))
+        self.conn = sqlite3.connect("mydatabase.db")
         self.cursor = self.conn.cursor()
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
