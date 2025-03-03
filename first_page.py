@@ -95,8 +95,8 @@ class Game:
         new_y = self.player_y + move_y
 
         # Define the player's hitbox (adjust padding if necessary)
-        hitbox_padding_x = 10
-        hitbox_padding_y = 15
+        hitbox_padding_x = 0
+        hitbox_padding_y = 5
         player_hitbox = pygame.Rect(
             new_x + hitbox_padding_x, 
             new_y + hitbox_padding_y, 
