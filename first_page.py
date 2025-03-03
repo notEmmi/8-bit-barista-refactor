@@ -1,6 +1,7 @@
 import pygame
 import pytmx
 import os
+from pygame.math import Vector2
 
 class Game:
     def __init__(self):
@@ -18,7 +19,8 @@ class Game:
         self.CAMERA_WIDTH = int(self.SCREEN_WIDTH / self.ZOOM_FACTOR)
         self.CAMERA_HEIGHT = int(self.SCREEN_HEIGHT / self.ZOOM_FACTOR)
 
-        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.FULLSCREEN)
+        # self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
         pygame.display.set_caption("My Pygame Game")
 
         # File Paths
@@ -28,8 +30,7 @@ class Game:
         self.SOUND_PATH = os.path.join(self.BASE_DIR, "assets", "sounds")
 
         # Load TMX Map
-        self.TMX_FILE = os.path.join(self.MAP_PATH, "map.tmx")
-        self.tmx_data = pytmx.load_pygame(self.TMX_FILE)
+        self.load_map(os.path.join(self.MAP_PATH, "map.tmx"))
 
         # Extract Tile Size
         self.TILE_WIDTH = self.tmx_data.tilewidth
@@ -76,33 +77,72 @@ class Game:
         pygame.mixer.music.load(self.background_music)
         pygame.mixer.music.play(-1)  # Play on repeat
 
+    
+
+    def load_map(self, map_file):
+        self.tmx_data = pytmx.load_pygame(map_file)
+        self.collidable_objects = []  # Reset collision list
+
+        # Look for a dedicated collision layer
+        for obj in self.tmx_data.objects:
+            if obj.name == "Collisions" or obj.properties.get("collidable", False):
+                rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+                self.collidable_objects.append(rect)
+
+
+    def move_player(self, move_x, move_y):
+        new_x = self.player_x + move_x
+        new_y = self.player_y + move_y
+
+        # Define the player's hitbox (adjust padding if necessary)
+        hitbox_padding_x = 10
+        hitbox_padding_y = 15
+        player_hitbox = pygame.Rect(
+            new_x + hitbox_padding_x, 
+            new_y + hitbox_padding_y, 
+            self.SPRITE_WIDTH - 2 * hitbox_padding_x, 
+            self.SPRITE_HEIGHT - 2 * hitbox_padding_y
+        )
+
+        # Check if the new position collides with any object
+        for obj in self.collidable_objects:
+            if player_hitbox.colliderect(obj):
+                return  # Collision detected, don't move
+
+        # No collision, update player position
+        self.player_x = new_x
+        self.player_y = new_y
+
     def draw_map(self, surface, cam_x, cam_y):
-        """Draws the visible portion of the TMX map based on the camera position."""
+        # Draw the tile layers
         for layer in self.tmx_data.visible_layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 for x, y, gid in layer:
                     if gid == 0:
-                        continue
-
+                        continue  # Skip empty tiles
+                    
                     tile = self.tmx_data.get_tile_image_by_gid(gid)
                     tile_x = x * self.TILE_WIDTH - cam_x
                     tile_y = y * self.TILE_HEIGHT - cam_y
 
-                    # Only draw tiles that are visible within the camera view
+                    # Only draw tiles visible within the camera view
                     if -self.TILE_WIDTH <= tile_x < self.CAMERA_WIDTH and -self.TILE_HEIGHT <= tile_y < self.CAMERA_HEIGHT:
                         surface.blit(tile, (tile_x, tile_y))
         
-        # 🔥 Draw object layers (e.g., buildings, NPCs)
+        # Draw objects (Trees, buildings, etc.)
         for obj in self.tmx_data.objects:
             obj_x = obj.x - cam_x
             obj_y = obj.y - cam_y
-            
-            # Debug: Draw a red rectangle where objects should be
-            # pygame.draw.rect(surface, (255, 0, 0), (obj_x, obj_y, obj.width, obj.height), 2)
-            
-            # If your objects have images, load them
-            if hasattr(obj, "image") and obj.image:
-                surface.blit(obj.image, (obj_x, obj_y))
+
+            if obj.gid:  # If object has an image
+                image = self.tmx_data.get_tile_image_by_gid(obj.gid)
+                if image:
+                    surface.blit(image, (obj_x, obj_y))
+        
+        # Debug: Draw red collision boxes
+        for rect in self.collidable_objects:
+            pygame.draw.rect(surface, (255, 0, 0), 
+                            (rect.x - cam_x, rect.y - cam_y, rect.width, rect.height), 2)
 
     def run(self):
         # Main Game Loop
@@ -143,8 +183,7 @@ class Game:
                 moving = True
 
             # Apply Movement (Player Now Restricted to Map Bounds)
-            self.player_x += move_x
-            self.player_y += move_y
+            self.move_player(move_x, move_y)
 
             # Handle Idle Animations (When No Input is Given)
             if not moving:
