@@ -91,6 +91,18 @@ class Game:
                     # Only draw tiles that are visible within the camera view
                     if -self.TILE_WIDTH <= tile_x < self.CAMERA_WIDTH and -self.TILE_HEIGHT <= tile_y < self.CAMERA_HEIGHT:
                         surface.blit(tile, (tile_x, tile_y))
+        
+        # 🔥 Draw object layers (e.g., buildings, NPCs)
+        for obj in self.tmx_data.objects:
+            obj_x = obj.x - cam_x
+            obj_y = obj.y - cam_y
+            
+            # Debug: Draw a red rectangle where objects should be
+            # pygame.draw.rect(surface, (255, 0, 0), (obj_x, obj_y, obj.width, obj.height), 2)
+            
+            # If your objects have images, load them
+            if hasattr(obj, "image") and obj.image:
+                surface.blit(obj.image, (obj_x, obj_y))
 
     def run(self):
         # Main Game Loop
