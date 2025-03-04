@@ -1,7 +1,7 @@
 import pygame
 import pytmx
 import os
-from pygame.math import Vector2
+from inventory import Inventory
 
 class Game:
     def __init__(self):
@@ -38,6 +38,7 @@ class Game:
         self.MAP_WIDTH = self.tmx_data.width * self.TILE_WIDTH
         self.MAP_HEIGHT = self.tmx_data.height * self.TILE_HEIGHT
 
+
         # Player Constants
         self.PLAYER_SPEED = 2
 
@@ -56,6 +57,8 @@ class Game:
             "idle_left": [pygame.image.load(os.path.join(self.SPRITE_PATH, "left_idle.png"))],
             "idle_right": [pygame.image.load(os.path.join(self.SPRITE_PATH, "right_idle.png"))],
         }
+
+
 
         # Get sprite size
         self.SPRITE_WIDTH, self.SPRITE_HEIGHT = self.ANIMATION_FRAMES["down"][0].get_width(), self.ANIMATION_FRAMES["down"][0].get_height()
@@ -76,6 +79,8 @@ class Game:
         self.background_music = os.path.join(self.SOUND_PATH, "1_new_life_master.mp3")
         pygame.mixer.music.load(self.background_music)
         pygame.mixer.music.play(-1)  # Play on repeat
+
+        self.inventory = Inventory()
 
     
 
@@ -182,6 +187,7 @@ class Game:
                 self.player_direction = "right"
                 moving = True
 
+
             # Apply Movement (Player Now Restricted to Map Bounds)
             self.move_player(move_x, move_y)
 
@@ -220,6 +226,9 @@ class Game:
             # Scale up the camera surface to the main screen
             zoomed_surface = pygame.transform.scale(self.camera_surface, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
             self.screen.blit(zoomed_surface, (0, 0))
+
+            # Draw the toolbox
+            self.inventory.draw_toolbox(self.screen)
 
             # Handle Quit Event
             for event in pygame.event.get():
