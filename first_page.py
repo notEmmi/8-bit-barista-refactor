@@ -1,7 +1,7 @@
 import pygame
 import pytmx
 import os
-from toolbar import Inventory
+from toolbar import Toolbox
 
 class Game:
     def __init__(self):
@@ -80,7 +80,7 @@ class Game:
         pygame.mixer.music.load(self.background_music)
         pygame.mixer.music.play(-1)  # Play on repeat
 
-        self.inventory = Inventory()
+        self.toolbox = Toolbox()
 
     
 
@@ -228,7 +228,7 @@ class Game:
             self.screen.blit(zoomed_surface, (0, 0))
 
             # Draw the toolbox
-            self.inventory.draw_toolbox(self.screen)
+            self.toolbox.draw(self.screen)
 
             # Handle tool selection with number keys
             for event in pygame.event.get():
@@ -236,7 +236,7 @@ class Game:
                     running = False
                 elif event.type == pygame.KEYDOWN:
                     if pygame.K_1 <= event.key <= pygame.K_5:
-                        self.inventory.selected_tool = event.key - pygame.K_1
+                        self.toolbox.select_tool(event.key - pygame.K_1)
 
             pygame.display.flip()  # Update display
             clock.tick(FPS)
