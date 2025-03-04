@@ -1,7 +1,7 @@
 import pygame
 import pytmx
 import os
-from inventory import Inventory
+from toolbar import Inventory
 
 class Game:
     def __init__(self):
