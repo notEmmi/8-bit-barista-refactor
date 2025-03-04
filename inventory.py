@@ -35,15 +35,15 @@ class Inventory:
     def draw_toolbox(self, surface):
         font = pygame.font.Font(None, 30)
         box_x, box_y = 20, 500  # Position of toolbox
-        box_width, box_height = 250, 50  # Size of toolbox bar
+        box_width, box_height = 300, 50  # Size of toolbox bar
 
         pygame.draw.rect(surface, (50, 50, 50), (box_x, box_y, box_width, box_height))  # Background
         pygame.draw.rect(surface, (200, 200, 200), (box_x, box_y, box_width, box_height), 2)  # Border
 
-        for i, tool in enumerate(self.toolbar):
-            color = (255, 255, 0) if i == self.selected_tool else (255, 255, 255)  # Highlight selected tool
-            text = font.render(tool, True, color)
-            surface.blit(text, (box_x + 10 + i * 80, box_y + 10))
+        for i, (tool_name, tool_image) in enumerate(self.toolbar.items()):
+            if i == self.selected_tool:
+                pygame.draw.rect(surface, (255, 255, 0), (box_x + i * 60, box_y, 50, 50), 2)  # Highlight selected tool
+            surface.blit(tool_image, (box_x + 10 + i * 60, box_y + 10))
 
     def draw_inventory(self, surface):
         font = pygame.font.Font(None, 30)
