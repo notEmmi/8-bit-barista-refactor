@@ -43,6 +43,6 @@ def crop_character(sprite, output_path):
         print(f"Warning: No character detected in {output_path}")
 
 # Example usage
-# sprite_sheet_path = "assets/sprite/boy1_sprites.png"
-# output_folder = "assets/sprite/boy1"
-# slice_character_sheet(sprite_sheet_path, output_folder)
+sprite_sheet_path = "assets/sprite/boy1_sprites.png"
+output_folder = "assets/sprite"
+slice_character_sheet(sprite_sheet_path, output_folder)

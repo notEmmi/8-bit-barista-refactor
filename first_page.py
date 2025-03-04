@@ -43,14 +43,14 @@ class Game:
 
         # Load Individual Sprite Images
         self.ANIMATION_FRAMES = {
-            "down": [pygame.image.load(os.path.join(self.SPRITE_PATH, "move_down_1.png")),
-                     pygame.image.load(os.path.join(self.SPRITE_PATH, "move_down_2.png"))],
-            "up": [pygame.image.load(os.path.join(self.SPRITE_PATH, "move_up_1.png")),
-                   pygame.image.load(os.path.join(self.SPRITE_PATH, "move_up_2.png"))],
-            "left": [pygame.image.load(os.path.join(self.SPRITE_PATH, "move_left_1.png")),
-                     pygame.image.load(os.path.join(self.SPRITE_PATH, "move_left_2.png"))],
-            "right": [pygame.image.load(os.path.join(self.SPRITE_PATH, "move_right_1.png")),
-                      pygame.image.load(os.path.join(self.SPRITE_PATH, "move_right_2.png"))],
+            "down": [pygame.image.load(os.path.join(self.SPRITE_PATH, "down_1.png")),
+                 pygame.image.load(os.path.join(self.SPRITE_PATH, "down_2.png"))],
+            "up": [pygame.image.load(os.path.join(self.SPRITE_PATH, "up_1.png")),
+               pygame.image.load(os.path.join(self.SPRITE_PATH, "up_2.png"))],
+            "left": [pygame.image.load(os.path.join(self.SPRITE_PATH, "left_1.png")),
+                 pygame.image.load(os.path.join(self.SPRITE_PATH, "left_2.png"))],
+            "right": [pygame.image.load(os.path.join(self.SPRITE_PATH, "right_1.png")),
+                  pygame.image.load(os.path.join(self.SPRITE_PATH, "right_2.png"))],
             "idle_down": [pygame.image.load(os.path.join(self.SPRITE_PATH, "down_idle.png"))],
             "idle_up": [pygame.image.load(os.path.join(self.SPRITE_PATH, "up_idle.png"))],
             "idle_left": [pygame.image.load(os.path.join(self.SPRITE_PATH, "left_idle.png"))],
@@ -140,9 +140,9 @@ class Game:
                     surface.blit(image, (obj_x, obj_y))
         
         # Debug: Draw red collision boxes
-        for rect in self.collidable_objects:
-            pygame.draw.rect(surface, (255, 0, 0), 
-                            (rect.x - cam_x, rect.y - cam_y, rect.width, rect.height), 2)
+        # for rect in self.collidable_objects:
+        #     pygame.draw.rect(surface, (255, 0, 0), 
+        #                     (rect.x - cam_x, rect.y - cam_y, rect.width, rect.height), 2)
 
     def run(self):
         # Main Game Loop
