@@ -1,4 +1,5 @@
 import pygame
+from pygame import mixer
 def runUnlock():
 # Initialize pygame
     pygame.init()
@@ -40,7 +41,9 @@ def runUnlock():
 
     exclaimationPoint = pygame.image.load("images/exPoint.png")
     exclaimationPoint = pygame.transform.scale(exclaimationPoint,(8,8))
-
+    mixer.init()
+    mixer.music.load("tracks/06 - Victory!.mp3")
+    mixer.music.play()
     # Main loop
     running = True
     while running:

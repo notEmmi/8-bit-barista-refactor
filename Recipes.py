@@ -1,5 +1,6 @@
 import pygame
 import Popular
+from pygame import mixer
 
 # Initialize pygame
 pygame.init()
@@ -7,7 +8,7 @@ pygame.init()
 # Screen dimensions
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Four Rectangles")
+pygame.display.set_caption("Recipes")
 recipes =pygame.image.load("images/recipes.png")
 recipes =pygame.transform.scale(recipes,(350, 150))
 
@@ -51,17 +52,22 @@ bottomRightRect_Surface.fill(LIGHTBROWN)
 
 # Load font
 font = pygame.font.Font(pygame.font.match_font("courier"), 24)
-
+mixer.init()
+mixer.music.load("tracks/08 - Shop.mp3")
+mixer.music.play()
 def draw_text(surface, text, rect, font, color):
     text_surface = font.render(text, True, color)
     text_rect = text_surface.get_rect(center=rect.center)
     surface.blit(text_surface, text_rect.topleft)
-
+    
+   
 # Main loop
 running = True
 while running:
     screen.fill(WHITE)
     mouse_pos = pygame.mouse.get_pos()
+    
+    
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

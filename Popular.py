@@ -1,5 +1,6 @@
 import pygame
 import Unlock
+from pygame import mixer
 
 # Initialize pygame
 def runPopular():
@@ -21,7 +22,7 @@ def runPopular():
     RECT_WIDTH, RECT_HEIGHT = 200, 100
     SPACING = 20
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Four Rectangles")
+    pygame.display.set_caption("Popular")
 
     kitchen =pygame.image.load("images/kitchen.png")
     kitchen =pygame.transform.scale(kitchen,(WIDTH, HEIGHT))
@@ -40,6 +41,9 @@ def runPopular():
 
     exclaimationPoint = pygame.image.load("images/exPoint.png")
     exclaimationPoint = pygame.transform.scale(exclaimationPoint,(30,30))
+
+    popup = pygame.image.load("images/popup.png")
+    popup = pygame.transform.scale(popup,(75,75))
 
 
     
@@ -87,7 +91,9 @@ def runPopular():
     # Load font
     font = pygame.font.Font(pygame.font.match_font("Irish Grover"), 24)
     popularFont = pygame.font.Font(pygame.font.match_font("Irish Grover"), 48)
-
+    mixer.init()
+    mixer.music.load("tracks/08 - Shop.mp3")
+    mixer.music.play()
     def draw_text(surface, text, rect, font, color):
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect(center=rect.center)
@@ -112,11 +118,18 @@ def runPopular():
             elif bottomLeftRect.collidepoint(mouse_pos):
 
                 bottomLeftRect_Surface.fill(SADDLEBROWN)
+
+
             
 
             elif bottomRightRect.collidepoint(mouse_pos):
 
-                bottomRightRect_Surface.fill(SADDLEBROWN)
+                bottomRightRect_Surface.fill(BLUE)
+
+                ### logic for pop up bubble here
+
+                
+
 
 
 
@@ -150,7 +163,9 @@ def runPopular():
         screen.blit(croisant, (croisant_x, croisant_y))
         screen.blit(bottomRightRect_Surface, bottomRightRect.topleft)
         screen.blit(lock, (lock_x, lock_y))
-
+        mouse_pos = pygame.mouse.get_pos()
+        if bottomRightRect.collidepoint(mouse_pos):
+         screen.blit(popup,(425,250))
         
         # Draw text centered in each rectangle
         draw_text(screen, "Popular", popularTextRect, popularFont, BLACK)
