@@ -2,6 +2,7 @@ import pygame
 import pytmx
 import os
 import time
+from weather import Rain, Raindrop, FloorDrop
 
 class Game:
     def __init__(self):
@@ -12,6 +13,14 @@ class Game:
 
         # Screen Size
         self.SCREEN_WIDTH, self.SCREEN_HEIGHT = 800, 600
+
+        # initializing rain
+        self.rain = Rain()
+        self.raining = False 
+
+        # Create Dark Rain Overlay
+        self.rain_overlay = pygame.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.SRCALPHA)
+        self.rain_overlay.fill((0, 0, 0, 100))  # Semi-transparent black layer (100/255 opacity)
 
         # Camera Zoom Factor (1.5x Zoom)
         self.ZOOM_FACTOR = 1.5
@@ -173,6 +182,15 @@ class Game:
         # Set time to 6am
         if keys[pygame.K_6]:
             self.game_start_time = time.time() - ((5 * 60 + 30 - self.GAME_START_HOUR * 60) * self.SECONDS_PER_GAME_MINUTE)
+            
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:  # Toggle rain when 'R' is pressed
+                    self.raining = not self.raining
+                    print(f"Rain Enabled: {self.raining}")  # Debug message
 
     def run(self):
         # Main Game Loop
@@ -261,6 +279,13 @@ class Game:
             # Draw Night Filter
             self.draw_night_filter()
             self.draw_time_display()
+
+            # Update & Draw Rain (Only if raining)
+            if self.raining:
+                self.rain.update(self.camera_x, self.camera_y)
+                self.rain.draw(self.screen)
+                self.screen.blit(self.rain_overlay, (0, 0))  # Dark filter for cloudy effect
+
             pygame.display.flip()  # Update display
             clock.tick(FPS)
 
