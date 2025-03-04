@@ -230,10 +230,13 @@ class Game:
             # Draw the toolbox
             self.inventory.draw_toolbox(self.screen)
 
-            # Handle Quit Event
+            # Handle tool selection with number keys
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.KEYDOWN:
+                    if pygame.K_1 <= event.key <= pygame.K_5:
+                        self.inventory.selected_tool = event.key - pygame.K_1
 
             pygame.display.flip()  # Update display
             clock.tick(FPS)
