@@ -1,19 +1,12 @@
 import pygame, random, sys, recipedata # type: ignore [this is so vscode doesn't yell at me]
 
-"""
-This one python file is meant to complete both task cards #63 and #73.
-This is a barebones crafting menu right now.
-It will be linked with code from other branches to minimize code duplication.
-Right now it has a gameloop with 80% chance of calling a customer to "simulate" coffeeshop customer flow.
-"""
-
 # Initialize Pygame
 pygame.init()
 
 # Screen Configuration
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("ORDER FULFILLMENT")
+pygame.display.set_caption("CUSTOMER INTERACTIONS")
 
 # Colors
 LIGHT_BROWN = (99, 55, 44)  # Outer Background
@@ -28,36 +21,46 @@ BRIGHTEST_BROWN = (201, 125, 96)
 
 # Fonts
 titleText = pygame.font.Font(pygame.font.match_font('courier'), 45)
-recipeNameText = pygame.font.Font(pygame.font.match_font('courier'), 22)
+buttonText = pygame.font.Font(pygame.font.match_font('courier'), 22)
+recipeText = pygame.font.Font(pygame.font.match_font('courier'), 32)
 ingredientText = pygame.font.Font(pygame.font.match_font('courier'), 18)
-buttonText = pygame.font.Font(pygame.font.match_font('courier'), 18)
 
-renderedRecipes = {}
+currentScene = "exterior"
+
+# items
+mainButtons = {
+    "Enter Shop": ("exterior", "interior"),
+    "View Customer Order": ("interior", "customerOrder"),
+    "Exit Shop": ("interior", "exterior"),
+    "Complete Order": ("customerOrder", "interior"),
+    "Reject Order": ("customerOrder", "interior"),
+    "Close": ("customerOrder", "interior"),
+}
+renderedButtons = {}
 
 # Bottom menu buttons
 menuButtons = {
-    "BACK": pygame.Rect(WIDTH // 2 - 40, 485, 80, 30)
+    "QUIT": pygame.Rect(WIDTH // 2 - 40, 485, 80, 30)
 }
 
-# Function to draw a toggle
-def drawRecipe(name, yPos, ingredients):
+# Function to draw a main button
+def drawMainButton(name, yPos, intendedSceneAndNextScene):
     min_x, max_x = 350, 590
     length = max_x - min_x
     buttonRect = pygame.Rect(min_x // 2 - 60, yPos + 2.5, length * 2.4, 40)
+    renderedButtons[name] = (buttonRect, intendedSceneAndNextScene[0], intendedSceneAndNextScene[1])
+    if (currentScene != intendedSceneAndNextScene[0]): return
     pygame.draw.rect(screen, BRIGHT_BROWN, buttonRect, border_radius=7)
-    ingredientString = recipedata.parseIngredients(ingredients)
-    recipeLabel = recipeNameText.render((name + ":" + str(ingredientString)), True, WHITE)
-    screen.blit(recipeLabel, (min_x // 2 - 50, yPos + 10))
-    renderedRecipes[name] = (buttonRect, ingredientString)
+    buttonLabel = buttonText.render(name, True, WHITE)
+    screen.blit(buttonLabel, (min_x // 2 - 50, yPos + 10))
 
 # Main Loop
 running = True
-hasOrder = False
-placedOrder = False
-customersOrder = None
 listOfRecipes = []
 for recipe in recipedata.theRecipes.keys():
     listOfRecipes.append(recipe)
+currentOrder = random.choice(listOfRecipes)
+print(f"currentOrder: {currentOrder}")
 while running:
     screen.fill(LIGHT_BROWN)  # Outer Coffee Background
     
@@ -81,14 +84,14 @@ while running:
     pygame.draw.rect(screen, BROWN, panel_rect, border_radius=12)
     
     # Draw Title
-    titleLabel = titleText.render("ORDER FULFILLMENT", True, WHITE)
+    titleLabel = titleText.render(currentScene, True, WHITE)
     screen.blit(titleLabel, (WIDTH // 2 - titleLabel.get_width() // 2, 85))
     
     # ingredient labels
-    yOffset = 300 - (len(recipedata.theRecipes) * 25)
-    for name, ingredients in recipedata.theRecipes.items():
-        drawRecipe(name, yOffset, ingredients)
-        yOffset += 50
+    yOffset = 300 - (len(mainButtons) * 25)
+    for name, intendedSceneAndNextScene in mainButtons.items():
+        drawMainButton(name, yOffset, intendedSceneAndNextScene)
+        if (currentScene == intendedSceneAndNextScene[0]): yOffset += 50
 
     # draw menuButtons
     for name, rect in menuButtons.items():
@@ -100,13 +103,11 @@ while running:
       text = buttonText.render(name, True, WHITE)
       screen.blit(text, text.get_rect(center=rect.center))
 
-    if (not hasOrder): hasOrder = random.randint(0,100) > 20
-    if (hasOrder and not placedOrder):
-        print("Order up!")
-        randomRecipe = random.choice(listOfRecipes)
-        customersOrder = renderedRecipes[randomRecipe]
-        print(f"customer wants {randomRecipe}")
-        placedOrder = True
+    if (currentScene == "customerOrder"):
+        recipeLabel = recipeText.render(currentOrder, True, WHITE)
+        screen.blit(recipeLabel, (WIDTH // 2 - recipeLabel.get_width() // 2, HEIGHT // 2 + 40))
+        ingredientLabel = ingredientText.render(recipedata.parseIngredients(recipedata.theRecipes.get(currentOrder)), True, WHITE)
+        screen.blit(ingredientLabel, (WIDTH // 2 - ingredientLabel.get_width() // 2, HEIGHT // 2 + 80))
     
     # Event Handling
     mousePosition = pygame.mouse.get_pos()
@@ -116,19 +117,23 @@ while running:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             print("MOUSEDOWN")
-            for name, rect in menuButtons.items():
+            for menuButtonName, rect in menuButtons.items():
                 if not rect.collidepoint(mousePosition): continue
-                print(f"{name} button clicked!")
+                print(f"{menuButtonName} button clicked!")
+                if (menuButtonName == "QUIT"): running = False
                 break
-            for recipe, buttonAndIngredients in renderedRecipes.items():
-                if not buttonAndIngredients[0].collidepoint(mousePosition): continue
-                print(f"User wants to craft {recipe}, and needs\n\t{buttonAndIngredients[1]}.")
-                if (placedOrder and customersOrder == buttonAndIngredients):
-                    print("order fulfilled!")
-                    hasOrder = False
-                    placedOrder = False
-                else:
-                    print(f"{recipe} is not what the customer ordered.")
+            for mainButtonName, buttonIntendedNext in renderedButtons.items():
+                if not buttonIntendedNext[0].collidepoint(mousePosition) or currentScene != buttonIntendedNext[1]: continue
+                print(f"{mainButtonName} clicked! switching scene to {buttonIntendedNext[2]}")
+                if (mainButtonName == "Reject Order"):
+                    print(f"rejected order {currentOrder}. customer could express disappointment here. generating new order...")
+                    currentOrder = random.choice(listOfRecipes)
+                    print(f"new order: {currentOrder}")
+                elif (mainButtonName == "Complete Order"):
+                    print(f"Completed order {currentOrder}. customer expresses appreciation here. generating new order...")
+                    currentOrder = random.choice(listOfRecipes)
+                    print(f"new order: {currentOrder}")
+                currentScene = buttonIntendedNext[2]
                 break
             x_positions = [320, 400, 480]
     
