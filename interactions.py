@@ -113,13 +113,10 @@ while running:
     mousePosition = pygame.mouse.get_pos()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            print("QUITTING")
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            print("MOUSEDOWN")
             for menuButtonName, rect in menuButtons.items():
                 if not rect.collidepoint(mousePosition): continue
-                print(f"{menuButtonName} button clicked!")
                 if (menuButtonName == "QUIT"): running = False
                 break
             for mainButtonName, buttonIntendedNext in renderedButtons.items():

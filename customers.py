@@ -112,13 +112,10 @@ while running:
     mousePosition = pygame.mouse.get_pos()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            print("QUITTING")
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            print("MOUSEDOWN")
             for name, rect in menuButtons.items():
                 if not rect.collidepoint(mousePosition): continue
-                print(f"{name} button clicked!")
                 break
             for recipe, buttonAndIngredients in renderedRecipes.items():
                 if not buttonAndIngredients[0].collidepoint(mousePosition): continue
