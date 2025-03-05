@@ -13,6 +13,7 @@ pygame.init()
 # Screen Configuration
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+transparentSurface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
 pygame.display.set_caption("ORDER FULFILLMENT")
 
 # Colors
@@ -25,12 +26,14 @@ GRAY = (100, 100, 100)
 ACTIVE_COLOR = (160, 100, 80)
 BRIGHT_BROWN = (143, 89, 68)
 BRIGHTEST_BROWN = (201, 125, 96)
+TRANSPARENT = (143, 89, 68, 0)
 
 # Fonts
 titleText = pygame.font.Font(pygame.font.match_font('courier'), 45)
 recipeNameText = pygame.font.Font(pygame.font.match_font('courier'), 22)
 ingredientText = pygame.font.Font(pygame.font.match_font('courier'), 18)
 buttonText = pygame.font.Font(pygame.font.match_font('courier'), 18)
+smallText = pygame.font.Font(pygame.font.match_font('courier'), 18)
 
 renderedRecipes = {}
 
@@ -40,15 +43,17 @@ menuButtons = {
 }
 
 # Function to draw a toggle
-def drawRecipe(name, yPos, ingredients):
-    min_x, max_x = 350, 590
-    length = max_x - min_x
-    buttonRect = pygame.Rect(min_x // 2 - 60, yPos + 2.5, length * 2.4, 40)
-    pygame.draw.rect(screen, BRIGHT_BROWN, buttonRect, border_radius=7)
-    ingredientString = recipedata.parseIngredients(ingredients)
-    recipeLabel = recipeNameText.render((name + ":" + str(ingredientString)), True, WHITE)
-    screen.blit(recipeLabel, (min_x // 2 - 50, yPos + 10))
-    renderedRecipes[name] = (buttonRect, ingredientString)
+def drawRecipe(recipeName, xPos, yPos, ingredients):
+    length = 125
+    buttonRect = pygame.Rect(xPos, yPos, length, length)
+    renderedRecipes[recipeName] = (buttonRect, recipedata.parseIngredients(ingredients))
+    screen.blit(transparentSurface, (0, 0))
+    pygame.draw.rect(transparentSurface, TRANSPARENT, buttonRect, border_radius=7)
+    recipeImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + str.lower(recipeName) + ".png")
+    recipeImage = pygame.transform.scale(recipeImage, (length, length))
+    screen.blit(recipeImage, (buttonRect.x, buttonRect.y))
+    recipeLabel = recipeNameText.render(name, True, WHITE)
+    screen.blit(recipeLabel, (xPos, yPos - recipeLabel.get_height() // 2))
 
 # Main Loop
 running = True
@@ -82,13 +87,21 @@ while running:
     
     # Draw Title
     titleLabel = titleText.render("ORDER FULFILLMENT", True, WHITE)
-    screen.blit(titleLabel, (WIDTH // 2 - titleLabel.get_width() // 2, 85))
+    screen.blit(titleLabel, (WIDTH // 2 - titleLabel.get_width() // 2, 72.5))
     
     # ingredient labels
-    yOffset = 300 - (len(recipedata.theRecipes) * 25)
+    itemsPerRow = 3
+    itemOnRow = 1
+    xOffset = 300 - (len(recipedata.theRecipes) * 25)
+    yOffset = 300 - (len(recipedata.theRecipes) * 25) + 10
     for name, ingredients in recipedata.theRecipes.items():
-        drawRecipe(name, yOffset, ingredients)
-        yOffset += 50
+        drawRecipe(name, xOffset, yOffset, ingredients)
+        xOffset += 190
+        itemOnRow += 1
+        if (itemOnRow > itemsPerRow):
+            itemOnRow = 1
+            xOffset = 300 - (len(recipedata.theRecipes) * 25)
+            yOffset += 175
 
     # draw menuButtons
     for name, rect in menuButtons.items():
@@ -100,13 +113,18 @@ while running:
       text = buttonText.render(name, True, WHITE)
       screen.blit(text, text.get_rect(center=rect.center))
 
-    if (not hasOrder): hasOrder = random.randint(0,100) > 20
+    if (not hasOrder):
+        smallTextContents = ""
+        hasOrder = random.randint(0,100) > 20
     if (hasOrder and not placedOrder):
         print("Order up!")
         randomRecipe = random.choice(listOfRecipes)
         customersOrder = renderedRecipes[randomRecipe]
         print(f"customer wants {randomRecipe}")
         placedOrder = True
+        smallTextContents = "Customer wants " + randomRecipe + "."
+    smallTextLabel = smallText.render(smallTextContents, True, WHITE)
+    screen.blit(smallTextLabel, (WIDTH // 2 - smallTextLabel.get_width() // 2, 115))
     
     # Event Handling
     mousePosition = pygame.mouse.get_pos()
