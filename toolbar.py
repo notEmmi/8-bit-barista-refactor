@@ -31,6 +31,14 @@ class Toolbox:
     def select_tool(self, index):
         if 0 <= index < len(self.tools):
             self.selected_tool = index  # Change selected tool
+    
+    def use_tool(self, tile_x, tile_y, game):
+        if self.selected_tool == 0:  # Hoe is selected
+            if not game.is_collidable(tile_x, tile_y):  # Ensure it's not colliding with any objects
+                print(f"Using hoe at ({tile_x}, {tile_y})")
+                game.change_tile(tile_x, tile_y, "dirt")
+
+
 
     def draw(self, surface):
         screen_width, screen_height = surface.get_size()

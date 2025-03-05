@@ -149,6 +149,34 @@ class Game:
         #     pygame.draw.rect(surface, (255, 0, 0), 
         #                     (rect.x - cam_x, rect.y - cam_y, rect.width, rect.height), 2)
 
+
+    def is_collidable(self, tile_x, tile_y):
+        tile_rect = pygame.Rect(tile_x * self.TILE_WIDTH, tile_y * self.TILE_HEIGHT, self.TILE_WIDTH, self.TILE_HEIGHT)
+        for obj in self.collidable_objects:
+            if tile_rect.colliderect(obj):
+                return True
+        return False
+
+    def change_tile(self, tile_x, tile_y, new_tile_type):
+        # Change tile at (tile_x, tile_y) to the specified new_tile_type
+        
+        # Ensure the tile is within bounds
+        if 0 <= tile_x < self.tmx_data.width and 0 <= tile_y < self.tmx_data.height:
+            # Depending on the tool, replace the tile
+            if new_tile_type == "dirt":
+                layer = self.tmx_data.get_layer_by_name("Dirt")  # Get the Ground layer
+                layer.data[tile_y][tile_x] = 12  # Change the tile to dirt
+    
+        # Redraw the map after changing the tile
+        self.redraw_map()
+
+    def redraw_map(self):
+        self.camera_surface.fill((0, 0, 0))  # Clear the screen
+        self.draw_map(self.camera_surface, self.camera_x, self.camera_y)  # Redraw map
+        zoomed_surface = pygame.transform.scale(self.camera_surface, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+        self.screen.blit(zoomed_surface, (0, 0))  # Scale the map and draw to the screen
+
+
     def run(self):
         # Main Game Loop
         running = True
@@ -237,6 +265,13 @@ class Game:
                 elif event.type == pygame.KEYDOWN:
                     if pygame.K_1 <= event.key <= pygame.K_5:
                         self.toolbox.select_tool(event.key - pygame.K_1)
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:  # Left mouse button
+                        mouse_x, mouse_y = event.pos
+                        tile_x = (mouse_x + self.camera_x) // self.TILE_WIDTH
+                        tile_y = (mouse_y + self.camera_y) // self.TILE_HEIGHT
+                        self.toolbox.use_tool(tile_x, tile_y, self)
+                    
 
             pygame.display.flip()  # Update display
             clock.tick(FPS)
