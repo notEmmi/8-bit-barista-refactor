@@ -32,11 +32,17 @@ class Toolbox:
         if 0 <= index < len(self.tools):
             self.selected_tool = index  # Change selected tool
     
-    def use_tool(self, tile_x, tile_y, game):
-        if self.selected_tool == 0:  # Hoe is selected
-            if not game.is_collidable(tile_x, tile_y):  # Ensure it's not colliding with any objects
-                print(f"Using hoe at ({tile_x}, {tile_y})")
-                game.change_tile(tile_x, tile_y, "dirt")
+    def use_tool(self):
+        if self.selected_tool == 0:
+            
+            print("Using hoe")
+        elif self.selected_tool == 1:
+            print("Using mallet")
+        elif self.selected_tool == 2:
+            print("Using seedpouch")
+        elif self.selected_tool == 3:
+            print("Using watercan")
+        
 
 
 

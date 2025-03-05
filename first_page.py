@@ -149,33 +149,25 @@ class Game:
         #     pygame.draw.rect(surface, (255, 0, 0), 
         #                     (rect.x - cam_x, rect.y - cam_y, rect.width, rect.height), 2)
 
-
-    def is_collidable(self, tile_x, tile_y):
-        tile_rect = pygame.Rect(tile_x * self.TILE_WIDTH, tile_y * self.TILE_HEIGHT, self.TILE_WIDTH, self.TILE_HEIGHT)
-        for obj in self.collidable_objects:
-            if tile_rect.colliderect(obj):
-                return True
-        return False
-
-    def change_tile(self, tile_x, tile_y, new_tile_type):
-        # Change tile at (tile_x, tile_y) to the specified new_tile_type
-        
-        # Ensure the tile is within bounds
-        if 0 <= tile_x < self.tmx_data.width and 0 <= tile_y < self.tmx_data.height:
-            # Depending on the tool, replace the tile
-            if new_tile_type == "dirt":
-                layer = self.tmx_data.get_layer_by_name("Dirt")  # Get the Ground layer
-                layer.data[tile_y][tile_x] = 12  # Change the tile to dirt
-    
-        # Redraw the map after changing the tile
-        self.redraw_map()
-
-    def redraw_map(self):
-        self.camera_surface.fill((0, 0, 0))  # Clear the screen
-        self.draw_map(self.camera_surface, self.camera_x, self.camera_y)  # Redraw map
-        zoomed_surface = pygame.transform.scale(self.camera_surface, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
-        self.screen.blit(zoomed_surface, (0, 0))  # Scale the map and draw to the screen
-
+    def use_tool(self, tile_x, tile_y):
+        print(f"Using tool at tile ({tile_x}, {tile_y}) with selected tool {self.toolbox.selected_tool}")
+        if self.toolbox.selected_tool == 0:
+            print("Using hoe")
+            # Check if tile is tilled (id 12 on layer "Dirt")
+            dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
+            if dirt_layer:
+                tile_gid = dirt_layer.data[tile_y][tile_x]
+                print(f"Current tile GID: {tile_gid}")
+                if tile_gid != 12:
+                    # Check if the tile is not collidable
+                    tile_rect = pygame.Rect(tile_x * self.TILE_WIDTH, tile_y * self.TILE_HEIGHT, self.TILE_WIDTH, self.TILE_HEIGHT)
+                    is_collidable = any(tile_rect.colliderect(obj) for obj in self.collidable_objects)
+                    print(f"Tile collidable: {is_collidable}")
+                    if not is_collidable:
+                        dirt_layer.data[tile_y][tile_x] = 12
+                        print(f"Tilled soil at ({tile_x}, {tile_y})")
+        elif self.toolbox.selected_tool == 1:
+            print("Using another tool")
 
     def run(self):
         # Main Game Loop
@@ -270,7 +262,7 @@ class Game:
                         mouse_x, mouse_y = event.pos
                         tile_x = (mouse_x + self.camera_x) // self.TILE_WIDTH
                         tile_y = (mouse_y + self.camera_y) // self.TILE_HEIGHT
-                        self.toolbox.use_tool(tile_x, tile_y, self)
+                        self.use_tool(tile_x, tile_y)
                     
 
             pygame.display.flip()  # Update display
