@@ -1,172 +1,315 @@
 import pygame
 import pytmx
 import os
+import time
+from weather import Rain, Raindrop, FloorDrop
 
-# Initialize Pygame
-pygame.init()
+class Game:
+    def __init__(self):
+        # Initialize Pygame
+        pygame.init()
+        pygame.font.init()
+        self.font = pygame.font.Font(None, 36)
 
-# Screen Size
-SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
+        # Screen Size
+        self.SCREEN_WIDTH, self.SCREEN_HEIGHT = 800, 600
 
-# Camera Zoom Factor (1.5x Zoom)
-ZOOM_FACTOR = 1.5
+        # initializing rain
+        self.rain = Rain()
+        self.raining = False 
 
-# Adjusted Screen Size for the Camera View
-CAMERA_WIDTH = int(SCREEN_WIDTH / ZOOM_FACTOR)
-CAMERA_HEIGHT = int(SCREEN_HEIGHT / ZOOM_FACTOR)
+        # Create Dark Rain Overlay
+        self.rain_overlay = pygame.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.SRCALPHA)
+        self.rain_overlay.fill((0, 0, 0, 100))  # Semi-transparent black layer (100/255 opacity)
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("My Pygame Game")
+        # Camera Zoom Factor (1.5x Zoom)
+        self.ZOOM_FACTOR = 1.5
 
-# File Paths
-BASE_DIR = os.path.dirname(__file__)
-SPRITE_PATH = os.path.join(BASE_DIR, "assets", "sprite")
-MAP_PATH = os.path.join(BASE_DIR, "assets", "map")
+        # Adjusted Screen Size for the Camera View
+        self.CAMERA_WIDTH = int(self.SCREEN_WIDTH / self.ZOOM_FACTOR)
+        self.CAMERA_HEIGHT = int(self.SCREEN_HEIGHT / self.ZOOM_FACTOR)
 
-# Load TMX Map
-TMX_FILE = os.path.join(MAP_PATH, "map.tmx")
-tmx_data = pytmx.load_pygame(TMX_FILE)
+        # Windowed Mode
+        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+        pygame.display.set_caption("My Pygame Game")
 
-# Extract Tile Size
-TILE_WIDTH = tmx_data.tilewidth
-TILE_HEIGHT = tmx_data.tileheight
-MAP_WIDTH = tmx_data.width * TILE_WIDTH
-MAP_HEIGHT = tmx_data.height * TILE_HEIGHT
+        # File Paths
+        self.BASE_DIR = os.path.dirname(__file__)
+        self.SPRITE_PATH = os.path.join(self.BASE_DIR, "assets", "sprite")
+        self.MAP_PATH = os.path.join(self.BASE_DIR, "assets", "map")
 
-# Player Constants
-PLAYER_SPEED = 3
+        # Load TMX Map
+        self.TMX_FILE = os.path.join(self.MAP_PATH, "map.tmx")
+        self.tmx_data = pytmx.load_pygame(self.TMX_FILE)
 
-# Load Individual Sprite Images
-ANIMATION_FRAMES = {
-    "down": [pygame.image.load(os.path.join(SPRITE_PATH, "move_down_1.png")),
-             pygame.image.load(os.path.join(SPRITE_PATH, "move_down_2.png"))],
-    "up": [pygame.image.load(os.path.join(SPRITE_PATH, "move_up_1.png")),
-           pygame.image.load(os.path.join(SPRITE_PATH, "move_up_2.png"))],
-    "left": [pygame.image.load(os.path.join(SPRITE_PATH, "move_left_1.png")),
-             pygame.image.load(os.path.join(SPRITE_PATH, "move_left_2.png"))],
-    "right": [pygame.image.load(os.path.join(SPRITE_PATH, "move_right_1.png")),
-              pygame.image.load(os.path.join(SPRITE_PATH, "move_right_2.png"))],
-    "idle_down": [pygame.image.load(os.path.join(SPRITE_PATH, "down_idle.png"))],
-    "idle_up": [pygame.image.load(os.path.join(SPRITE_PATH, "up_idle.png"))],
-    "idle_left": [pygame.image.load(os.path.join(SPRITE_PATH, "left_idle.png"))],
-    "idle_right": [pygame.image.load(os.path.join(SPRITE_PATH, "right_idle.png"))],
-}
+        # Extract Tile Size
+        self.TILE_WIDTH = self.tmx_data.tilewidth
+        self.TILE_HEIGHT = self.tmx_data.tileheight
+        self.MAP_WIDTH = self.tmx_data.width * self.TILE_WIDTH
+        self.MAP_HEIGHT = self.tmx_data.height * self.TILE_HEIGHT
 
-# Get sprite size
-SPRITE_WIDTH, SPRITE_HEIGHT = ANIMATION_FRAMES["down"][0].get_width(), ANIMATION_FRAMES["down"][0].get_height()
+        # Player Constants
+        self.PLAYER_SPEED = 2
 
-# Player Setup (Start in the middle of the map)
-player_x, player_y = MAP_WIDTH // 2, MAP_HEIGHT // 2
-player_direction = "idle_down"  # Default idle position
-animation_index = 0
-animation_timer = 0
+        # Load Individual Sprite Images
+        self.ANIMATION_FRAMES = {
+            "down": [pygame.image.load(os.path.join(self.SPRITE_PATH, "move_down_1.png")),
+                     pygame.image.load(os.path.join(self.SPRITE_PATH, "move_down_2.png"))],
+            "up": [pygame.image.load(os.path.join(self.SPRITE_PATH, "move_up_1.png")),
+                   pygame.image.load(os.path.join(self.SPRITE_PATH, "move_up_2.png"))],
+            "left": [pygame.image.load(os.path.join(self.SPRITE_PATH, "move_left_1.png")),
+                     pygame.image.load(os.path.join(self.SPRITE_PATH, "move_left_2.png"))],
+            "right": [pygame.image.load(os.path.join(self.SPRITE_PATH, "move_right_1.png")),
+                      pygame.image.load(os.path.join(self.SPRITE_PATH, "move_right_2.png"))],
+            "idle_down": [pygame.image.load(os.path.join(self.SPRITE_PATH, "down_idle.png"))],
+            "idle_up": [pygame.image.load(os.path.join(self.SPRITE_PATH, "up_idle.png"))],
+            "idle_left": [pygame.image.load(os.path.join(self.SPRITE_PATH, "left_idle.png"))],
+            "idle_right": [pygame.image.load(os.path.join(self.SPRITE_PATH, "right_idle.png"))],
+        }
 
-# Camera Position (Starts Centered)
-camera_x, camera_y = player_x - CAMERA_WIDTH // 2, player_y - CAMERA_HEIGHT // 2
+        # Get sprite size
+        self.SPRITE_WIDTH, self.SPRITE_HEIGHT = self.ANIMATION_FRAMES["down"][0].get_width(), self.ANIMATION_FRAMES["down"][0].get_height()
 
-# Create a surface for rendering with zoom applied
-camera_surface = pygame.Surface((CAMERA_WIDTH, CAMERA_HEIGHT))
+        # Player Setup (Start in the middle of the map)
+        self.player_x, self.player_y = self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2
+        self.player_direction = "idle_down"  # Default idle position
+        self.animation_index = 0
+        self.animation_timer = 0
 
-# Function to Draw Map
-def draw_map(surface, cam_x, cam_y):
-    """Draws the visible portion of the TMX map based on the camera position."""
-    for layer in tmx_data.visible_layers:
-        if isinstance(layer, pytmx.TiledTileLayer):
-            for x, y, gid in layer:
-                if gid == 0:
-                    continue
+        # Camera Position (Starts Centered)
+        self.camera_x, self.camera_y = self.player_x - self.CAMERA_WIDTH // 2, self.player_y - self.CAMERA_HEIGHT // 2
+
+        # Create a surface for rendering with zoom applied
+        self.camera_surface = pygame.Surface((self.CAMERA_WIDTH, self.CAMERA_HEIGHT))
+
+        # Game Time System (Stardew Valley Timing)
+        self.SECONDS_PER_GAME_MINUTE = 0.7  # 10 minutes = 7 seconds in real life
+        self.GAME_START_HOUR = 6  # 6:00 AM
+        self.game_start_time = time.time()  # Real-world start time
+        self.time_multiplier = 1  # Normal speed, increased when pressing '1'
+      
+    def draw_map(self, surface, cam_x, cam_y):
+        """Draws the visible portion of the TMX map based on the camera position."""
+        for layer in self.tmx_data.visible_layers:
+            if isinstance(layer, pytmx.TiledTileLayer):
+                for x, y, gid in layer:
+                    if gid == 0:
+                        continue
+
+                    tile = self.tmx_data.get_tile_image_by_gid(gid)
+                    tile_x = x * self.TILE_WIDTH - cam_x
+                    tile_y = y * self.TILE_HEIGHT - cam_y
+
+                    # Only draw tiles that are visible within the camera view
+                    if -self.TILE_WIDTH <= tile_x < self.CAMERA_WIDTH and -self.TILE_HEIGHT <= tile_y < self.CAMERA_HEIGHT:
+                        surface.blit(tile, (tile_x, tile_y))
+
+    def get_game_time(self):
+        """Converts real-time seconds to in-game hours and minutes."""
+        elapsed_time = (time.time() - self.game_start_time) * self.time_multiplier
+        game_minutes = int(elapsed_time / self.SECONDS_PER_GAME_MINUTE)
+        game_hour = (self.GAME_START_HOUR + game_minutes // 60) % 24
+        game_minute = game_minutes % 60
+        return game_hour, game_minute
+
+    def is_night_time(self):
+        """Returns True if the current game time is night (after 5:30 PM or before 6 AM)."""
+        game_hour, game_minute = self.get_game_time()
+        total_minutes = game_hour * 60 + game_minute  # Convert to total minutes since midnight
+
+        return total_minutes >= 1050 or total_minutes < 360  # 1050 = 5:30 PM, 360 = 6:00 AM
+
+        
+    def draw_night_filter(self):
+        """Applies a transparent gradient for nighttime effect without duplicating overlays."""
+        game_hour, game_minute = self.get_game_time()
+        total_minutes = game_hour * 60 + game_minute
+
+        start_night_transition = 17 * 60 + 30  # 5:30 PM
+        end_night_transition = 18 * 60  # 6:00 PM
+
+        start_morning_transition = 5 * 60 + 30  # 5:30 AM
+        end_morning_transition = 6 * 60  # 6:00 AM
+
+        transition_progress = 0  # Default to no overlay
+
+        # Determine transition progress
+        if start_night_transition <= total_minutes <= end_night_transition:  
+            # Nighttime transition (5:30 PM - 5:40 PM)
+            transition_progress = (total_minutes - start_night_transition) / (end_night_transition - start_night_transition)
+        elif start_morning_transition <= total_minutes <= end_morning_transition:  
+            # Morning transition (5:50 AM - 6:00 AM) → Fade out night filter
+            transition_progress = 1 - ((total_minutes - start_morning_transition) / (end_morning_transition - start_morning_transition))
+        elif total_minutes > end_night_transition or total_minutes < start_morning_transition:
+            # Fully dark at night
+            transition_progress = 1
+
+        # If fully daylight, return 0 alpha (no effect)
+        if transition_progress == 0:
+            return 0  
+
+        # Calculate alpha value for overlay
+        alpha_value = int(transition_progress * 225)  # Max opacity at night
+
+        return alpha_value
+
+    def draw_time_display(self):
+        """Displays the current in-game time on the top right of the screen."""
+        game_hour, game_minute = self.get_game_time()
+        time_text = f"{game_hour:02}:{game_minute:02}"
+        text_surface = self.font.render(time_text, True, (255, 255, 255))
+        text_rect = text_surface.get_rect(topright=(self.SCREEN_WIDTH-10, 10))
+        pygame.draw.rect(self.screen,(0,0,0,150), text_rect)
+
+        self.screen.blit(text_surface, text_rect.topleft)
+
+    def handle_input(self):
+        """Handles keyboard input, including time acceleration."""
+        keys = pygame.key.get_pressed()
+
+        new_multiplier = 10 if keys[pygame.K_1] else 1  # Determine new multiplier
+        
+        if new_multiplier != self.time_multiplier:  # Only update if multiplier changed
+            elapsed_time = time.time() - self.game_start_time  # Get current elapsed time
+            self.game_start_time = time.time() - (elapsed_time * self.time_multiplier / new_multiplier)  
+            self.time_multiplier = new_multiplier  # Update the multiplier
+
+        # Set time to 5pm
+        if keys[pygame.K_5]: 
+            self.game_start_time = time.time() - ((17 - self.GAME_START_HOUR) * 60 * self.SECONDS_PER_GAME_MINUTE)
+
+        # Set time to 5am
+        if keys[pygame.K_6]:
+            self.game_start_time = time.time() - ((5 * 60 - self.GAME_START_HOUR * 60) * self.SECONDS_PER_GAME_MINUTE)
+            
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:  # Toggle rain when 'R' is pressed
+                    self.raining = not self.raining
+                    print(f"Rain Enabled: {self.raining}")  # Debug message
+
+    def run(self):
+        # Main Game Loop
+        running = True
+        clock = pygame.time.Clock()
+        FPS = 60
+
+        while running:
+            self.screen.fill((0, 0, 0))  # Clear screen
+            self.handle_input() # Handle key inputs
+            self.draw_map(self.camera_surface, self.camera_x, self.camera_y)  # Draw map to camera
+
+            # Handle Events
+            keys = pygame.key.get_pressed()
+            moving = False
+
+            # Movement Logic (Player Now Restricted to Map Bounds)
+            move_x, move_y = 0, 0
+
+            if keys[pygame.K_w]:  # Move Up
+                if self.player_y - self.PLAYER_SPEED >= 0:  # Prevent going above the map
+                    move_y = -self.PLAYER_SPEED
+                self.player_direction = "up"
+                moving = True
+            if keys[pygame.K_s]:  # Move Down
+                if self.player_y + self.PLAYER_SPEED + self.SPRITE_HEIGHT <= self.MAP_HEIGHT:  # Prevent going below the map
+                    move_y = self.PLAYER_SPEED
+                self.player_direction = "down"
+                moving = True
+            if keys[pygame.K_a]:  # Move Left
+                if self.player_x - self.PLAYER_SPEED >= 0:  # Prevent going left off the map
+                    move_x = -self.PLAYER_SPEED
+                self.player_direction = "left"
+                moving = True
+            if keys[pygame.K_d]:  # Move Right
+                if self.player_x + self.PLAYER_SPEED + self.SPRITE_WIDTH <= self.MAP_WIDTH:  # Prevent going right off the map
+                    move_x = self.PLAYER_SPEED
+                self.player_direction = "right"
+                moving = True
+
+            # Apply Movement (Player Now Restricted to Map Bounds)
+            self.player_x += move_x
+            self.player_y += move_y
+
+            # Handle Idle Animations (When No Input is Given)
+            if not moving:
+                if self.player_direction == "up":
+                    self.player_direction = "idle_up"
+                elif self.player_direction == "down":
+                    self.player_direction = "idle_down"
+                elif self.player_direction == "left":
+                    self.player_direction = "idle_left"
+                elif self.player_direction == "right":
+                    self.player_direction = "idle_right"
+
+            # Update Animation (Only cycle between the two movement frames when moving)
+            if moving:
+                self.animation_timer += 1
+                if self.animation_timer > 10:  # Adjust animation speed
+                    self.animation_index = (self.animation_index + 1) % 2  # Always alternate between 0 and 1
+                    self.animation_timer = 0
+            else:
+                self.animation_index = 0  # Reset to first frame when idle
+
+            # Camera Moves Freely Until It Hits the Map Edge
+            new_camera_x = self.player_x - self.CAMERA_WIDTH // 2
+            new_camera_y = self.player_y - self.CAMERA_HEIGHT // 2
+
+            # Clamp Camera to Stay Within the Map Bounds
+            self.camera_x = max(0, min(new_camera_x, self.MAP_WIDTH - self.CAMERA_WIDTH))
+            self.camera_y = max(0, min(new_camera_y, self.MAP_HEIGHT - self.CAMERA_HEIGHT))
+
+            # Draw Player at Correct Position Relative to Camera
+            self.camera_surface.blit(self.ANIMATION_FRAMES[self.player_direction][self.animation_index], 
+                                     (self.player_x - self.camera_x, self.player_y - self.camera_y))
+
+            # Scale up the camera surface to the main screen
+            zoomed_surface = pygame.transform.scale(self.camera_surface, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+
+            # Get nighttime alpha level
+            night_alpha = self.draw_night_filter()  
+            rain_alpha = 80 if self.raining else 0
+
+            # Initialize overlay with full transparency by default
+            overlay = pygame.Surface((zoomed_surface.get_size()), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 0))  # Fully transparent by default
+
+            # Apply overlay only when it's night or raining
+            if self.is_night_time():
+                overlay.fill((0, 0, 0, night_alpha))  # Adjust opacity
+
+            if self.raining:
+                rain_overlay = pygame.Surface((zoomed_surface.get_size()), pygame.SRCALPHA)
+                rain_overlay.fill((0,0,0, rain_alpha))
+                overlay.blit(rain_overlay, (0,0))
+
+            # Now, overlay is always defined before blitting
+            zoomed_surface.blit(overlay, (0, 0))  
+
+            # Blit the final zoomed surface to the screen
+            self.screen.blit(zoomed_surface, (0, 0))
+            
+            # Handle Quit Event
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+            # Update & Draw Rain (Only if raining)
+            if self.raining:
+                self.rain.update(self.camera_x, self.camera_y)
+                self.rain.draw(self.screen)
                 
-                tile = tmx_data.get_tile_image_by_gid(gid)
-                tile_x = x * TILE_WIDTH - cam_x
-                tile_y = y * TILE_HEIGHT - cam_y
+            # Draw Clock
+            self.draw_time_display()
 
-                # Only draw tiles that are visible within the camera view
-                if -TILE_WIDTH <= tile_x < CAMERA_WIDTH and -TILE_HEIGHT <= tile_y < CAMERA_HEIGHT:
-                    surface.blit(tile, (tile_x, tile_y))
+            pygame.display.flip()  # Update display
+            clock.tick(FPS)
 
-# Main Game Loop
-running = True
-clock = pygame.time.Clock()
-FPS = 60
+        pygame.quit()
 
-while running:
-    camera_surface.fill((0, 0, 0))  # Clear screen
-    draw_map(camera_surface, camera_x, camera_y)  # Draw map to camera
-
-    # Handle Events
-    keys = pygame.key.get_pressed()
-    moving = False
-
-    # Movement Logic (Player Now Restricted to Map Bounds)
-    move_x, move_y = 0, 0
-
-    if keys[pygame.K_w]:  # Move Up
-        if player_y - PLAYER_SPEED >= 0:  # Prevent going above the map
-            move_y = -PLAYER_SPEED
-        player_direction = "up"
-        moving = True
-    if keys[pygame.K_s]:  # Move Down
-        if player_y + PLAYER_SPEED + SPRITE_HEIGHT <= MAP_HEIGHT:  # Prevent going below the map
-            move_y = PLAYER_SPEED
-        player_direction = "down"
-        moving = True
-    if keys[pygame.K_a]:  # Move Left
-        if player_x - PLAYER_SPEED >= 0:  # Prevent going left off the map
-            move_x = -PLAYER_SPEED
-        player_direction = "left"
-        moving = True
-    if keys[pygame.K_d]:  # Move Right
-        if player_x + PLAYER_SPEED + SPRITE_WIDTH <= MAP_WIDTH:  # Prevent going right off the map
-            move_x = PLAYER_SPEED
-        player_direction = "right"
-        moving = True
-
-    # Apply Movement (Player Now Restricted to Map Bounds)
-    player_x += move_x
-    player_y += move_y
-
-    # Handle Idle Animations (When No Input is Given)
-    if not moving:
-        if player_direction == "up":
-            player_direction = "idle_up"
-        elif player_direction == "down":
-            player_direction = "idle_down"
-        elif player_direction == "left":
-            player_direction = "idle_left"
-        elif player_direction == "right":
-            player_direction = "idle_right"
-
-    # Update Animation (Only cycle between the two movement frames when moving)
-    if moving:
-        animation_timer += 1
-        if animation_timer > 10:  # Adjust animation speed
-            animation_index = (animation_index + 1) % 2  # Always alternate between 0 and 1
-            animation_timer = 0
-    else:
-        animation_index = 0  # Reset to first frame when idle
-
-    # **Camera Moves Freely Until It Hits the Map Edge**
-    new_camera_x = player_x - CAMERA_WIDTH // 2
-    new_camera_y = player_y - CAMERA_HEIGHT // 2
-
-    # **Clamp Camera to Stay Within the Map Bounds**
-    camera_x = max(0, min(new_camera_x, MAP_WIDTH - CAMERA_WIDTH))
-    camera_y = max(0, min(new_camera_y, MAP_HEIGHT - CAMERA_HEIGHT))
-
-    # Draw Player at Correct Position Relative to Camera
-    camera_surface.blit(ANIMATION_FRAMES[player_direction][animation_index], 
-                        (player_x - camera_x, player_y - camera_y))
-
-    # Scale up the camera surface to the main screen
-    zoomed_surface = pygame.transform.scale(camera_surface, (SCREEN_WIDTH, SCREEN_HEIGHT))
-    screen.blit(zoomed_surface, (0, 0))
-
-    # Handle Quit Event
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-    pygame.display.flip()  # Update display
-    clock.tick(FPS)
-
-pygame.quit()
+if __name__ == "__main__":
+    game = Game()
+    game.run()
