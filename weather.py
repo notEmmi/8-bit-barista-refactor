@@ -45,6 +45,7 @@ def load_and_modify_floor(image_path):
         raise FileNotFoundError(f"Floor splash image not found: {image_path}")
 
     image = pygame.image.load(image_path).convert_alpha()
+    print(f"Loaded floor sprite: {image_path}")  # Confirm it loads correctly
     
     # Maintain aspect ratio while making it fit within the raindrop's height
     original_width, original_height = image.get_size()
@@ -108,7 +109,8 @@ class FloorDrop(pygame.sprite.Sprite):
     """Raindrop splash effect that stays FIXED in place (NOT moving with the camera)."""
     def __init__(self, screen_x, screen_y):
         super().__init__()
-        self.image = random.choice(FLOOR_SPRITES)
+        self.original_image = random.choice(FLOOR_SPRITES).convert_alpha()  # Ensure transparency
+        self.image = self.original_image.copy()  # Preserve original
         self.rect = self.image.get_rect()
 
         # Store screen position at the moment of creation
@@ -116,12 +118,22 @@ class FloorDrop(pygame.sprite.Sprite):
         self.rect.y = max(0, min(screen_y, SCREEN_HEIGHT - self.rect.height))
 
         self.lifetime = 30  # Frames before disappearing
+        self.alpha = 200  # Initial opacity (out of 255)
 
     def update(self):
-        """Reduce lifetime of splash, ensuring it never moves."""
+        """Reduce lifetime of splash and gradually fade out."""
         self.lifetime -= 1
         if self.lifetime <= 0:
             self.kill()  # Remove when expired
+
+        # Gradually fade out
+        self.alpha -= 8  
+        if self.alpha < 0:
+            self.alpha = 0
+
+        # Apply correct transparency using set_alpha()
+        self.image = self.original_image.copy().convert_alpha()
+        self.image.fill((255, 255, 255, self.alpha), special_flags=pygame.BLEND_RGBA_MULT)
 
 class Rain:
     """Manages raindrops and floor splashes"""
@@ -138,8 +150,8 @@ class Rain:
 
     def draw(self, screen):
         """Draw rain and floor effects"""
-        self.raindrops.draw(screen)
         self.floor_splashes.draw(screen)
+        self.raindrops.draw(screen)
 
 # Example usage (for testing)
 if __name__ == "__main__":
