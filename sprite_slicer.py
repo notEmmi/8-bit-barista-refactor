@@ -27,6 +27,30 @@ def slice_character_sheet(path, output_dir):
             crop_character(sprite, output_path)
 
 
+def slice_sprite_sheet(path, output_dir, rows, cols):
+    sheet = Image.open(path)
+
+    sprite_width = sheet.width // cols
+    sprite_height = sheet.height // rows
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    for row in range(rows):
+        for col in range(cols):
+            left = col * sprite_width
+            upper = row * sprite_height
+            right = left + sprite_width
+            lower = upper + sprite_height
+            sprite = sheet.crop((left, upper, right, lower))
+            
+            # Construct filename
+            filename = f"sprite_{row}_{col}.png"
+            output_path = os.path.join(output_dir, filename)
+
+            # Crop and save
+            crop_character(sprite, output_path)
+
+
 def crop_character(sprite, output_path):
     # Convert to RGBA to detect transparency
     sprite = sprite.convert("RGBA")
@@ -43,6 +67,6 @@ def crop_character(sprite, output_path):
         print(f"Warning: No character detected in {output_path}")
 
 # Example usage
-sprite_sheet_path = "assets/sprite/boy1_sprites.png"
-output_folder = "assets/sprite"
-slice_character_sheet(sprite_sheet_path, output_folder)
+sprite_sheet_path = "Basic_tools_and_meterials.png"
+output_folder = "assets/images/tools"
+slice_sprite_sheet(sprite_sheet_path, output_folder, 2, 3)
