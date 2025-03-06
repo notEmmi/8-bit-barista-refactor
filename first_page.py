@@ -280,8 +280,8 @@ class Game:
                         mouse_x, mouse_y = event.pos
 
                         # Adjust mouse position to account for camera and zoom factor
-                        adjusted_mouse_x = (mouse_x + self.camera_x) / self.ZOOM_FACTOR
-                        adjusted_mouse_y = (mouse_y + self.camera_y) / self.ZOOM_FACTOR
+                        adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
+                        adjusted_mouse_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
 
                         # Calculate the tile position based on the adjusted mouse position
                         tile_x = adjusted_mouse_x // self.TILE_WIDTH
