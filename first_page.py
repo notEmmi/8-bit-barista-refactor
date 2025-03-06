@@ -4,6 +4,8 @@ import os
 import time
 from weather import Rain, Raindrop, FloorDrop
 from toolbar import Toolbox
+import interactions
+import customers
 
 class Game:
     def __init__(self):
@@ -322,7 +324,13 @@ class Game:
             self.time_multiplier = new_multiplier  # Update the multiplier
 
         if keys[pygame.K_TAB]:
+            
+            interactions.runInteractions()
             print("placeholder")
+
+        if keys[pygame.K_CAPSLOCK]:
+            customers.runCustomers()
+
 
            
  # Set time to 5pm
