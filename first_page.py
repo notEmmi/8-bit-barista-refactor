@@ -6,6 +6,7 @@ from weather import Rain, Raindrop, FloorDrop
 from toolbar import Toolbox
 import interactions
 import customers
+import shop
 
 class Game:
     def __init__(self):
@@ -326,10 +327,15 @@ class Game:
         if keys[pygame.K_TAB]:
             
             interactions.runInteractions()
-            print("placeholder")
+            
 
         if keys[pygame.K_CAPSLOCK]:
             customers.runCustomers()
+
+
+        if keys[pygame.K_LSHIFT]:
+
+            shop.runShop()
 
 
            
