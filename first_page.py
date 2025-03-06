@@ -26,6 +26,8 @@ class Game:
 
         # Camera Zoom Factor (2x Zoom)
         self.ZOOM_FACTOR = 2.0
+        ## rectangles for click detection
+        self.cafe_rect = pygame.Rect(377, 309, 77, 84)
 
         # Adjusted Screen Size for the Camera View
         self.CAMERA_WIDTH = int(self.SCREEN_WIDTH / self.ZOOM_FACTOR)
@@ -319,7 +321,11 @@ class Game:
             self.game_start_time = time.time() - (elapsed_time * self.time_multiplier / new_multiplier)  
             self.time_multiplier = new_multiplier  # Update the multiplier
 
-        # Set time to 5pm
+        if keys[pygame.K_TAB]:
+            print("placeholder")
+
+           
+ # Set time to 5pm
         if keys[pygame.K_5]: 
             self.game_start_time = time.time() - ((17 - self.GAME_START_HOUR) * 60 * self.SECONDS_PER_GAME_MINUTE)
 
@@ -335,6 +341,17 @@ class Game:
                 if event.key == pygame.K_r:  # Toggle rain when 'R' is pressed
                     self.raining = not self.raining
                     print(f"Rain Enabled: {self.raining}")  # Debug message
+            ##### handle click on rectange event
+            
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Left mouse button
+                        mouse_x, mouse_y = event.pos
+                        print(mouse_x, mouse_y)
+                        adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
+                        adjusted_mouse_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
+                        if self.cafe_rect.collidepoint(adjusted_mouse_x, adjusted_mouse_y):
+                         print("Cafe Clicked!")        
 
     def use_tool(self, tile_x, tile_y):
         print(f"Using tool at tile ({tile_x}, {tile_y}) with selected tool {self.toolbox.selected_tool}")
@@ -509,7 +526,9 @@ class Game:
 
                         # Use the tool on the clicked tile
                         self.use_tool(int(tile_x), int(tile_y))
-                    
+
+            
+
 
             # Update & Draw Rain (Only if raining)
             if self.raining:
