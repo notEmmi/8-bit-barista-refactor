@@ -111,15 +111,24 @@ class Game:
         game_hour = (self.GAME_START_HOUR + game_minutes // 60) % 24
         game_minute = game_minutes % 60
         return game_hour, game_minute
+
+    def is_night_time(self):
+        """Returns True if the current game time is night (after 5:30 PM or before 6 AM)."""
+        game_hour, game_minute = self.get_game_time()
+        total_minutes = game_hour * 60 + game_minute  # Convert to total minutes since midnight
+
+        return total_minutes >= 1050 or total_minutes < 360  # 1050 = 5:30 PM, 360 = 6:00 AM
+
         
     def draw_night_filter(self):
-        """Creates a transparent gradient for nighttime effect."""
+        """Applies a transparent gradient for nighttime effect without duplicating overlays."""
         game_hour, game_minute = self.get_game_time()
-
         total_minutes = game_hour * 60 + game_minute
+
         start_night_transition = 17 * 60 + 30  # 5:30 PM
-        end_night_transition = 17 * 60 + 40  # 5:40 PM
-        start_morning_transition = 5 * 60 + 50  # 5:50 AM
+        end_night_transition = 18 * 60  # 6:00 PM
+
+        start_morning_transition = 5 * 60 + 30  # 5:30 AM
         end_morning_transition = 6 * 60  # 6:00 AM
 
         transition_progress = 0  # Default to no overlay
@@ -135,34 +144,24 @@ class Game:
             # Fully dark at night
             transition_progress = 1
 
+        # If fully daylight, return 0 alpha (no effect)
         if transition_progress == 0:
-            return  # No overlay needed during full daytime
+            return 0  
 
-        alpha_value = int(transition_progress * 225)  # Max opacity at 60% darkness
+        # Calculate alpha value for overlay
+        alpha_value = int(transition_progress * 225)  # Max opacity at night
 
-        # Gradient Overlay
-        overlay = pygame.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.SRCALPHA)
-        for y in range(self.SCREEN_HEIGHT):  
-            if y < self.SCREEN_HEIGHT * 0.3:  # Top 30% of the screen (22223B)
-                blend_factor = 1  
-            else:  
-                # Bottom 70% gradually fades into black
-                blend_factor = max(0, 1 - ((y - self.SCREEN_HEIGHT * 0.3) / (self.SCREEN_HEIGHT * 0.7)))
-
-            r = int(25 * blend_factor)
-            g = int(25 * blend_factor)
-            b = int(44 * blend_factor)
-
-            pygame.draw.line(overlay, (r, g, b, alpha_value), (0, y), (self.SCREEN_WIDTH, y))
-
-        self.screen.blit(overlay, (0, 0))
+        return alpha_value
 
     def draw_time_display(self):
         """Displays the current in-game time on the top right of the screen."""
         game_hour, game_minute = self.get_game_time()
         time_text = f"{game_hour:02}:{game_minute:02}"
         text_surface = self.font.render(time_text, True, (255, 255, 255))
-        self.screen.blit(text_surface, (10, 10))
+        text_rect = text_surface.get_rect(topright=(self.SCREEN_WIDTH-10, 10))
+        pygame.draw.rect(self.screen,(0,0,0,150), text_rect)
+
+        self.screen.blit(text_surface, text_rect.topleft)
 
     def handle_input(self):
         """Handles keyboard input, including time acceleration."""
@@ -179,9 +178,9 @@ class Game:
         if keys[pygame.K_5]: 
             self.game_start_time = time.time() - ((17 - self.GAME_START_HOUR) * 60 * self.SECONDS_PER_GAME_MINUTE)
 
-        # Set time to 6am
+        # Set time to 5am
         if keys[pygame.K_6]:
-            self.game_start_time = time.time() - ((5 * 60 + 30 - self.GAME_START_HOUR * 60) * self.SECONDS_PER_GAME_MINUTE)
+            self.game_start_time = time.time() - ((5 * 60 - self.GAME_START_HOUR * 60) * self.SECONDS_PER_GAME_MINUTE)
             
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -255,11 +254,11 @@ class Game:
             else:
                 self.animation_index = 0  # Reset to first frame when idle
 
-            # **Camera Moves Freely Until It Hits the Map Edge**
+            # Camera Moves Freely Until It Hits the Map Edge
             new_camera_x = self.player_x - self.CAMERA_WIDTH // 2
             new_camera_y = self.player_y - self.CAMERA_HEIGHT // 2
 
-            # **Clamp Camera to Stay Within the Map Bounds**
+            # Clamp Camera to Stay Within the Map Bounds
             self.camera_x = max(0, min(new_camera_x, self.MAP_WIDTH - self.CAMERA_WIDTH))
             self.camera_y = max(0, min(new_camera_y, self.MAP_HEIGHT - self.CAMERA_HEIGHT))
 
@@ -269,22 +268,42 @@ class Game:
 
             # Scale up the camera surface to the main screen
             zoomed_surface = pygame.transform.scale(self.camera_surface, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
-            self.screen.blit(zoomed_surface, (0, 0))
 
+            # Get nighttime alpha level
+            night_alpha = self.draw_night_filter()  
+            rain_alpha = 80 if self.raining else 0
+
+            # Initialize overlay with full transparency by default
+            overlay = pygame.Surface((zoomed_surface.get_size()), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 0))  # Fully transparent by default
+
+            # Apply overlay only when it's night or raining
+            if self.is_night_time():
+                overlay.fill((0, 0, 0, night_alpha))  # Adjust opacity
+
+            if self.raining:
+                rain_overlay = pygame.Surface((zoomed_surface.get_size()), pygame.SRCALPHA)
+                rain_overlay.fill((0,0,0, rain_alpha))
+                overlay.blit(rain_overlay, (0,0))
+
+            # Now, overlay is always defined before blitting
+            zoomed_surface.blit(overlay, (0, 0))  
+
+            # Blit the final zoomed surface to the screen
+            self.screen.blit(zoomed_surface, (0, 0))
+            
             # Handle Quit Event
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
 
-            # Draw Night Filter
-            self.draw_night_filter()
-            self.draw_time_display()
-
             # Update & Draw Rain (Only if raining)
             if self.raining:
                 self.rain.update(self.camera_x, self.camera_y)
                 self.rain.draw(self.screen)
-                self.screen.blit(self.rain_overlay, (0, 0))  # Dark filter for cloudy effect
+                
+            # Draw Clock
+            self.draw_time_display()
 
             pygame.display.flip()  # Update display
             clock.tick(FPS)
