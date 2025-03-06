@@ -1,5 +1,6 @@
 import pygame
 import sys
+import temp_recipes_open_screen
 
 class PlaceholderScreen:
     def __init__(self):
@@ -18,6 +19,11 @@ class PlaceholderScreen:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.running = False
+                    if event.key == pygame.K_RETURN:
+                        ## create an intance of placeholder recipe screen to be replaced later
+                       TempRecipeStart = temp_recipes_open_screen.TempRecipeOptionScreen()
+                       TempRecipeStart.run()
+
 
             self.screen.fill((0, 0, 0))
             text_surface = self.font.render("Coming Soon...", True, (255, 255, 255))
