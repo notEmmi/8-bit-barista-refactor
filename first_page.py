@@ -38,7 +38,6 @@ class Game:
         self.MAP_WIDTH = self.tmx_data.width * self.TILE_WIDTH
         self.MAP_HEIGHT = self.tmx_data.height * self.TILE_HEIGHT
 
-
         # Player Constants
         self.PLAYER_SPEED = 2
 
@@ -57,8 +56,6 @@ class Game:
             "idle_left": [pygame.image.load(os.path.join(self.SPRITE_PATH, "left_idle.png"))],
             "idle_right": [pygame.image.load(os.path.join(self.SPRITE_PATH, "right_idle.png"))],
         }
-
-
 
         # Get sprite size
         self.SPRITE_WIDTH, self.SPRITE_HEIGHT = self.ANIMATION_FRAMES["down"][0].get_width(), self.ANIMATION_FRAMES["down"][0].get_height()
@@ -81,8 +78,6 @@ class Game:
         pygame.mixer.music.play(-1)  # Play on repeat
 
         self.toolbox = Toolbox()
-
-    
 
     def load_map(self, map_file):
         self.tmx_data = pytmx.load_pygame(map_file)
@@ -125,7 +120,6 @@ class Game:
                 for x, y, gid in layer:
                     if gid == 0:
                         continue  # Skip empty tiles
-                    
                     tile = self.tmx_data.get_tile_image_by_gid(gid)
                     tile_x = x * self.TILE_WIDTH - cam_x
                     tile_y = y * self.TILE_HEIGHT - cam_y
@@ -151,23 +145,44 @@ class Game:
 
     def use_tool(self, tile_x, tile_y):
         print(f"Using tool at tile ({tile_x}, {tile_y}) with selected tool {self.toolbox.selected_tool}")
+        
+        if self.toolbox.selected_tool == -1:
+            print("No tool selected")
+            return
+        
         if self.toolbox.selected_tool == 0:
             print("Using hoe")
+            
             # Check if tile is tilled (id 12 on layer "Dirt")
             dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
+            
+           
+            # Check specific tile value:
+            print(f"Tile at ({tile_x}, {tile_y}): {dirt_layer.data[tile_y][tile_x]}")
+
             if dirt_layer:
+                dirt_id = 21  # Replace with the correct GID for tilled soil
+
                 tile_gid = dirt_layer.data[tile_y][tile_x]
-                print(f"Current tile GID: {tile_gid}")
-                if tile_gid != 12:
+
+
+                if tile_gid != dirt_id:
                     # Check if the tile is not collidable
-                    tile_rect = pygame.Rect(tile_x * self.TILE_WIDTH, tile_y * self.TILE_HEIGHT, self.TILE_WIDTH, self.TILE_HEIGHT)
-                    is_collidable = any(tile_rect.colliderect(obj) for obj in self.collidable_objects)
-                    print(f"Tile collidable: {is_collidable}")
-                    if not is_collidable:
-                        dirt_layer.data[tile_y][tile_x] = 12
-                        print(f"Tilled soil at ({tile_x}, {tile_y})")
+                    dirt_layer.data[tile_y][tile_x] = dirt_id
+                    self.update_map("Dirt", dirt_layer.data)
+                
         elif self.toolbox.selected_tool == 1:
             print("Using another tool")
+
+
+        
+    def update_map(self, layer_name, new_data):
+        for layer in self.tmx_data.visible_layers:
+            if layer.name == layer_name:
+                layer.data = new_data
+                break
+        
+
 
     def run(self):
         # Main Game Loop
@@ -257,12 +272,27 @@ class Game:
                 elif event.type == pygame.KEYDOWN:
                     if pygame.K_1 <= event.key <= pygame.K_5:
                         self.toolbox.select_tool(event.key - pygame.K_1)
+                    if pygame.K_0 == event.key or pygame.K_6 <= event.key <= pygame.K_9:
+                        self.toolbox.select_tool(-1)
+
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:  # Left mouse button
                         mouse_x, mouse_y = event.pos
-                        tile_x = (mouse_x + self.camera_x) // self.TILE_WIDTH
-                        tile_y = (mouse_y + self.camera_y) // self.TILE_HEIGHT
-                        self.use_tool(tile_x, tile_y)
+
+                        # Adjust mouse position to account for camera and zoom factor
+                        adjusted_mouse_x = (mouse_x + self.camera_x) / self.ZOOM_FACTOR
+                        adjusted_mouse_y = (mouse_y + self.camera_y) / self.ZOOM_FACTOR
+
+                        # Calculate the tile position based on the adjusted mouse position
+                        tile_x = adjusted_mouse_x // self.TILE_WIDTH
+                        tile_y = adjusted_mouse_y // self.TILE_HEIGHT
+                        print(f"Mouse Position: ({mouse_x}, {mouse_y})")
+                        print(f"Adjusted Mouse Position: ({adjusted_mouse_x}, {adjusted_mouse_y})")
+                        print(f"Tile Coordinates: ({tile_x}, {tile_y})")
+
+
+                        # Use the tool on the clicked tile
+                        self.use_tool(int(tile_x), int(tile_y))
                     
 
             pygame.display.flip()  # Update display

@@ -34,8 +34,8 @@ class Toolbox:
     
     def use_tool(self):
         if self.selected_tool == 0:
-            
             print("Using hoe")
+
         elif self.selected_tool == 1:
             print("Using mallet")
         elif self.selected_tool == 2:
