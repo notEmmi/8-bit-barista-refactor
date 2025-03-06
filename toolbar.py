@@ -31,6 +31,20 @@ class Toolbox:
     def select_tool(self, index):
         if 0 <= index < len(self.tools):
             self.selected_tool = index  # Change selected tool
+    
+    def use_tool(self):
+        if self.selected_tool == 0:
+            print("Using hoe")
+
+        elif self.selected_tool == 1:
+            print("Using mallet")
+        elif self.selected_tool == 2:
+            print("Using seedpouch")
+        elif self.selected_tool == 3:
+            print("Using watercan")
+        
+
+
 
     def draw(self, surface):
         screen_width, screen_height = surface.get_size()
