@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 pygame-ce
 pygame_gui
 bcrypt
-=======
 pygame==2.5.2
 pytmx==3.30.0
->>>>>>> 5acb6b470f51061eda756a014099771e980f4de7
