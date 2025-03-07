@@ -94,6 +94,12 @@ class Game:
             "idle_right": [pygame.image.load(os.path.join(self.SPRITE_PATH, "right_idle.png"))],
         }
 
+        # Apply transparency fix by setting colorkey for character sprites
+        for direction, frames in self.ANIMATION_FRAMES.items():
+            for i in range(len(frames)):
+                frames[i] = frames[i].convert_alpha()  # Ensure transparency is preserved
+                frames[i].set_colorkey((0, 0, 0))  # Remove black background (if transparency is lost)
+
         # Get sprite size
         self.SPRITE_WIDTH, self.SPRITE_HEIGHT = self.ANIMATION_FRAMES["down"][0].get_width(), self.ANIMATION_FRAMES["down"][0].get_height()
 
@@ -201,8 +207,7 @@ class Game:
         total_minutes = game_hour * 60 + game_minute  # Convert to total minutes since midnight
 
         return total_minutes >= 1050 or total_minutes < 360  # 1050 = 5:30 PM, 360 = 6:00 AM
-
-        
+   
     def draw_night_filter(self):
         """Applies a transparent gradient for nighttime effect without duplicating overlays."""
         game_hour, game_minute = self.get_game_time()
@@ -237,13 +242,21 @@ class Game:
         return alpha_value
 
     def draw_time_display(self):
-        """Displays the current in-game time on the top right of the screen."""
+        """Displays the current in-game time on the top right of the screen with proper transparency."""
         game_hour, game_minute = self.get_game_time()
         time_text = f"{game_hour:02}:{game_minute:02}"
-        text_surface = self.font.render(time_text, True, (255, 255, 255))
-        text_rect = text_surface.get_rect(topright=(self.SCREEN_WIDTH-10, 10))
-        pygame.draw.rect(self.screen,(0,0,0,150), text_rect)
 
+        # Render the text with white color
+        text_surface = self.font.render(time_text, True, (255, 255, 255))
+
+        # Get text rect and create a background rectangle slightly larger
+        text_rect = text_surface.get_rect(topright=(self.SCREEN_WIDTH - 10, 10))
+        bg_rect = pygame.Rect(text_rect.x - 5, text_rect.y - 2, text_rect.width + 10, text_rect.height + 4)
+
+        # Draw the semi-transparent background directly (NO separate surface)
+        pygame.draw.rect(self.screen, (0, 0, 0, 120), bg_rect)  # Alpha = 120 for transparency
+
+        # Draw the time text on top
         self.screen.blit(text_surface, text_rect.topleft)
 
     def handle_input(self):
@@ -288,8 +301,7 @@ class Game:
         total_minutes = game_hour * 60 + game_minute  # Convert to total minutes since midnight
 
         return total_minutes >= 1050 or total_minutes < 360  # 1050 = 5:30 PM, 360 = 6:00 AM
-
-        
+  
     def draw_night_filter(self):
         """Applies a transparent gradient for nighttime effect without duplicating overlays."""
         game_hour, game_minute = self.get_game_time()
@@ -322,16 +334,6 @@ class Game:
         alpha_value = int(transition_progress * 225)  # Max opacity at night
 
         return alpha_value
-
-    def draw_time_display(self):
-        """Displays the current in-game time on the top right of the screen."""
-        game_hour, game_minute = self.get_game_time()
-        time_text = f"{game_hour:02}:{game_minute:02}"
-        text_surface = self.font.render(time_text, True, (255, 255, 255))
-        text_rect = text_surface.get_rect(topright=(self.SCREEN_WIDTH-10, 10))
-        pygame.draw.rect(self.screen,(0,0,0,150), text_rect)
-
-        self.screen.blit(text_surface, text_rect.topleft)
 
     def handle_input(self):
         """Handles keyboard input, including time acceleration."""
@@ -417,17 +419,13 @@ class Game:
                 
         elif self.toolbox.selected_tool == 1:
             print("Using another tool")
-
-
-        
+   
     def update_map(self, layer_name, new_data):
         for layer in self.tmx_data.visible_layers:
             if layer.name == layer_name:
                 layer.data = new_data
                 break
         
-
-
     def run(self):
         # Main Game Loop
         running = True
@@ -557,9 +555,6 @@ class Game:
 
                         # Use the tool on the clicked tile
                         self.use_tool(int(tile_x), int(tile_y))
-                
-            # Draw Clock
-            self.draw_time_display()
 
             # Update & Draw Rain (Only if raining)
             if self.raining:
