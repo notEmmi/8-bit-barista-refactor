@@ -51,6 +51,26 @@ class Game:
         # Player Constants
         self.PLAYER_SPEED = 2
 
+        # Load Rain Drop Sprites
+        self.RAIN_SPRITES = [
+            pygame.image.load(os.path.join(self.BASE_DIR, "assets", "rain", "drop_1.png")).convert_alpha(),
+            pygame.image.load(os.path.join(self.BASE_DIR, "assets", "rain", "drop_2.png")).convert_alpha(),
+            pygame.image.load(os.path.join(self.BASE_DIR, "assets", "rain", "drop_3.png")).convert_alpha(),
+        ]
+
+        # Load Floor Drop Sprites
+        self.FLOOR_SPRITES = [
+            pygame.image.load(os.path.join(self.BASE_DIR, "assets", "rain", "floor_1.png")).convert_alpha(),
+            pygame.image.load(os.path.join(self.BASE_DIR, "assets", "rain", "floor_2.png")).convert_alpha(),
+            pygame.image.load(os.path.join(self.BASE_DIR, "assets", "rain", "floor_3.png")).convert_alpha(),
+        ]
+
+        for sprite in self.FLOOR_SPRITES:
+            sprite.set_colorkey((0, 0, 0))  # Remove black background for transparency
+
+        # Initialize Rain system with loaded textures
+        self.rain = Rain(rain_sprites=self.RAIN_SPRITES, floor_sprites=self.FLOOR_SPRITES)
+
         # Load Individual Sprite Images
         self.ANIMATION_FRAMES = {
             "down": [pygame.image.load(os.path.join(self.SPRITE_PATH, "move_down_1.png")),
@@ -288,9 +308,6 @@ class Game:
 
             # Now, overlay is always defined before blitting
             zoomed_surface.blit(overlay, (0, 0))  
-
-            # Blit the final zoomed surface to the screen
-            self.screen.blit(zoomed_surface, (0, 0))
             
             # Handle Quit Event
             for event in pygame.event.get():
@@ -300,7 +317,10 @@ class Game:
             # Update & Draw Rain (Only if raining)
             if self.raining:
                 self.rain.update(self.camera_x, self.camera_y)
-                self.rain.draw(self.screen)
+                self.rain.draw(zoomed_surface)  # Draw all rain elements (drops + floor splashes)
+
+            # Blit the final zoomed surface to the screen
+            self.screen.blit(zoomed_surface, (0, 0))
                 
             # Draw Clock
             self.draw_time_display()
