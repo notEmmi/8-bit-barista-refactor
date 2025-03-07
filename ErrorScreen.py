@@ -69,4 +69,12 @@ def runError():
         clock.tick(30)
         pygame.display.flip()  # Update the screen
 
+
+
+    
     pygame.quit()
+
+
+    
+if __name__ == "__main__":
+    runError()
