@@ -112,7 +112,7 @@ class Recipes:
         pygame.quit()
 
 # Create an instance of RecipeScreen and run it
-# if __name__ == "__main__":
-#     app = Recipes()
-#     app.run()
+if __name__ == "__main__":
+     app = Recipes()
+     app.run()
 
