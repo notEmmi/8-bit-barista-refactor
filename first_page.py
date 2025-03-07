@@ -337,7 +337,8 @@ class Game:
         """Handles keyboard input, including time acceleration."""
         keys = pygame.key.get_pressed()
 
-        new_multiplier = 10 if keys[pygame.K_1] else 1  # Determine new multiplier
+        # Keybind 'b' accelerates the time
+        new_multiplier = 10 if keys[pygame.K_b] else 1  # Determine new multiplier
         
         if new_multiplier != self.time_multiplier:  # Only update if multiplier changed
             elapsed_time = time.time() - self.game_start_time  # Get current elapsed time
@@ -359,12 +360,12 @@ class Game:
 
 
            
- # Set time to 5pm
-        if keys[pygame.K_5]: 
+        # Set time to 5pm by pressing 'n'
+        if keys[pygame.K_n]: 
             self.game_start_time = time.time() - ((17 - self.GAME_START_HOUR) * 60 * self.SECONDS_PER_GAME_MINUTE)
 
-        # Set time to 5am
-        if keys[pygame.K_6]:
+        # Set time to 5am by pressing 'm'
+        if keys[pygame.K_m]:
             self.game_start_time = time.time() - ((5 * 60 - self.GAME_START_HOUR * 60) * self.SECONDS_PER_GAME_MINUTE)
             
         for event in pygame.event.get():
@@ -376,7 +377,6 @@ class Game:
                     self.raining = not self.raining
                     print(f"Rain Enabled: {self.raining}")  # Debug message
             ##### handle click on rectange event
-            
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
@@ -527,7 +527,7 @@ class Game:
             zoomed_surface.blit(overlay, (0, 0))  
             
             # Draw the toolbox
-            self.toolbox.draw(self.screen)
+            #self.toolbox.draw(self.screen)
 
             # Handle tool selection with number keys
             for event in pygame.event.get():
@@ -557,30 +557,6 @@ class Game:
 
                         # Use the tool on the clicked tile
                         self.use_tool(int(tile_x), int(tile_y))
-
-            
-
-
-            # Update & Draw Rain (Only if raining)
-            if self.raining:
-                self.rain.update(self.camera_x, self.camera_y)
-                self.rain.draw(self.screen)
-                
-            # Draw Clock
-            self.draw_time_display()
-
-            # Update & Draw Rain (Only if raining)
-            if self.raining:
-                self.rain.update(self.camera_x, self.camera_y)
-                self.rain.draw(self.screen)
-                
-            # Draw Clock
-            self.draw_time_display()
-
-            # Update & Draw Rain (Only if raining)
-            if self.raining:
-                self.rain.update(self.camera_x, self.camera_y)
-                self.rain.draw(self.screen)
                 
             # Draw Clock
             self.draw_time_display()
@@ -592,7 +568,9 @@ class Game:
 
             # Blit the final zoomed surface to the screen
             self.screen.blit(zoomed_surface, (0, 0))
-                
+            
+            self.toolbox.draw(self.screen)
+            
             # Draw Clock
             self.draw_time_display()
 

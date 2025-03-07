@@ -12,9 +12,9 @@ screen = pygame.display.set_mode((800, 600))
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 RAIN_COUNT = 50
-FLOOR_DROP_COUNT = 10  
-RAIN_SPEED_X = -16  
-RAIN_SPEED_Y = 26  
+FLOOR_DROP_COUNT = 15  
+RAIN_SPEED_X = -18  
+RAIN_SPEED_Y = 26 
 RAIN_COLOR = (80, 150, 255, 150)  # Blueish with transparency (RGBA)
 RAIN_OPACITY = 150  # 150 out of 255 (semi-transparent)
 DROP_SIZE = (8, 16)  # Raindrop size
@@ -126,7 +126,7 @@ class FloorDrop(pygame.sprite.Sprite):
         self.rect.x = max(0, min(screen_x, SCREEN_WIDTH - self.rect.width))
         self.rect.y = max(0, min(screen_y, SCREEN_HEIGHT - self.rect.height))
 
-        self.lifetime = 30  # Frames before disappearing
+        self.lifetime = 60  # Frames before disappearing
         self.alpha = 200  # Initial opacity
 
     def update(self):
