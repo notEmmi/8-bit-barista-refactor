@@ -89,6 +89,6 @@ class RegistrationApp:
         pygame.quit()
         sys.exit()
 
-# Example usage
-# registration_app = RegistrationApp()
-# registration_app.run()
+
+registration_app = RegistrationApp()
+registration_app.run()
