@@ -89,7 +89,26 @@ def run_logIn():
                 elif password_box.collidepoint(event.pos):
                     active_box = "password"
                 elif login_button.collidepoint(event.pos):
-                    print(f"Logging in with:\nUsername: {username}\nPassword: {password}")
+                        print(f"Logging in with:\nUsername: {username}\nPassword: {password}")
+                        userExists = check_username(username)
+                        if userExists == 1:
+                            print("username exists!")
+                        elif userExists == 0:
+                            print("invalid username!")
+                        cursor.execute("SELECT password FROM users WHERE username = ?", (username,))
+                        result = cursor.fetchone()
+                        print("encrypted password", result)
+
+                        
+                        if result:
+                            stored_hash = result[0]  # Extract stored hash from the tuple
+                            if check_password(password, stored_hash):  # Convert to bytes
+                               print("Login successful!")
+                               start_menu = StartMenu()
+                               loading_screen = LoadingScreen(start_menu.run)
+                               loading_screen.run()
+                               print("password exists")
+
                 
                 ################ START OF LOGIN LOGIC WHEN I GET THERE #####################
                 
