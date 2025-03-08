@@ -15,13 +15,13 @@ class RegistrationApp:
         self.WHITE = (255, 255, 255)
         self.conn = sqlite3.connect("mydatabase.db")
         self.cursor = self.conn.cursor()
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL
-            )
-        """)
+        # self.cursor.execute("""
+        #     CREATE TABLE IF NOT EXISTS users (
+        #         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        #         username TEXT UNIQUE NOT NULL,
+        #         password TEXT NOT NULL
+        #     )
+        # """)
         self.conn.commit()
         self.setup_ui()
         self.clock = pygame.time.Clock()
@@ -89,6 +89,6 @@ class RegistrationApp:
         pygame.quit()
         sys.exit()
 
-# Example usage
-# registration_app = RegistrationApp()
-# registration_app.run()
+##Example usage
+registration_app = RegistrationApp()
+registration_app.run()

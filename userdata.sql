@@ -1,7 +1,7 @@
- CREATE TABLE users (
- id INTEGER PRIMARY KEY,
- username TEXT NOT NULL,
- password TEXT NOT NULL);
+--  CREATE TABLE users (
+--  id INTEGER PRIMARY KEY,
+--  username TEXT NOT NULL,
+--  password TEXT NOT NULL);
 
 
 -- useful cmds to remeber --
