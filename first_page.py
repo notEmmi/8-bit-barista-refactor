@@ -7,6 +7,7 @@ from toolbar import Toolbox
 import interactions
 import customers
 import shop
+import inventory
 
 class Game:
     def __init__(self):
@@ -21,7 +22,7 @@ class Game:
 
         # initializing rain
         self.rain = Rain()
-        self.raining = False 
+        self.raining = False
 
         # Create Dark Rain Overlay
         self.rain_overlay = pygame.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.SRCALPHA)
@@ -361,6 +362,8 @@ class Game:
             shop.runShop()
 
 
+        if keys[pygame.K_e]:
+            inventory.run()
            
         # Set time to 5pm by pressing 'n'
         if keys[pygame.K_n]: 
@@ -565,6 +568,7 @@ class Game:
             self.screen.blit(zoomed_surface, (0, 0))
             
             self.toolbox.draw(self.screen)
+            inventory.drawBundle(self.screen)
             
             # Draw Clock
             self.draw_time_display()
