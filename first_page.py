@@ -2,7 +2,7 @@ import pygame
 import pytmx
 import os
 import time
-from weather import Rain, Raindrop, FloorDrop
+from weather import Rain, Raindrop, FloorDrop, Cloudy
 from toolbar import Toolbox
 import interactions
 import customers
@@ -22,6 +22,10 @@ class Game:
         # initializing rain
         self.rain = Rain()
         self.raining = False 
+
+        # Initalize cloudy weather
+        self.cloudy = Cloudy()
+        self.cloudy_weather = False
 
         # Create Dark Rain Overlay
         self.rain_overlay = pygame.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.SRCALPHA)
@@ -378,8 +382,11 @@ class Game:
                 if event.key == pygame.K_r:  # Toggle rain when 'R' is pressed
                     self.raining = not self.raining
                     print(f"Rain Enabled: {self.raining}")  # Debug message
-            ##### handle click on rectange event
+                if event.key == pygame.K_c:  # Toggle cloudy weather when 'C' is pressed
+                    self.cloudy_weather = not self.cloudy_weather
+                    print(f"Cloudy Weather Enabled: {self.cloudy_weather}")  # Debug message 
 
+            ##### handle click on rectange event
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
                         mouse_x, mouse_y = event.pos
@@ -520,6 +527,9 @@ class Game:
                 rain_overlay = pygame.Surface((zoomed_surface.get_size()), pygame.SRCALPHA)
                 rain_overlay.fill((0,0,0, rain_alpha))
                 overlay.blit(rain_overlay, (0,0))
+            
+            if self.cloudy_weather:  # Draw the cloudy overlay if enabled
+                self.cloudy.draw(overlay)  # Draw the cloudy effect on the overlay
 
             # Now, overlay is always defined before blitting
             zoomed_surface.blit(overlay, (0, 0))  

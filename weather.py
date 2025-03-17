@@ -18,6 +18,7 @@ RAIN_SPEED_Y = 26
 RAIN_COLOR = (80, 150, 255, 150)  # Blueish with transparency (RGBA)
 RAIN_OPACITY = 150  # 150 out of 255 (semi-transparent)
 DROP_SIZE = (8, 16)  # Raindrop size
+CLOUDY_OPACITY = 100  # Opacity for the cloudy effect (0-255)
 
 # Asset Directory
 BASE_DIR = os.path.dirname(__file__)
@@ -173,11 +174,21 @@ class Rain:
         self.floor_splashes.draw(surface)  # Draw floor splashes first
         self.raindrops.draw(surface)  # Then draw falling raindrops
 
+class Cloudy:
+    """Manages the cloudy weather effect"""
+    def __init__(self):
+        self.cloudy_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        self.cloudy_surface.fill((0, 0, 0, CLOUDY_OPACITY))  # Darken the screen with semi-transparency
+
+    def draw(self, surface):
+        """Draw the cloudy effect over the screen"""
+        surface.blit(self.cloudy_surface, (0, 0))
 
 # Example usage (for testing)
 if __name__ == "__main__":
     clock = pygame.time.Clock()
     rain = Rain()
+    cloudy = Cloudy()
 
     running = True
     while running:
@@ -188,6 +199,7 @@ if __name__ == "__main__":
 
         rain.update(0, 0)  
         rain.draw(screen)
+        cloudy.draw(screen)  # Draw the cloudy effect
 
         pygame.display.flip()
         clock.tick(30)  
