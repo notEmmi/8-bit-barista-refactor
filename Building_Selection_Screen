@@ -1,4 +1,5 @@
 import pygame
+import Building_Confirm_Selection_Screen
 
 # Initialize pygame
 pygame.init()
@@ -38,7 +39,7 @@ for row in range(ROWS):
     for col in range(COLS):
         x = start_x + col * (SQUARE_SIZE + PADDING)
         y = start_y + row * (SQUARE_SIZE + PADDING)
-        squares.append({"rect": pygame.Rect(x, y, SQUARE_SIZE, SQUARE_SIZE), "image": resized_images[row * COLS + col]})
+        squares.append({"rect": pygame.Rect(x, y, SQUARE_SIZE, SQUARE_SIZE), "image": resized_images[row * COLS + col],"image_path": image_paths[row * COLS + col]})
 
 # Main loop
 running = True
@@ -51,6 +52,12 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+    if event.type == pygame.MOUSEBUTTONDOWN:
+     for square in squares:
+        if square["rect"].collidepoint((mouse_x, mouse_y)):
+         print("Square clicked!")  # Replace with any action
+         Building_Confirm_Selection_Screen.runConfirmationScreen(square["image_path"])
     
     # Draw the squares with images
     screen.blit(background, (0,0))
@@ -69,6 +76,9 @@ while running:
     for square in squares:
      pygame.draw.rect(screen, (255, 255, 255), square["rect"], 2)  # White border
      screen.blit(square["image"], (square["rect"].x, square["rect"].y))
+
+
+     
     
     pygame.display.flip()
 
