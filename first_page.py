@@ -379,15 +379,7 @@ class Game:
                     self.raining = not self.raining
                     print(f"Rain Enabled: {self.raining}")  # Debug message
             ##### handle click on rectange event
-
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Left mouse button
-                        mouse_x, mouse_y = event.pos
-                        print(mouse_x, mouse_y)
-                        adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
-                        adjusted_mouse_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
-                        if self.cafe_rect.collidepoint(adjusted_mouse_x, adjusted_mouse_y):
-                         print("Cafe Clicked!")        
+  
 
     def use_tool(self, tile_x, tile_y):
         print(f"Using tool at tile ({tile_x}, {tile_y}) with selected tool {self.toolbox.selected_tool}")
