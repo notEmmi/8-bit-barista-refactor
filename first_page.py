@@ -348,20 +348,14 @@ class Game:
             self.time_multiplier = new_multiplier  # Update the multiplier
 
         if keys[pygame.K_TAB]:
-            
             interactions.runInteractions()
             
-
         if keys[pygame.K_CAPSLOCK]:
             customers.runCustomers()
 
-
         if keys[pygame.K_LSHIFT]:
-
             shop.runShop()
 
-
-           
         # Set time to 5pm by pressing 'n'
         if keys[pygame.K_n]: 
             self.game_start_time = time.time() - ((17 - self.GAME_START_HOUR) * 60 * self.SECONDS_PER_GAME_MINUTE)
@@ -370,15 +364,34 @@ class Game:
         if keys[pygame.K_m]:
             self.game_start_time = time.time() - ((5 * 60 - self.GAME_START_HOUR * 60) * self.SECONDS_PER_GAME_MINUTE)
             
+        # Handle tool selection with number keys
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_r:  # Toggle rain when 'R' is pressed
-                    self.raining = not self.raining
-                    print(f"Rain Enabled: {self.raining}")  # Debug message
-            ##### handle click on rectange event
+                if pygame.K_1 <= event.key <= pygame.K_5:
+                    self.toolbox.select_tool(event.key - pygame.K_1)
+                if pygame.K_0 == event.key or pygame.K_6 <= event.key <= pygame.K_9:
+                    self.toolbox.select_tool(-1)
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Left mouse button
+                    mouse_x, mouse_y = event.pos
+
+                    # Adjust mouse position to account for camera and zoom factor
+                    adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
+                    adjusted_mouse_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
+
+                    # Calculate the tile position based on the adjusted mouse position
+                    tile_x = adjusted_mouse_x // self.TILE_WIDTH
+                    tile_y = adjusted_mouse_y // self.TILE_HEIGHT
+                    print(f"Mouse Position: ({mouse_x}, {mouse_y})")
+                    print(f"Adjusted Mouse Position: ({adjusted_mouse_x}, {adjusted_mouse_y})")
+                    print(f"Tile Coordinates: ({tile_x}, {tile_y})")
+
+                    # Use the tool on the clicked tile
+                    self.use_tool(int(tile_x), int(tile_y))
   
 
     def use_tool(self, tile_x, tile_y):
@@ -518,35 +531,6 @@ class Game:
             
             # Draw the toolbox
             #self.toolbox.draw(self.screen)
-
-            # Handle tool selection with number keys
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                elif event.type == pygame.KEYDOWN:
-                    if pygame.K_1 <= event.key <= pygame.K_5:
-                        self.toolbox.select_tool(event.key - pygame.K_1)
-                    if pygame.K_0 == event.key or pygame.K_6 <= event.key <= pygame.K_9:
-                        self.toolbox.select_tool(-1)
-
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:  # Left mouse button
-                        mouse_x, mouse_y = event.pos
-
-                        # Adjust mouse position to account for camera and zoom factor
-                        adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
-                        adjusted_mouse_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
-
-                        # Calculate the tile position based on the adjusted mouse position
-                        tile_x = adjusted_mouse_x // self.TILE_WIDTH
-                        tile_y = adjusted_mouse_y // self.TILE_HEIGHT
-                        print(f"Mouse Position: ({mouse_x}, {mouse_y})")
-                        print(f"Adjusted Mouse Position: ({adjusted_mouse_x}, {adjusted_mouse_y})")
-                        print(f"Tile Coordinates: ({tile_x}, {tile_y})")
-
-
-                        # Use the tool on the clicked tile
-                        self.use_tool(int(tile_x), int(tile_y))
 
             # Update & Draw Rain (Only if raining)
             if self.raining:
