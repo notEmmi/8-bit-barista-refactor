@@ -396,10 +396,13 @@ class Game:
 
         if keys[pygame.K_TAB]:
             interactions.runInteractions()
+            
         if keys[pygame.K_CAPSLOCK]:
             customers.runCustomers()
+
         if keys[pygame.K_LSHIFT]:
             shop.runShop()
+
 
         # Set time to 5pm by pressing 'n'
         if keys[pygame.K_n] and not self.is_paused: 
@@ -409,6 +412,7 @@ class Game:
         if keys[pygame.K_m] and not self.is_paused:
             self.set_game_time(1,30)
 
+        # Handle tool selection with number keys
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -417,25 +421,26 @@ class Game:
                 if event.key == pygame.K_r:  # Toggle rain when 'R' is pressed
                     self.raining = not self.raining
                     print(f"Rain Enabled: {self.raining}")  # Debug message
-                if event.key == pygame.K_c:  # Toggle cloudy weather when 'C' is pressed
-                    self.cloudy_weather = not self.cloudy_weather
-                    print(f"Cloudy Weather Enabled: {self.cloudy_weather}")  # Debug message 
-                if self.show_new_day_prompt:  # Handle new day prompt input
-                    if event.key == pygame.K_RETURN:  # Enter key
-                        self.time_multiplier = 1
-                        self.confirm_new_day = True
-                        self.show_new_day_prompt = False
-                        self.is_paused = False  # Unpause the game
-
             ##### handle click on rectange event
+
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
-                        mouse_x, mouse_y = event.pos
-                        print(mouse_x, mouse_y)
-                        adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
-                        adjusted_mouse_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
-                        if self.cafe_rect.collidepoint(adjusted_mouse_x, adjusted_mouse_y):
-                         print("Cafe Clicked!")        
+                    mouse_x, mouse_y = event.pos
+
+                    # Adjust mouse position to account for camera and zoom factor
+                    adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
+                    adjusted_mouse_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
+
+                    # Calculate the tile position based on the adjusted mouse position
+                    tile_x = adjusted_mouse_x // self.TILE_WIDTH
+                    tile_y = adjusted_mouse_y // self.TILE_HEIGHT
+                    print(f"Mouse Position: ({mouse_x}, {mouse_y})")
+                    print(f"Adjusted Mouse Position: ({adjusted_mouse_x}, {adjusted_mouse_y})")
+                    print(f"Tile Coordinates: ({tile_x}, {tile_y})")
+
+                    # Use the tool on the clicked tile
+                    self.use_tool(int(tile_x), int(tile_y))
+  
 
     def use_tool(self, tile_x, tile_y):
         print(f"Using tool at tile ({tile_x}, {tile_y}) with selected tool {self.toolbox.selected_tool}")
@@ -596,39 +601,10 @@ class Game:
                 # Draw the toolbox
                 #self.toolbox.draw(self.screen)
 
-                # Handle tool selection with number keys
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        running = False
-                    elif event.type == pygame.KEYDOWN:
-                        if pygame.K_1 <= event.key <= pygame.K_5:
-                            self.toolbox.select_tool(event.key - pygame.K_1)
-                        if pygame.K_0 == event.key or pygame.K_6 <= event.key <= pygame.K_9:
-                            self.toolbox.select_tool(-1)
-
-                    elif event.type == pygame.MOUSEBUTTONDOWN:
-                        if event.button == 1:  # Left mouse button
-                            mouse_x, mouse_y = event.pos
-
-                            # Adjust mouse position to account for camera and zoom factor
-                            adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
-                            adjusted_mouse_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
-
-                            # Calculate the tile position based on the adjusted mouse position
-                            tile_x = adjusted_mouse_x // self.TILE_WIDTH
-                            tile_y = adjusted_mouse_y // self.TILE_HEIGHT
-                            print(f"Mouse Position: ({mouse_x}, {mouse_y})")
-                            print(f"Adjusted Mouse Position: ({adjusted_mouse_x}, {adjusted_mouse_y})")
-                            print(f"Tile Coordinates: ({tile_x}, {tile_y})")
-
-
-                            # Use the tool on the clicked tile
-                            self.use_tool(int(tile_x), int(tile_y))
-
-                # Update & Draw Rain (Only if raining)
-                if self.raining:
-                    self.rain.update(self.camera_x, self.camera_y)
-                    self.rain.draw(zoomed_surface)  # Draw all rain elements (drops + floor splashes)
+            # Update & Draw Rain (Only if raining)
+            if self.raining:
+                self.rain.update(self.camera_x, self.camera_y)
+                self.rain.draw(zoomed_surface)  # Draw all rain elements (drops + floor splashes)
 
             # Blit the final zoomed surface to the screen
             self.screen.blit(zoomed_surface, (0, 0))
