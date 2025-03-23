@@ -326,7 +326,32 @@ class Game:
             # Check if tile is tilled (id 21 on layer "Dirt")
             dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
             if dirt_layer:
-                if 
+                water_layer = self.tmx_data.get_layer_by_name("Watered")
+                if not water_layer:
+                    print("Watered layer not found")
+                    return
+
+                water_id = 22  # Replace with the correct GID for watered soil
+                tile_gid = dirt_layer.data[tile_y][tile_x]
+
+                if tile_gid == 21:  # Check if the tile is tilled
+                    water_layer.data[tile_y][tile_x] = water_id
+                    self.update_map("Watered", water_layer.data)
+
+                    # Set a timer to remove the watered state after 1 in-game day
+                    def remove_watered_tile():
+                        water_layer.data[tile_y][tile_x] = 0  # Reset to no water
+                        self.update_map("Watered", water_layer.data)
+
+                    # Calculate the delay in real-time seconds for 1 in-game day
+                    one_day_seconds = 24 * 60 * self.SECONDS_PER_GAME_MINUTE
+                    pygame.time.set_timer(pygame.USEREVENT, int(one_day_seconds * 1000))
+
+                    # Listen for the timer event in the main game loop
+                    for event in pygame.event.get():
+                        if event.type == pygame.USEREVENT:
+                            remove_watered_tile()
+
         elif self.toolbox.selected_tool == 4:
             print("Using another tool")
    
@@ -444,8 +469,6 @@ class Game:
                 elif event.type == pygame.KEYDOWN:
                     if pygame.K_1 <= event.key <= pygame.K_5:
                         self.toolbox.select_tool(event.key - pygame.K_1)
-                    if pygame.K_0 == event.key or pygame.K_6 <= event.key <= pygame.K_9:
-                        self.toolbox.select_tool(-1)
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:  # Left mouse button
