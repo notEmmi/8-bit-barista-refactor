@@ -193,13 +193,7 @@ class Game:
         #     pygame.draw.rect(surface, (255, 0, 0), 
         #                     (rect.x - cam_x, rect.y - cam_y, rect.width, rect.height), 2)
 
-    def get_game_time(self):
-        """Converts real-time seconds to in-game hours and minutes."""
-        elapsed_time = (time.time() - self.game_start_time) * self.time_multiplier
-        game_minutes = int(elapsed_time / self.SECONDS_PER_GAME_MINUTE)
-        game_hour = (self.GAME_START_HOUR + game_minutes // 60) % 24
-        game_minute = game_minutes % 60
-        return game_hour, game_minute
+
 
     def is_night_time(self):
         """Returns True if the current game time is night (after 5:30 PM or before 6 AM)."""
@@ -293,101 +287,7 @@ class Game:
         game_minutes = int(elapsed_time / self.SECONDS_PER_GAME_MINUTE)
         game_hour = (self.GAME_START_HOUR + game_minutes // 60) % 24
         game_minute = game_minutes % 60
-        return game_hour, game_minute
-
-    def is_night_time(self):
-        """Returns True if the current game time is night (after 5:30 PM or before 6 AM)."""
-        game_hour, game_minute = self.get_game_time()
-        total_minutes = game_hour * 60 + game_minute  # Convert to total minutes since midnight
-
-        return total_minutes >= 1050 or total_minutes < 360  # 1050 = 5:30 PM, 360 = 6:00 AM
-  
-    def draw_night_filter(self):
-        """Applies a transparent gradient for nighttime effect without duplicating overlays."""
-        game_hour, game_minute = self.get_game_time()
-        total_minutes = game_hour * 60 + game_minute
-
-        start_night_transition = 17 * 60 + 30  # 5:30 PM
-        end_night_transition = 18 * 60  # 6:00 PM
-
-        start_morning_transition = 5 * 60 + 30  # 5:30 AM
-        end_morning_transition = 6 * 60  # 6:00 AM
-
-        transition_progress = 0  # Default to no overlay
-
-        # Determine transition progress
-        if start_night_transition <= total_minutes <= end_night_transition:  
-            # Nighttime transition (5:30 PM - 5:40 PM)
-            transition_progress = (total_minutes - start_night_transition) / (end_night_transition - start_night_transition)
-        elif start_morning_transition <= total_minutes <= end_morning_transition:  
-            # Morning transition (5:50 AM - 6:00 AM) → Fade out night filter
-            transition_progress = 1 - ((total_minutes - start_morning_transition) / (end_morning_transition - start_morning_transition))
-        elif total_minutes > end_night_transition or total_minutes < start_morning_transition:
-            # Fully dark at night
-            transition_progress = 1
-
-        # If fully daylight, return 0 alpha (no effect)
-        if transition_progress == 0:
-            return 0  
-
-        # Calculate alpha value for overlay
-        alpha_value = int(transition_progress * 225)  # Max opacity at night
-
-        return alpha_value
-
-    def handle_input(self):
-        """Handles keyboard input, including time acceleration."""
-        keys = pygame.key.get_pressed()
-
-        # Keybind 'b' accelerates the time
-        new_multiplier = 10 if keys[pygame.K_b] else 1  # Determine new multiplier
-        
-        if new_multiplier != self.time_multiplier:  # Only update if multiplier changed
-            elapsed_time = time.time() - self.game_start_time  # Get current elapsed time
-            self.game_start_time = time.time() - (elapsed_time * self.time_multiplier / new_multiplier)  
-            self.time_multiplier = new_multiplier  # Update the multiplier
-
-        if keys[pygame.K_TAB]:
-            
-            interactions.runInteractions()
-            
-
-        if keys[pygame.K_CAPSLOCK]:
-            customers.runCustomers()
-
-
-        if keys[pygame.K_LSHIFT]:
-
-            shop.runShop()
-
-
-           
-        # Set time to 5pm by pressing 'n'
-        if keys[pygame.K_n]: 
-            self.game_start_time = time.time() - ((17 - self.GAME_START_HOUR) * 60 * self.SECONDS_PER_GAME_MINUTE)
-
-        # Set time to 5am by pressing 'm'
-        if keys[pygame.K_m]:
-            self.game_start_time = time.time() - ((5 * 60 - self.GAME_START_HOUR * 60) * self.SECONDS_PER_GAME_MINUTE)
-            
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_r:  # Toggle rain when 'R' is pressed
-                    self.raining = not self.raining
-                    print(f"Rain Enabled: {self.raining}")  # Debug message
-            ##### handle click on rectange event
-
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Left mouse button
-                        mouse_x, mouse_y = event.pos
-                        print(mouse_x, mouse_y)
-                        adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
-                        adjusted_mouse_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
-                        if self.cafe_rect.collidepoint(adjusted_mouse_x, adjusted_mouse_y):
-                         print("Cafe Clicked!")        
+        return game_hour, game_minute   
 
     def use_tool(self, tile_x, tile_y):
         print(f"Using tool at tile ({tile_x}, {tile_y}) with selected tool {self.toolbox.selected_tool}")
@@ -418,6 +318,16 @@ class Game:
                     self.update_map("Dirt", dirt_layer.data)
                 
         elif self.toolbox.selected_tool == 1:
+            print("Using another tool")
+        elif self.toolbox.selected_tool == 2:
+            print("Using another tool")
+        elif self.toolbox.selected_tool == 3:
+            print("Using watering can")
+            # Check if tile is tilled (id 21 on layer "Dirt")
+            dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
+            if dirt_layer:
+                if 
+        elif self.toolbox.selected_tool == 4:
             print("Using another tool")
    
     def update_map(self, layer_name, new_data):
