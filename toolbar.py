@@ -30,21 +30,10 @@ class Toolbox:
 
     def select_tool(self, index):
         if 0 <= index < len(self.tools):
-            self.selected_tool = index  # Change selected tool
-    
-    def use_tool(self):
-        if self.selected_tool == 0:
-            print("Using hoe")
-
-        elif self.selected_tool == 1:
-            print("Using mallet")
-        elif self.selected_tool == 2:
-            print("Using seedpouch")
-        elif self.selected_tool == 3:
-            print("Using watercan")
-        
-
-
+            if self.selected_tool == index:
+                self.selected_tool = -1  # Deselect the tool if it's already selected
+            else:
+                self.selected_tool = index  # Change to the new selected tool
 
     def draw(self, surface):
         screen_width, screen_height = surface.get_size()
@@ -77,8 +66,8 @@ class Toolbox:
                             (slot_x, slot_y, self.slot_width, self.slot_height),
                             border_radius=self.corner_radius)
             
-            # Highlight selected tool
-            if i == self.selected_tool:
+            # Highlight selected tool only if a tool is selected
+            if self.selected_tool != -1 and i == self.selected_tool:
                 pygame.draw.rect(surface, self.highlight_color, 
                                 (slot_x - 2, slot_y - 2, self.slot_width + 4, self.slot_height + 4), 
                                 width=3, border_radius=self.corner_radius)
