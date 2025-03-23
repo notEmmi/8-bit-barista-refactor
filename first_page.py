@@ -338,8 +338,22 @@ class Game:
 
         self.screen.blit(prompt_text, text_rect)
         self.screen.blit(prompt_text2, text_rect2)
-        
+
     def draw_hud(self):
+        """Displays 'Day X' on top, with the Weather Icon and Clock properly aligned at the top-right."""
+
+        # Define Panel Dimensions & Styling
+        panel_x_margin = 12  # Space between panel and screen edges
+        panel_y_margin = 8
+        panel_width = 115  # Unified width
+        panel_height = 65  # Height to fit stacked elements
+        border_radius = 8  # Rounded corners
+
+        # Load a Smaller & Thinner Font
+        clock_font = pygame.font.Font(None, 30)  # Smaller size & thinner weight
+        day_font = pygame.font.Font(None, 25)  # Smaller size & thinner weight
+
+        # Create HUD Panel Background
         """Displays 'Day X' on top, with the Weather Icon and Clock properly aligned at the top-right."""
 
         # Define Panel Dimensions & Styling
@@ -384,7 +398,45 @@ class Game:
         # Clock - Fixed Position (Independent)
         clock_text = f"{self.get_game_time()[0]:02}:{self.get_game_time()[1]:02}"
         time_surface = clock_font.render(clock_text, True, (255, 255, 255))
+        pygame.draw.rect(
+            hud_surface, (99, 55, 44, 240), (0, 0, panel_width, panel_height), border_radius=border_radius
+        )
+
+        # "Day X" - Positioned at the top with internal padding
+        day_text = day_font.render(f"Day {self.current_day}", True, (255, 255, 255))
+        day_rect = day_text.get_rect(midtop=(panel_width // 2, panel_y_margin))  # Centered horizontally
+        hud_surface.blit(day_text, day_rect.topleft)
+
+        # Weather Icon - Adjust Position Based on Type
+        if self.current_weather in self.weather_icons:
+            weather_icon = pygame.transform.scale(self.weather_icons[self.current_weather], (28, 28))
+            icon_x = 8  # Fixed left alignment
+
+            # Adjust icon height based on weather type
+            if self.current_weather == "sunny":
+                icon_y = day_rect.bottom + 5  # Default position
+            elif self.current_weather in ["cloudy", "rainy"]:
+                icon_y = day_rect.bottom + 2  # Move up slightly for balance
+            else:
+                icon_y = day_rect.bottom + 5  # Default fallback
+
+            hud_surface.blit(weather_icon, (icon_x, icon_y))
+        else:
+            print(f"WARNING: Missing weather icon for {self.current_weather}")
+
+        # Clock - Fixed Position (Independent)
+        clock_text = f"{self.get_game_time()[0]:02}:{self.get_game_time()[1]:02}"
+        time_surface = clock_font.render(clock_text, True, (255, 255, 255))
         
+        clock_x = panel_width - 70  # Shift clock right, away from the icon
+        clock_y = day_rect.bottom + 8  # Position slightly lower for visual balance
+
+        hud_surface.blit(time_surface, (clock_x, clock_y))  # Now truly independent
+
+        # Move Panel to the Top-Right of the Screen with Proper Margins
+        screen_x = self.SCREEN_WIDTH - panel_width - panel_x_margin  # Fixed position
+        screen_y = panel_y_margin  # Fixed vertical margin
+        self.screen.blit(hud_surface, (screen_x, screen_y))
         clock_x = panel_width - 70  # Shift clock right, away from the icon
         clock_y = day_rect.bottom + 8  # Position slightly lower for visual balance
 
@@ -416,10 +468,13 @@ class Game:
 
         if keys[pygame.K_TAB]:
             interactions.runInteractions()
+            
         if keys[pygame.K_CAPSLOCK]:
             customers.runCustomers()
+
         if keys[pygame.K_LSHIFT]:
             shop.runShop()
+
 
         # Set time to 5pm by pressing 'n'
         if keys[pygame.K_n] and not self.is_paused: 
@@ -429,6 +484,7 @@ class Game:
         if keys[pygame.K_m] and not self.is_paused:
             self.set_game_time(1,30)
 
+        # Handle tool selection with number keys
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -446,16 +502,29 @@ class Game:
                         self.confirm_new_day = True
                         self.show_new_day_prompt = False
                         self.is_paused = False  # Unpause the game
+                if pygame.K_1 <= event.key <= pygame.K_5:
+                    self.toolbox.select_tool(event.key - pygame.K_1)
+                if pygame.K_0 == event.key or pygame.K_6 <= event.key <= pygame.K_9:
+                    self.toolbox.select_tool(-1)
 
-            ##### handle click on rectange event
+            ##### handle click on rectange event       
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
-                        mouse_x, mouse_y = event.pos
-                        print(mouse_x, mouse_y)
-                        adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
-                        adjusted_mouse_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
-                        if self.cafe_rect.collidepoint(adjusted_mouse_x, adjusted_mouse_y):
-                         print("Cafe Clicked!")        
+                    mouse_x, mouse_y = event.pos
+
+                    # Adjust mouse position to account for camera and zoom factor
+                    adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
+                    adjusted_mouse_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
+
+                    # Calculate the tile position based on the adjusted mouse position
+                    tile_x = adjusted_mouse_x // self.TILE_WIDTH
+                    tile_y = adjusted_mouse_y // self.TILE_HEIGHT
+                    print(f"Mouse Position: ({mouse_x}, {mouse_y})")
+                    print(f"Adjusted Mouse Position: ({adjusted_mouse_x}, {adjusted_mouse_y})")
+                    print(f"Tile Coordinates: ({tile_x}, {tile_y})")
+
+                    # Use the tool on the clicked tile
+                    self.use_tool(int(tile_x), int(tile_y))
 
     def use_tool(self, tile_x, tile_y):
         print(f"Using tool at tile ({tile_x}, {tile_y}) with selected tool {self.toolbox.selected_tool}")
@@ -615,35 +684,6 @@ class Game:
                 
                 # Draw the toolbox
                 #self.toolbox.draw(self.screen)
-
-                # Handle tool selection with number keys
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        running = False
-                    elif event.type == pygame.KEYDOWN:
-                        if pygame.K_1 <= event.key <= pygame.K_5:
-                            self.toolbox.select_tool(event.key - pygame.K_1)
-                        if pygame.K_0 == event.key or pygame.K_6 <= event.key <= pygame.K_9:
-                            self.toolbox.select_tool(-1)
-
-                    elif event.type == pygame.MOUSEBUTTONDOWN:
-                        if event.button == 1:  # Left mouse button
-                            mouse_x, mouse_y = event.pos
-
-                            # Adjust mouse position to account for camera and zoom factor
-                            adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
-                            adjusted_mouse_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
-
-                            # Calculate the tile position based on the adjusted mouse position
-                            tile_x = adjusted_mouse_x // self.TILE_WIDTH
-                            tile_y = adjusted_mouse_y // self.TILE_HEIGHT
-                            print(f"Mouse Position: ({mouse_x}, {mouse_y})")
-                            print(f"Adjusted Mouse Position: ({adjusted_mouse_x}, {adjusted_mouse_y})")
-                            print(f"Tile Coordinates: ({tile_x}, {tile_y})")
-
-
-                            # Use the tool on the clicked tile
-                            self.use_tool(int(tile_x), int(tile_y))
 
                 # Update & Draw Rain (Only if raining)
                 if self.raining:
