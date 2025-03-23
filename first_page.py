@@ -339,41 +339,61 @@ class Game:
         self.screen.blit(prompt_text, text_rect)
         self.screen.blit(prompt_text2, text_rect2)
 
-    def draw_time_display(self):
-        """Displays the current in-game time on the top right of the screen with proper transparency."""
-        game_hour, game_minute = self.get_game_time()
-        time_text = f"{game_hour:02}:{game_minute:02}"
-
-        # Render the text with white color
-        text_surface = self.font.render(time_text, True, (255, 255, 255))
-
-        # Get text rect and create a background rectangle slightly larger
-        text_rect = text_surface.get_rect(topright=(self.SCREEN_WIDTH - 10, 10))
-        bg_rect = pygame.Rect(text_rect.x - 5, text_rect.y - 2, text_rect.width + 10, text_rect.height + 4)
-
-        # Draw the semi-transparent background directly (NO separate surface)
-        pygame.draw.rect(self.screen, (0, 0, 0, 120), bg_rect)  # Alpha = 120 for transparency
-
-        # Draw the time text on top
-        self.screen.blit(text_surface, text_rect.topleft)
-
     def draw_hud(self):
-        # Create a semi-transparent background panel
-        panel_width = 180
-        panel_height = 50
+        """Displays 'Day X' on top, with the Weather Icon and Clock properly aligned at the top-right."""
+
+        # Define Panel Dimensions & Styling
+        panel_x_margin = 12  # Space between panel and screen edges
+        panel_y_margin = 8
+        panel_width = 115  # Unified width
+        panel_height = 65  # Height to fit stacked elements
+        border_radius = 8  # Rounded corners
+
+        # Load a Smaller & Thinner Font
+        clock_font = pygame.font.Font(None, 30)  # Smaller size & thinner weight
+        day_font = pygame.font.Font(None, 25)  # Smaller size & thinner weight
+
+        # Create HUD Panel Background
         hud_surface = pygame.Surface((panel_width, panel_height), pygame.SRCALPHA)
-        hud_surface.fill((0, 0, 0, 120))  # Dark semi-transparent
+        pygame.draw.rect(
+            hud_surface, (99, 55, 44, 240), (0, 0, panel_width, panel_height), border_radius=border_radius
+        )
+
+        # "Day X" - Positioned at the top with internal padding
+        day_text = day_font.render(f"Day {self.current_day}", True, (255, 255, 255))
+        day_rect = day_text.get_rect(midtop=(panel_width // 2, panel_y_margin))  # Centered horizontally
+        hud_surface.blit(day_text, day_rect.topleft)
+
+        # Weather Icon - Adjust Position Based on Type
+        if self.current_weather in self.weather_icons:
+            weather_icon = pygame.transform.scale(self.weather_icons[self.current_weather], (28, 28))
+            icon_x = 8  # Fixed left alignment
+
+            # Adjust icon height based on weather type
+            if self.current_weather == "sunny":
+                icon_y = day_rect.bottom + 5  # Default position
+            elif self.current_weather in ["cloudy", "rainy"]:
+                icon_y = day_rect.bottom + 2  # Move up slightly for balance
+            else:
+                icon_y = day_rect.bottom + 5  # Default fallback
+
+            hud_surface.blit(weather_icon, (icon_x, icon_y))
+        else:
+            print(f"WARNING: Missing weather icon for {self.current_weather}")
+
+        # Clock - Fixed Position (Independent)
+        clock_text = f"{self.get_game_time()[0]:02}:{self.get_game_time()[1]:02}"
+        time_surface = clock_font.render(clock_text, True, (255, 255, 255))
         
-        # Day display
-        day_text = self.font.render(f"Day {self.current_day}", True, (255, 255, 255))
-        hud_surface.blit(day_text, (5, 5))
-        
-        # Weather icon
-        weather_icon = self.weather_icons[self.current_weather]
-        hud_surface.blit(weather_icon, (panel_width - 40, 5))
-        
-        # Blit the HUD to main screen
-        self.screen.blit(hud_surface, (10, 10))
+        clock_x = panel_width - 70  # Shift clock right, away from the icon
+        clock_y = day_rect.bottom + 8  # Position slightly lower for visual balance
+
+        hud_surface.blit(time_surface, (clock_x, clock_y))  # Now truly independent
+
+        # Move Panel to the Top-Right of the Screen with Proper Margins
+        screen_x = self.SCREEN_WIDTH - panel_width - panel_x_margin  # Fixed position
+        screen_y = panel_y_margin  # Fixed vertical margin
+        self.screen.blit(hud_surface, (screen_x, screen_y))
 
     def is_night_time(self):
         """Returns True if the current game time is night (after 5:30 PM or before 6 AM)."""
@@ -421,8 +441,21 @@ class Game:
                 if event.key == pygame.K_r:  # Toggle rain when 'R' is pressed
                     self.raining = not self.raining
                     print(f"Rain Enabled: {self.raining}")  # Debug message
-            ##### handle click on rectange event
+                if event.key == pygame.K_c:  # Toggle cloudy weather when 'C' is pressed
+                    self.cloudy_weather = not self.cloudy_weather
+                    print(f"Cloudy Weather Enabled: {self.cloudy_weather}")  # Debug message 
+                if self.show_new_day_prompt:  # Handle new day prompt input
+                    if event.key == pygame.K_RETURN:  # Enter key
+                        self.time_multiplier = 1
+                        self.confirm_new_day = True
+                        self.show_new_day_prompt = False
+                        self.is_paused = False  # Unpause the game
+                if pygame.K_1 <= event.key <= pygame.K_5:
+                    self.toolbox.select_tool(event.key - pygame.K_1)
+                if pygame.K_0 == event.key or pygame.K_6 <= event.key <= pygame.K_9:
+                    self.toolbox.select_tool(-1)
 
+            ##### handle click on rectange event       
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
                     mouse_x, mouse_y = event.pos
@@ -440,7 +473,6 @@ class Game:
 
                     # Use the tool on the clicked tile
                     self.use_tool(int(tile_x), int(tile_y))
-  
 
     def use_tool(self, tile_x, tile_y):
         print(f"Using tool at tile ({tile_x}, {tile_y}) with selected tool {self.toolbox.selected_tool}")
@@ -601,10 +633,10 @@ class Game:
                 # Draw the toolbox
                 #self.toolbox.draw(self.screen)
 
-            # Update & Draw Rain (Only if raining)
-            if self.raining:
-                self.rain.update(self.camera_x, self.camera_y)
-                self.rain.draw(zoomed_surface)  # Draw all rain elements (drops + floor splashes)
+                # Update & Draw Rain (Only if raining)
+                if self.raining:
+                    self.rain.update(self.camera_x, self.camera_y)
+                    self.rain.draw(zoomed_surface)  # Draw all rain elements (drops + floor splashes)
 
             # Blit the final zoomed surface to the screen
             self.screen.blit(zoomed_surface, (0, 0))
@@ -617,7 +649,6 @@ class Game:
             
             # Draw HUD
             self.draw_hud()
-            self.draw_time_display()
 
             pygame.display.flip()  # Update display
             clock.tick(FPS)
