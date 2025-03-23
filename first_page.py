@@ -395,13 +395,6 @@ class Game:
         screen_y = panel_y_margin  # Fixed vertical margin
         self.screen.blit(hud_surface, (screen_x, screen_y))
 
-    def is_night_time(self):
-        """Returns True if the current game time is night (after 5:30 PM or before 6 AM)."""
-        game_hour, game_minute = self.get_game_time()
-        total_minutes = game_hour * 60 + game_minute  # Convert to total minutes since midnight
-
-        return total_minutes >= 1050 or total_minutes < 360  # 1050 = 5:30 PM, 360 = 6:00 AM
-
     def handle_input(self):
         """Handles keyboard input, including time acceleration."""
         keys = pygame.key.get_pressed()
