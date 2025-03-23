@@ -445,10 +445,8 @@ class Game:
                         self.is_paused = False  # Unpause the game
                 if pygame.K_1 <= event.key <= pygame.K_5:
                     self.toolbox.select_tool(event.key - pygame.K_1)
-                if pygame.K_0 == event.key or pygame.K_6 <= event.key <= pygame.K_9:
-                    self.toolbox.select_tool(-1)
 
-            ##### handle click on rectange event       
+            # Handle Mouse Button Events    
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
                     mouse_x, mouse_y = event.pos
@@ -658,8 +656,6 @@ class Game:
                 # Now, overlay is always defined before blitting
                 zoomed_surface.blit(overlay, (0, 0))  
                 
-                # Draw the toolbox
-                #self.toolbox.draw(self.screen)
 
                 # Update & Draw Rain (Only if raining)
                 if self.raining:
