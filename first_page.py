@@ -478,12 +478,11 @@ class Game:
             # Check if tile is tilled (id 12 on layer "Dirt")
             dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
             
-           
             # Check specific tile value:
             print(f"Tile at ({tile_x}, {tile_y}): {dirt_layer.data[tile_y][tile_x]}")
 
             if dirt_layer:
-                dirt_id = 21  # Replace with the correct GID for tilled soil
+                dirt_id = 1  # Replace with the correct GID for tilled soil
 
                 tile_gid = dirt_layer.data[tile_y][tile_x]
 
@@ -507,26 +506,12 @@ class Game:
                     print("Watered layer not found")
                     return
 
-                water_id = 22  # Replace with the correct GID for watered soil
+                water_id = 2  # Replace with the correct GID for watered soil
                 tile_gid = dirt_layer.data[tile_y][tile_x]
 
-                if tile_gid == 21:  # Check if the tile is tilled
+                if tile_gid == 1:  # Check if the tile is tilled
                     water_layer.data[tile_y][tile_x] = water_id
                     self.update_map("Watered", water_layer.data)
-
-                    # Set a timer to remove the watered state after 1 in-game day
-                    def remove_watered_tile():
-                        water_layer.data[tile_y][tile_x] = 0  # Reset to no water
-                        self.update_map("Watered", water_layer.data)
-
-                    # Calculate the delay in real-time seconds for 1 in-game day
-                    one_day_seconds = 24 * 60 * self.SECONDS_PER_GAME_MINUTE
-                    pygame.time.set_timer(pygame.USEREVENT, int(one_day_seconds * 1000))
-
-                    # Listen for the timer event in the main game loop
-                    for event in pygame.event.get():
-                        if event.type == pygame.USEREVENT:
-                            remove_watered_tile()
 
         elif self.toolbox.selected_tool == 4:
             print("Using another tool")
