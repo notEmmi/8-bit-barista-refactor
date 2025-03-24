@@ -445,6 +445,8 @@ class Game:
                         self.is_paused = False  # Unpause the game
                 if pygame.K_1 <= event.key <= pygame.K_5:
                     self.toolbox.select_tool(event.key - pygame.K_1)
+                if self.toolbox.seed_inventory_open and pygame.K_1 <= event.key <= pygame.K_5:
+                    self.toolbox.select_seed(event.key - pygame.K_1)
 
             # Handle Mouse Button Events    
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -495,7 +497,16 @@ class Game:
         elif self.toolbox.selected_tool == 1:
             print("Using another tool")
         elif self.toolbox.selected_tool == 2:
-            print("Using another tool")
+            if self.toolbox.selected_seed is not None:
+                seed_name = self.toolbox.seed_slots[self.toolbox.selected_seed]
+                dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
+                plant_layer = self.tmx_data.get_layer_by_name("Plants")
+                if dirt_layer and plant_layer:
+                    tile_gid = dirt_layer.data[tile_y][tile_x]
+                    if tile_gid == 1:  # Check if the tile is tilled
+                        seed_gid = self.get_seed_gid(seed_name)
+                        plant_layer.data[tile_y][tile_x] = seed_gid
+                        self.update_map("Plants", plant_layer.data)
         elif self.toolbox.selected_tool == 3:
             print("Using watering can")
             # Check if tile is tilled (id 21 on layer "Dirt")
@@ -513,9 +524,47 @@ class Game:
                     water_layer.data[tile_y][tile_x] = water_id
                     self.update_map("Watered", water_layer.data)
 
-        elif self.toolbox.selected_tool == 4:
-            print("Using another tool")
-   
+        elif self.toolbox.selected_tool == 4:  # Harvesting tool (e.g., axe)
+            self.harvest_plant(tile_x, tile_y)
+
+    def get_seed_gid(self, seed_name):
+        # Map seed names to their initial GID in the tileset
+        seed_gid_map = {
+            "wheat": 1,  # Replace with the correct GID for wheat1.png
+            # Add other seeds here
+        }
+        return seed_gid_map.get(seed_name, 0)
+
+    def grow_plants(self):
+        """
+        Updates plant growth stages based on the Plant_Objects tileset.
+        Growth stops at the `last-1` stage for each plant.
+        """
+        plant_layer = self.tmx_data.get_layer_by_name("Plants")
+        if plant_layer:
+            for y in range(self.tmx_data.height):
+                for x in range(self.tmx_data.width):
+                    tile_gid = plant_layer.data[y][x]
+                    if tile_gid in range(1, 12):  # Example GIDs for all plant stages
+                        # Determine the plant type and stage
+                        plant_type = (tile_gid - 1) // 6  # Each plant has 6 stages
+                        stage = (tile_gid - 1) % 6
+
+                        # Advance to the next stage if not at `last-1`
+                        if stage < 4:  # `last-1` is stage 4 (0-indexed)
+                            plant_layer.data[y][x] += 1  # Advance to the next growth stage
+
+            self.update_map("Plants", plant_layer.data)
+
+    def harvest_plant(self, tile_x, tile_y):
+        plant_layer = self.tmx_data.get_layer_by_name("Plants")
+        if plant_layer:
+            tile_gid = plant_layer.data[tile_y][tile_x]
+            if tile_gid % 6 == 5:  # Check if it's the final product stage (e.g., wheat6)
+                print(f"Harvested plant at ({tile_x}, {tile_y})")
+                plant_layer.data[tile_y][tile_x] = 0  # Reset the tile after harvesting
+                self.update_map("Plants", plant_layer.data)
+
     def update_map(self, layer_name, new_data):
         for layer in self.tmx_data.visible_layers:
             if layer.name == layer_name:
@@ -646,6 +695,8 @@ class Game:
                 if self.raining:
                     self.rain.update(self.camera_x, self.camera_y)
                     self.rain.draw(zoomed_surface)  # Draw all rain elements (drops + floor splashes)
+
+                self.grow_plants()  # Call this periodically (e.g., every in-game day)
 
             # Blit the final zoomed surface to the screen
             self.screen.blit(zoomed_surface, (0, 0))
