@@ -44,6 +44,6 @@ def print_tile_properties(map_file, output_file):
 if __name__ == "__main__":
     # Replace 'map.tmx' with the path to your TMX file
     map_file = os.path.join(os.path.dirname(__file__), "assets", "map", "map.tmx")
-    output_file = os.path.join(os.path.dirname(__file__), "tile_properties_output.txt")
+    output_file = os.path.join(os.path.dirname(__file__), "utility", "tile_properties_output.txt")
     print_tile_properties(map_file, output_file)
     print(f"Tile properties written to {output_file}")
