@@ -34,6 +34,20 @@ class Toolbox:
                 self.selected_tool = -1  # Deselect the tool if it's already selected
             else:
                 self.selected_tool = index  # Change to the new selected tool
+            
+            # Open seed inventory if the selected tool is the seed pouch
+            tool_list = list(self.tools.keys())
+            if tool_list[self.selected_tool] == "seedpouch":
+                self.open_seed_inventory()
+
+    def open_seed_inventory(self):
+        # Placeholder for opening the seed inventory
+        print("Seed inventory opened")
+        self.seed_inventory_open = True
+
+    def close_seed_inventory(self):
+        # Close the seed inventory
+        self.seed_inventory_open = False
 
     def draw(self, surface):
         screen_width, screen_height = surface.get_size()
@@ -50,6 +64,32 @@ class Toolbox:
         pygame.draw.rect(surface, self.background_color, 
                         (box_x, box_y, box_width, box_height), 
                         border_radius=self.corner_radius)
+        
+        # Draw the seed inventory if open
+        if getattr(self, 'seed_inventory_open', False):
+            inventory_height = box_height  # Same height as the toolbar
+            inventory_y = box_y - inventory_height - 10  # 10px padding above the toolbar
+            
+            # Draw the inventory background
+            pygame.draw.rect(surface, self.background_color, 
+                            (box_x, inventory_y, box_width, inventory_height), 
+                            border_radius=self.corner_radius)
+            
+            # Draw seed slots (example with 5 slots)
+            seed_slots = 5
+            for i in range(seed_slots):
+                slot_x = box_x + self.slot_margin + i * (self.slot_width + self.slot_margin)
+                slot_y = inventory_y + self.slot_margin
+                
+                # Draw slot background
+                pygame.draw.rect(surface, self.slot_color, 
+                                (slot_x, slot_y, self.slot_width, self.slot_height),
+                                border_radius=self.corner_radius)
+                
+                # Placeholder for seed icons (can be replaced with actual seed images)
+                pygame.draw.circle(surface, (0, 255, 0), 
+                                   (slot_x + self.slot_width // 2, slot_y + self.slot_height // 2), 
+                                   self.slot_width // 4)
         
         # Draw the tool slots
         tool_list = list(self.tools.items())
