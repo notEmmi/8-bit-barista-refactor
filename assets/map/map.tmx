@@ -10,6 +10,7 @@
  <tileset firstgid="406" source="House Tiles 2.tsx"/>
  <tileset firstgid="630" source="Building_Objects.tsx"/>
  <tileset firstgid="634" source="Biom_Objects.tsx"/>
+ <tileset firstgid="668" source="Plant_Objects.tsx"/>
  <layer id="28" name="GID_setter" width="50" height="50">
   <data encoding="csv">
 183,227,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
