@@ -20,6 +20,9 @@ def runBuildingSelectionScreen():
     background = pygame.image.load("assets/images/others/sky.png")
     background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
+    sign = pygame.image.load("images/buildingSign.png")
+    sign = pygame.transform.scale(sign, (SCREEN_WIDTH/2, SCREEN_HEIGHT/5))
+
     # Calculate total width and height occupied by squares including padding
     total_width = COLS * SQUARE_SIZE + (COLS - 1) * PADDING
     total_height = ROWS * SQUARE_SIZE + (ROWS - 1) * PADDING
@@ -63,7 +66,7 @@ def runBuildingSelectionScreen():
         
         # Draw the squares with images
         screen.blit(background, (0,0))
-
+        screen.blit(sign, (SCREEN_WIDTH/4,5))
         
 
         for square in squares:
