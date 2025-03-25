@@ -37,6 +37,18 @@ Tile Properties:
   GID: 142, Properties: {'id': 28, 'source': 'tile006.png', 'trans': None, 'width': '16', 'height': '16', 'frames': []}
   GID: 143, Properties: {'id': 31, 'source': 'tree1cut.png', 'trans': None, 'width': '34', 'height': '14', 'frames': []}
   GID: 144, Properties: {'id': 33, 'source': 'tree2cut.png', 'trans': None, 'width': '36', 'height': '18', 'frames': []}
+  GID: 145, Properties: {'id': 0, 'growth_stage': 0, 'max_stage': 5, 'next_stage_gid': 1, 'source': '../images/plants/wheat1.png', 'trans': None, 'width': '16', 'height': '16', 'frames': []}
+  GID: 146, Properties: {'id': 1, 'growth_stage': 1, 'max_stage': 5, 'next_stage_gid': 2, 'source': '../images/plants/wheat2.png', 'trans': None, 'width': '16', 'height': '16', 'frames': []}
+  GID: 147, Properties: {'id': 2, 'growth_stage': 2, 'max_stage': 5, 'next_stage_gid': 3, 'source': '../images/plants/wheat3.png', 'trans': None, 'width': '16', 'height': '16', 'frames': []}
+  GID: 148, Properties: {'id': 3, 'growth_stage': 3, 'max_stage': 5, 'next_stage_gid': 4, 'source': '../images/plants/wheat4.png', 'trans': None, 'width': '16', 'height': '16', 'frames': []}
+  GID: 149, Properties: {'id': 4, 'growth_stage': 4, 'max_stage': 5, 'next_stage_gid': 5, 'source': '../images/plants/wheat5.png', 'trans': None, 'width': '16', 'height': '16', 'frames': []}
+  GID: 150, Properties: {'id': 5, 'growth_stage': 5, 'max_stage': 5, 'next_stage_gid': 0, 'source': '../images/plants/wheat6.png', 'trans': None, 'width': '16', 'height': '16', 'frames': []}
+  GID: 151, Properties: {'id': 6, 'growth_stage': 0, 'max_stage': 5, 'next_stage_gid': 7, 'source': '../images/plants/tomato1.png', 'trans': None, 'width': '16', 'height': '16', 'frames': []}
+  GID: 152, Properties: {'id': 7, 'growth_stage': 1, 'max_stage': 5, 'next_stage_gid': 8, 'source': '../images/plants/tomato2.png', 'trans': None, 'width': '16', 'height': '16', 'frames': []}
+  GID: 153, Properties: {'id': 8, 'growth_stage': 2, 'max_stage': 5, 'next_stage_gid': 9, 'source': '../images/plants/tomato3.png', 'trans': None, 'width': '16', 'height': '16', 'frames': []}
+  GID: 154, Properties: {'id': 9, 'growth_stage': 3, 'max_stage': 5, 'next_stage_gid': 10, 'source': '../images/plants/tomato4.png', 'trans': None, 'width': '16', 'height': '16', 'frames': []}
+  GID: 155, Properties: {'id': 10, 'growth_stage': 4, 'max_stage': 5, 'next_stage_gid': 11, 'source': '../images/plants/tomato5.png', 'trans': None, 'width': '16', 'height': '16', 'frames': []}
+  GID: 156, Properties: {'id': 11, 'growth_stage': 5, 'max_stage': 5, 'next_stage_gid': 0, 'source': '../images/plants/tomato6.png', 'trans': None, 'width': '16', 'height': '16', 'frames': []}
 
 Layer Data:
 Layer: GID_setter
@@ -5167,6 +5179,7 @@ Layer: Dirt
   Tile at (12, 20) - GID: 25
   Tile at (13, 20) - GID: 26
 Layer: Watered
+Layer: Plants
 Layer: Water
   Tile at (5, 30) - GID: 27
   Tile at (6, 30) - GID: 27
