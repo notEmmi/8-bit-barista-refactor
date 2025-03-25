@@ -29,13 +29,13 @@
   <image source="../images/plants/wheat5.png" width="16" height="16"/>
   <properties>
     <property name="growing" type="bool" value="true"/>
-    <property name="harvest" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="5">
   <image source="../images/plants/wheat6.png" width="16" height="16"/>
   <properties>
     <property name="growing" type="bool" value="false"/>
+    <property name="harvest" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="6">
@@ -59,20 +59,20 @@
  <tile id="9">
   <image source="../images/plants/tomato4.png" width="16" height="16"/>
   <properties>
-    <property name="growing" type="bool" value="false"/>
+    <property name="growing" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="10">
   <image source="../images/plants/tomato5.png" width="16" height="16"/>
   <properties>
     <property name="growing" type="bool" value="true"/>
-    <property name="harvest" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="11">
   <image source="../images/plants/tomato6.png" width="16" height="16"/>
   <properties>
     <property name="growing" type="bool" value="false"/>
+    <property name="harvest" type="bool" value="true"/>
   </properties>
  </tile>
 </tileset>
