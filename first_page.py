@@ -409,7 +409,13 @@ class Game:
                     self.time_multiplier, self.confirm_new_day, self.show_new_day_prompt, self.is_paused = 1, True, False, False
                 if pygame.K_1 <= event.key <= pygame.K_5:  # Tool or seed selection
                     if self.toolbox.seed_inventory_open:
-                        self.toolbox.select_seed(event.key - pygame.K_1)
+                        selected_seed_index = event.key - pygame.K_1
+                        if self.toolbox.selected_seed == selected_seed_index:
+                            # Close seed inventory and deselect seed pouch
+                            self.toolbox.close_seed_inventory()
+                            self.toolbox.selected_tool = -1
+                        else:
+                            self.toolbox.select_seed(selected_seed_index)
                     else:
                         self.toolbox.select_tool(event.key - pygame.K_1)
 
@@ -473,8 +479,25 @@ class Game:
             if dirt_layer and dirt_layer.data[tile_y][tile_x] == dirt_id:  # Check if tile is tilled
                 self.place_tile("Watered", tile_x, tile_y, watered_id)
 
-        elif self.toolbox.selected_tool == 4:  # Harvesting tool (Axe -- maybe axe later)
-            self.harvest_plant(tile_x, tile_y)
+        elif self.toolbox.selected_tool == 4:  # Harvesting tool
+            plant_layer = self.tmx_data.get_layer_by_name("Plants")
+            watered_layer = self.tmx_data.get_layer_by_name("Watered")
+            if plant_layer:
+                tile_gid = plant_layer.data[tile_y][tile_x]
+                if tile_gid != 0:  # Check if there's a plant
+                    tile_properties = self.tmx_data.get_tile_properties_by_gid(tile_gid)
+                    if tile_properties and tile_properties.get("harvest", False):
+                        print(f"Harvested plant at ({tile_x}, {tile_y})")
+                        plant_layer.data[tile_y][tile_x] = 0  # Remove the plant
+                        self.update_map("Plants", plant_layer.data)
+                        
+                        # Remove watered soil if it was there
+                        if watered_layer and watered_layer.data[tile_y][tile_x] != 0:
+                            watered_layer.data[tile_y][tile_x] = 0
+                            self.update_map("Watered", watered_layer.data)
+                        
+                        # Indicate the item was added to inventory
+                        print("+++ Added to inventory +++")
 
     def get_seed_gid(self, seed_name):
         # Map seed names to their initial GID in the tileset using get_gid
@@ -516,9 +539,10 @@ class Game:
 
                                 # If watered, advance an additional stage if possible
                                 if is_watered:
+                                    next_stage_gid += 1  # Advance an additional stage
                                     next_properties = self.tmx_data.get_tile_properties_by_gid(next_stage_gid)
                                     if next_properties and next_properties.get("growing", False):
-                                        plant_layer.data[y][x] = next_properties.get(next_stage_gid + 1, next_stage_gid)
+                                        plant_layer.data[y][x] = next_stage_gid
                                         updated = True
 
             # Update the map only if changes occurred
