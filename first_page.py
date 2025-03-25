@@ -442,8 +442,6 @@ class Game:
         return self.tmx_data.map_gid(tileset.firstgid + tile_index)[0][0]
     
 
-
-
     def use_tool(self, tile_x, tile_y):
         print(f"Using tool at tile ({tile_x}, {tile_y}) with selected tool {self.toolbox.selected_tool}")
         
@@ -458,28 +456,38 @@ class Game:
             print(f"Retrieved dirt_gid: {dirt_id}")
                 
         elif self.toolbox.selected_tool == 1:
+            # Handle the case for another tool (not specified)
             print("Using another tool")
         elif self.toolbox.selected_tool == 2:
+            # Handle the seed pouch tool
             print("Using seedpouch")
             if self.toolbox.selected_seed is not None:
+                # Get the name of the selected seed
                 seed_name = self.toolbox.seed_slots[self.toolbox.selected_seed]
                 print(f"Selected seed: {seed_name}")
+
+                # Get the current tile's GID from the dirt layer
                 dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
-                plant_layer = self.tmx_data.get_layer_by_name("Plants")
-                if dirt_layer and plant_layer:
-                    tile_gid = dirt_layer.data[tile_y][tile_x]
-                    print(f"Tile GID at ({tile_x}, {tile_y}): {tile_gid}")
-                    if tile_gid == 1:  # Check if the tile is tilled
-                        seed_gid = self.get_seed_gid(seed_name)
-                        print(f"Placing seed with GID {seed_gid} at ({tile_x}, {tile_y})")
-                        plant_layer.data[tile_y][tile_x] = seed_gid
-                        self.update_map("Plants", plant_layer.data)
-                    else:
-                        print(f"Cannot plant seed at ({tile_x}, {tile_y}) - Tile is not tilled")
+                tile_gid = dirt_layer.data[tile_y][tile_x]
+                print(f"Tile GID at ({tile_x}, {tile_y}): {tile_gid}")
+
+                # Get the GID for tilled dirt
+                dirt_id = self.get_gid(tileset_name="Tilled_Dirt", tile_index=12)
+
+                # Check if the tile is tilled before planting the seed
+                if tile_gid == dirt_id:
+                    # Get the GID for the selected seed
+                    seed_gid = self.get_seed_gid(seed_name)
+                    print(f"Placing seed with GID {seed_gid} at ({tile_x}, {tile_y})")
+
+                    # Place the seed on the "Plants" layer
+                    self.place_tile("Plants", tile_x, tile_y, seed_gid)
                 else:
-                    print("Dirt or Plants layer not found")
+                    # Inform the user that the tile is not tilled
+                    print(f"Cannot plant seed at ({tile_x}, {tile_y}) - Tile is not tilled")
             else:
-                print("No seed selected")  # Inform the user that no seed is selected
+                # Inform the user that no seed is selected
+                print("No seed selected")
         elif self.toolbox.selected_tool == 3:
             print("Using watering can")  # Debug message for using the watering can
 
@@ -488,7 +496,8 @@ class Game:
             dirt_id = self.get_gid(tileset_name="Tilled_Dirt", tile_index=12)
 
             # Get the current tile's GID from the dirt layer
-            tile_gid = dirt_layer.data[tile_y][tile_x]
+            dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
+            tile_gid = dirt_layer.data[tile_y][tile_x] if dirt_layer else None
 
             # Check if the tile is tilled before watering
             if tile_gid == dirt_id:
