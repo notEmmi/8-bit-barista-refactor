@@ -473,7 +473,7 @@ class Game:
             if dirt_layer and dirt_layer.data[tile_y][tile_x] == dirt_id:  # Check if tile is tilled
                 self.place_tile("Watered", tile_x, tile_y, watered_id)
 
-        elif self.toolbox.selected_tool == 4:  # Harvesting tool
+        elif self.toolbox.selected_tool == 4:  # Harvesting tool (Axe -- maybe axe later)
             self.harvest_plant(tile_x, tile_y)
 
     def get_seed_gid(self, seed_name):
@@ -489,9 +489,12 @@ class Game:
         """
         Updates plant growth stages based on the Plant_Objects tileset using object properties.
         Growth stops at the `last-1` stage for each plant. Growth speed is doubled if the tile is watered.
+        Only updates the map if any changes occur for efficiency.
         """
         plant_layer = self.tmx_data.get_layer_by_name("Plants")
         watered_layer = self.tmx_data.get_layer_by_name("Watered")
+        updated = False  # Track if any changes occur
+
         if plant_layer:
             for y in range(self.tmx_data.height):
                 for x in range(self.tmx_data.width):
@@ -499,32 +502,27 @@ class Game:
                     if tile_gid != 0:  # Skip empty tiles
                         tile_properties = self.tmx_data.get_tile_properties_by_gid(tile_gid)
                         if tile_properties:
-                            # Check if the tile has a "has_growth" property
-                            has_growth = tile_properties.get("has_growth", False)
-                            next_stage_gid = tile_properties.get("next_stage_gid")
+                            # Check if the tile has a "growing" property
+                            growing = tile_properties.get("growing", True)
+                            next_stage_gid = tile_gid + 1
 
-                            if has_growth and next_stage_gid:
+                            if growing and next_stage_gid:
                                 # Check if the tile is watered
                                 is_watered = watered_layer and watered_layer.data[y][x] != 0
 
                                 # Advance growth stage
                                 plant_layer.data[y][x] = next_stage_gid
+                                updated = True
 
                                 # If watered, advance an additional stage if possible
                                 if is_watered:
                                     next_properties = self.tmx_data.get_tile_properties_by_gid(next_stage_gid)
-                                    if next_properties and next_properties.get("has_growth", False):
-                                        plant_layer.data[y][x] = next_properties.get("next_stage_gid", next_stage_gid)
+                                    if next_properties and next_properties.get("growing", False):
+                                        plant_layer.data[y][x] = next_properties.get(next_stage_gid + 1, next_stage_gid)
+                                        updated = True
 
-            self.update_map("Plants", plant_layer.data)
-
-    def harvest_plant(self, tile_x, tile_y):
-        plant_layer = self.tmx_data.get_layer_by_name("Plants")
-        if plant_layer:
-            tile_gid = plant_layer.data[tile_y][tile_x]
-            if tile_gid % 6 == 5:  # Check if it's the final product stage (e.g., wheat6)
-                print(f"Harvested plant at ({tile_x}, {tile_y})")
-                plant_layer.data[tile_y][tile_x] = 0  # Reset the tile after harvesting
+            # Update the map only if changes occurred
+            if updated:
                 self.update_map("Plants", plant_layer.data)
 
     def update_map(self, layer_name, new_data):
@@ -539,9 +537,11 @@ class Game:
         clock = pygame.time.Clock()
         FPS = 60
 
+        last_grow_time = self.get_game_time()[0]  # Track the last hour plants were grown
+
         while running:
             self.screen.fill((0, 0, 0))  # Clear screen
-            self.handle_input() # Handle key inputs
+            self.handle_input()  # Handle key inputs
 
             # Check for new day prompt at 2:00 AM
             self.check_for_new_day_prompt()
@@ -658,7 +658,11 @@ class Game:
                     self.rain.update(self.camera_x, self.camera_y)
                     self.rain.draw(zoomed_surface)  # Draw all rain elements (drops + floor splashes)
 
-                self.grow_plants()  # Call this periodically (e.g., every in-game day)
+                # Call grow_plants every in-game hour
+                current_hour = self.get_game_time()[0]
+                if current_hour != last_grow_time:
+                    self.grow_plants()
+                    last_grow_time = current_hour
 
             # Blit the final zoomed surface to the screen
             self.screen.blit(zoomed_surface, (0, 0))
