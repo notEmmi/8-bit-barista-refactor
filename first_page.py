@@ -149,67 +149,44 @@ class Game:
         self.toolbox = Toolbox()
 
     def load_map(self, map_file):
+        """Load TMX map and extract collidable objects."""
         self.tmx_data = pytmx.load_pygame(map_file, load_all_tiles=True)
-        self.collidable_objects = []  # Reset collision list
-
-        # Look for a dedicated collision layer
-        for obj in self.tmx_data.objects:
-            if obj.name == "Collisions" or obj.properties.get("collidable", False):
-                rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
-                self.collidable_objects.append(rect)
+        self.collidable_objects = [
+            pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+            for obj in self.tmx_data.objects
+            if obj.name == "Collisions" or obj.properties.get("collidable", False)
+        ]
 
     def move_player(self, move_x, move_y):
-        new_x = self.player_x + move_x
-        new_y = self.player_y + move_y
+        # Calculate new position and define player's hitbox
+        new_x, new_y = self.player_x + move_x, self.player_y + move_y
+        hitbox = pygame.Rect(new_x, new_y + 5, self.SPRITE_WIDTH, self.SPRITE_HEIGHT - 10)
 
-        # Define the player's hitbox (adjust padding if necessary)
-        hitbox_padding_x = 0
-        hitbox_padding_y = 5
-        player_hitbox = pygame.Rect(
-            new_x + hitbox_padding_x, 
-            new_y + hitbox_padding_y, 
-            self.SPRITE_WIDTH - 2 * hitbox_padding_x, 
-            self.SPRITE_HEIGHT - 2 * hitbox_padding_y
-        )
+        # Prevent movement if collision detected
+        if any(hitbox.colliderect(obj) for obj in self.collidable_objects):
+            return
 
-        # Check if the new position collides with any object
-        for obj in self.collidable_objects:
-            if player_hitbox.colliderect(obj):
-                return  # Collision detected, don't move
-
-        # No collision, update player position
-        self.player_x = new_x
-        self.player_y = new_y
+        # Update position if no collision
+        self.player_x, self.player_y = new_x, new_y
 
     def draw_map(self, surface, cam_x, cam_y):
-        # Draw the tile layers
+        """Draws the visible map layers and objects within the camera view."""
+        # Draw tile layers
         for layer in self.tmx_data.visible_layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 for x, y, gid in layer:
-                    if gid == 0:
-                        continue  # Skip empty tiles
-                    tile = self.tmx_data.get_tile_image_by_gid(gid)
-                    tile_x = x * self.TILE_WIDTH - cam_x
-                    tile_y = y * self.TILE_HEIGHT - cam_y
+                    if gid:  # Skip empty tiles
+                        tile = self.tmx_data.get_tile_image_by_gid(gid)
+                        tile_x, tile_y = x * self.TILE_WIDTH - cam_x, y * self.TILE_HEIGHT - cam_y
+                        if -self.TILE_WIDTH <= tile_x < self.CAMERA_WIDTH and -self.TILE_HEIGHT <= tile_y < self.CAMERA_HEIGHT:
+                            surface.blit(tile, (tile_x, tile_y))
 
-                    # Only draw tiles visible within the camera view
-                    if -self.TILE_WIDTH <= tile_x < self.CAMERA_WIDTH and -self.TILE_HEIGHT <= tile_y < self.CAMERA_HEIGHT:
-                        surface.blit(tile, (tile_x, tile_y))
-        
-        # Draw objects (Trees, buildings, etc.)
+        # Draw objects (e.g., trees, buildings)
         for obj in self.tmx_data.objects:
-            obj_x = obj.x - cam_x
-            obj_y = obj.y - cam_y
-
-            if obj.gid:  # If object has an image
+            if obj.gid:  # Only draw objects with images
                 image = self.tmx_data.get_tile_image_by_gid(obj.gid)
                 if image:
-                    surface.blit(image, (obj_x, obj_y))
-        
-        # Debug: Draw red collision boxes
-        # for rect in self.collidable_objects:
-        #     pygame.draw.rect(surface, (255, 0, 0), 
-        #                     (rect.x - cam_x, rect.y - cam_y, rect.width, rect.height), 2)
+                    surface.blit(image, (obj.x - cam_x, obj.y - cam_y))
 
     def get_game_time(self):
         """Converts real-time seconds to in-game hours and minutes."""
@@ -396,10 +373,10 @@ class Game:
         self.screen.blit(hud_surface, (screen_x, screen_y))
 
     def handle_input(self):
-        """Handles keyboard input, including time acceleration."""
+        """Handles keyboard and mouse input, including time acceleration and tool usage."""
         keys = pygame.key.get_pressed()
 
-        # Keybind 'b' accelerates the time
+        # Accelerate time with 'b', reset multiplier when released
         if not self.is_paused:
             new_multiplier = 10 if keys[pygame.K_b] else 1
             if new_multiplier != self.time_multiplier:
@@ -407,65 +384,43 @@ class Game:
                 self.game_start_time = time.time() - (elapsed_time * self.time_multiplier / new_multiplier)
                 self.time_multiplier = new_multiplier
 
-        if keys[pygame.K_TAB]:
-            interactions.runInteractions()
-            
-        if keys[pygame.K_CAPSLOCK]:
-            customers.runCustomers()
+        # Trigger interactions, customers, or shop with respective keys
+        if keys[pygame.K_TAB]: interactions.runInteractions()
+        if keys[pygame.K_CAPSLOCK]: customers.runCustomers()
+        if keys[pygame.K_LSHIFT]: shop.runShop()
 
-        if keys[pygame.K_LSHIFT]:
-            shop.runShop()
+        # Set specific times with 'n' (5 PM) and 'm' (1:30 AM)
+        if keys[pygame.K_n] and not self.is_paused: self.set_game_time(17, 0)
+        if keys[pygame.K_m] and not self.is_paused: self.set_game_time(1, 30)
 
-
-        # Set time to 5pm by pressing 'n'
-        if keys[pygame.K_n] and not self.is_paused: 
-            self.set_game_time(17, 0)
-
-        # Set time to 1 am by pressing 'm'
-        if keys[pygame.K_m] and not self.is_paused:
-            self.set_game_time(1,30)
-
-        # Handle tool selection with number keys
+        # Handle events (e.g., quitting, toggling weather, tool selection)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_r:  # Toggle rain when 'R' is pressed
+                if event.key == pygame.K_r:  # Toggle rain
                     self.raining = not self.raining
-                    print(f"Rain Enabled: {self.raining}")  # Debug message
-                if event.key == pygame.K_c:  # Toggle cloudy weather when 'C' is pressed
+                    print(f"Rain Enabled: {self.raining}")
+                if event.key == pygame.K_c:  # Toggle cloudy weather
                     self.cloudy_weather = not self.cloudy_weather
-                    print(f"Cloudy Weather Enabled: {self.cloudy_weather}")  # Debug message 
-                if self.show_new_day_prompt:  # Handle new day prompt input
-                    if event.key == pygame.K_RETURN:  # Enter key
-                        self.time_multiplier = 1
-                        self.confirm_new_day = True
-                        self.show_new_day_prompt = False
-                        self.is_paused = False  # Unpause the game
-                if pygame.K_1 <= event.key <= pygame.K_5:
-                    self.toolbox.select_tool(event.key - pygame.K_1)
-                if self.toolbox.seed_inventory_open and pygame.K_1 <= event.key <= pygame.K_5:
-                    self.toolbox.select_seed(event.key - pygame.K_1)
+                    print(f"Cloudy Weather Enabled: {self.cloudy_weather}")
+                if self.show_new_day_prompt and event.key == pygame.K_RETURN:  # Confirm new day
+                    self.time_multiplier, self.confirm_new_day, self.show_new_day_prompt, self.is_paused = 1, True, False, False
+                if pygame.K_1 <= event.key <= pygame.K_5:  # Tool or seed selection
+                    if self.toolbox.seed_inventory_open:
+                        self.toolbox.select_seed(event.key - pygame.K_1)
+                    else:
+                        self.toolbox.select_tool(event.key - pygame.K_1)
 
-            # Handle Mouse Button Events    
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Left mouse button
-                    mouse_x, mouse_y = event.pos
-
-                    # Adjust mouse position to account for camera and zoom factor
-                    adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
-                    adjusted_mouse_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
-
-                    # Calculate the tile position based on the adjusted mouse position
-                    tile_x = adjusted_mouse_x // self.TILE_WIDTH
-                    tile_y = adjusted_mouse_y // self.TILE_HEIGHT
-                    print(f"Mouse Position: ({mouse_x}, {mouse_y})")
-                    print(f"Adjusted Mouse Position: ({adjusted_mouse_x}, {adjusted_mouse_y})")
-                    print(f"Tile Coordinates: ({tile_x}, {tile_y})")
-
-                    # Use the tool on the clicked tile
-                    self.use_tool(int(tile_x), int(tile_y))
+            # Handle mouse input for tool usage
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click
+                mouse_x, mouse_y = event.pos
+                adjusted_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
+                adjusted_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
+                tile_x, tile_y = int(adjusted_x // self.TILE_WIDTH), int(adjusted_y // self.TILE_HEIGHT)
+                print(f"Mouse: ({mouse_x}, {mouse_y}), Adjusted: ({adjusted_x}, {adjusted_y}), Tile: ({tile_x}, {tile_y})")
+                self.use_tool(tile_x, tile_y)
 
     def place_tile(self, layer_name, tile_x, tile_y, tile_gid):
         """Places a tile with the given GID at the specified coordinates in the specified layer."""
