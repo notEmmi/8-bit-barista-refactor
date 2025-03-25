@@ -441,77 +441,46 @@ class Game:
             return None
         return self.tmx_data.map_gid(tileset.firstgid + tile_index)[0][0]
     
-
     def use_tool(self, tile_x, tile_y):
         print(f"Using tool at tile ({tile_x}, {tile_y}) with selected tool {self.toolbox.selected_tool}")
-        
         if self.toolbox.selected_tool == -1:
-            print("No tool selected")
-            return
-        
-        elif self.toolbox.selected_tool == 0:
-            print("Using hoe")
-            dirt_id = self.get_gid(tileset_name="Tilled_Dirt", tile_index=12)
+            print("No tool selected"); return
+
+        if self.toolbox.selected_tool == 0:  # Hoe
+            dirt_id = self.get_gid("Tilled_Dirt", 12)
             self.place_tile("Dirt", tile_x, tile_y, dirt_id)
-            print(f"Retrieved dirt_gid: {dirt_id}")
-                
-        elif self.toolbox.selected_tool == 1:
-            # Handle the case for another tool (not specified)
+            print(f"Tilled soil at ({tile_x}, {tile_y})")
+
+        elif self.toolbox.selected_tool == 1:  # Placeholder for another tool
             print("Using another tool")
-        elif self.toolbox.selected_tool == 2:
-            # Handle the seed pouch tool
-            print("Using seedpouch")
+
+        elif self.toolbox.selected_tool == 2:  # Seed pouch
             if self.toolbox.selected_seed is not None:
-                # Get the name of the selected seed
                 seed_name = self.toolbox.seed_slots[self.toolbox.selected_seed]
-                print(f"Selected seed: {seed_name}")
-
-                # Get the current tile's GID from the dirt layer
                 dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
-                tile_gid = dirt_layer.data[tile_y][tile_x]
-                print(f"Tile GID at ({tile_x}, {tile_y}): {tile_gid}")
+                plant_layer = self.tmx_data.get_layer_by_name("Plants")
+                dirt_id = self.get_gid("Tilled_Dirt", 12)
+                if dirt_layer.data[tile_y][tile_x] == dirt_id:  # Check if tile is tilled
+                    if plant_layer.data[tile_y][tile_x] == 0:  # Check if tile is not occupied
+                        seed_gid = self.get_seed_gid(seed_name)
+                        self.place_tile("Plants", tile_x, tile_y, seed_gid)
+                    else:
+                        print(f"Tile ({tile_x}, {tile_y}) is already occupied.")
 
-                # Get the GID for tilled dirt
-                dirt_id = self.get_gid(tileset_name="Tilled_Dirt", tile_index=12)
-
-                # Check if the tile is tilled before planting the seed
-                if tile_gid == dirt_id:
-                    # Get the GID for the selected seed
-                    seed_gid = self.get_seed_gid(seed_name)
-                    print(f"Placing seed with GID {seed_gid} at ({tile_x}, {tile_y})")
-
-                    # Place the seed on the "Plants" layer
-                    self.place_tile("Plants", tile_x, tile_y, seed_gid)
-                else:
-                    # Inform the user that the tile is not tilled
-                    print(f"Cannot plant seed at ({tile_x}, {tile_y}) - Tile is not tilled")
-            else:
-                # Inform the user that no seed is selected
-                print("No seed selected")
-        elif self.toolbox.selected_tool == 3:
-            print("Using watering can")  # Debug message for using the watering can
-
-            # Get the GID for the watered tile and tilled dirt tile
-            watered_id = self.get_gid("Tilled_Dirt", 56)
-            dirt_id = self.get_gid(tileset_name="Tilled_Dirt", tile_index=12)
-
-            # Get the current tile's GID from the dirt layer
+        elif self.toolbox.selected_tool == 3:  # Watering can
             dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
-            tile_gid = dirt_layer.data[tile_y][tile_x] if dirt_layer else None
-
-            # Check if the tile is tilled before watering
-            if tile_gid == dirt_id:
-                # Place the watered tile on the "Watered" layer
+            dirt_id, watered_id = self.get_gid("Tilled_Dirt", 12), self.get_gid("Tilled_Dirt", 56)
+            if dirt_layer and dirt_layer.data[tile_y][tile_x] == dirt_id:  # Check if tile is tilled
                 self.place_tile("Watered", tile_x, tile_y, watered_id)
-                
 
-        elif self.toolbox.selected_tool == 4:  # Harvesting tool (e.g., axe)
+        elif self.toolbox.selected_tool == 4:  # Harvesting tool
             self.harvest_plant(tile_x, tile_y)
 
     def get_seed_gid(self, seed_name):
-        # Map seed names to their initial GID in the tileset
+        # Map seed names to their initial GID in the tileset using get_gid
         seed_gid_map = {
-            "wheat": 1,  # Replace with the correct GID for wheat1.png
+            "wheat": self.get_gid("Plant_Objects", 1),
+            "tomato": self.get_gid("Plant_Objects", 7)
             # Add other seeds here
         }
         return seed_gid_map.get(seed_name, 0)
@@ -519,9 +488,10 @@ class Game:
     def grow_plants(self):
         """
         Updates plant growth stages based on the Plant_Objects tileset using object properties.
-        Growth stops at the `last-1` stage for each plant.
+        Growth stops at the `last-1` stage for each plant. Growth speed is doubled if the tile is watered.
         """
         plant_layer = self.tmx_data.get_layer_by_name("Plants")
+        watered_layer = self.tmx_data.get_layer_by_name("Watered")
         if plant_layer:
             for y in range(self.tmx_data.height):
                 for x in range(self.tmx_data.width):
@@ -529,15 +499,22 @@ class Game:
                     if tile_gid != 0:  # Skip empty tiles
                         tile_properties = self.tmx_data.get_tile_properties_by_gid(tile_gid)
                         if tile_properties:
-                            # Check if the tile has a "growth_stage" property
-                            current_stage = tile_properties.get("growth_stage")
-                            max_stage = tile_properties.get("max_stage")
+                            # Check if the tile has a "has_growth" property
+                            has_growth = tile_properties.get("has_growth", False)
                             next_stage_gid = tile_properties.get("next_stage_gid")
 
-                            if current_stage is not None and max_stage is not None:
-                                # Advance to the next stage if not at max stage
-                                if current_stage < max_stage and next_stage_gid:
-                                    plant_layer.data[y][x] = next_stage_gid
+                            if has_growth and next_stage_gid:
+                                # Check if the tile is watered
+                                is_watered = watered_layer and watered_layer.data[y][x] != 0
+
+                                # Advance growth stage
+                                plant_layer.data[y][x] = next_stage_gid
+
+                                # If watered, advance an additional stage if possible
+                                if is_watered:
+                                    next_properties = self.tmx_data.get_tile_properties_by_gid(next_stage_gid)
+                                    if next_properties and next_properties.get("has_growth", False):
+                                        plant_layer.data[y][x] = next_properties.get("next_stage_gid", next_stage_gid)
 
             self.update_map("Plants", plant_layer.data)
 
