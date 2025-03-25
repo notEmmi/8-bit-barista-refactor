@@ -468,6 +468,7 @@ class Game:
                     self.use_tool(int(tile_x), int(tile_y))
 
     def place_tile(self, layer_name, tile_x, tile_y, tile_gid):
+        """Places a tile with the given GID at the specified coordinates in the specified layer."""
         layer = self.tmx_data.get_layer_by_name(layer_name)
         if layer:
             layer.data[tile_y][tile_x] = tile_gid
@@ -475,20 +476,15 @@ class Game:
 
     def get_tileset_by_name(self, tileset_name):
         """Finds a tileset by name in the TMX map."""
-        for tileset in self.tmx_data.tilesets:
-            if tileset.name == tileset_name:
-                return tileset
-        return None  # If no tileset matches       
+        return next((tileset for tileset in self.tmx_data.tilesets if tileset.name == tileset_name), None)
 
     def get_gid(self, tileset_name, tile_index):
-        """Gets the GID of a tile from the given tileset and index."""
-        tileset = self.get_tileset_by_name(tileset_name)  # Fixed
+        """Gets the GID (Global ID) of a tile from the given tileset and index."""
+        tileset = self.get_tileset_by_name(tileset_name)
         if not tileset:
             print(f"Tileset '{tileset_name}' not found")
-            return None  # Return None if tileset isn't found
-
-        first_gid = tileset.firstgid
-        return first_gid + tile_index  # Compute the correct GID
+            return None
+        return self.tmx_data.map_gid(tileset.firstgid + tile_index)[0][0]
     
 
 
@@ -500,29 +496,11 @@ class Game:
             print("No tool selected")
             return
         
-        if self.toolbox.selected_tool == 0:
+        elif self.toolbox.selected_tool == 0:
             print("Using hoe")
-            # dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
-            # # Check specific tile value:
-            # print(f"Tile at ({tile_x}, {tile_y}): {dirt_layer.data[tile_y][tile_x]}")
-            # if dirt_layer:
-            #     dirt_id = 1
-            #     tile_gid = dirt_layer.data[tile_y][tile_x]
-            #     if tile_gid != dirt_id:
-            #         # Check if the tile is not collidable
-            #         dirt_layer.data[tile_y][tile_x] = dirt_id
-            #         self.update_map("Dirt", dirt_layer.data)
-
-            # dirt_gid = self.get_gid(tileset_name="Tilled_Dirt", tile_index=13)
-            # print(f"dirt_gid {dirt_gid}")
-            # self.place_tile("Dirt", tile_x, tile_y, dirt_gid)
-
-            gid = self.get_gid(tileset_name="Tilled_Dirt", tile_index=12)
-
-            print(f"map_gid for {gid}: {self.tmx_data.map_gid(gid)}")
-            print(f"map_gid for 227: {self.tmx_data.map_gid(227)}")
-
-
+            dirt_id = self.get_gid(tileset_name="Tilled_Dirt", tile_index=12)
+            self.place_tile("Dirt", tile_x, tile_y, dirt_id)
+            print(f"Retrieved dirt_gid: {dirt_id}")
                 
         elif self.toolbox.selected_tool == 1:
             print("Using another tool")
@@ -546,23 +524,22 @@ class Game:
                 else:
                     print("Dirt or Plants layer not found")
             else:
-                print("No seed selected")
+                print("No seed selected")  # Inform the user that no seed is selected
         elif self.toolbox.selected_tool == 3:
-            print("Using watering can")
-            # Check if tile is tilled (id 21 on layer "Dirt")
-            dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
-            if dirt_layer:
-                water_layer = self.tmx_data.get_layer_by_name("Watered")
-                if not water_layer:
-                    print("Watered layer not found")
-                    return
+            print("Using watering can")  # Debug message for using the watering can
 
-                water_id = 2  # Replace with the correct GID for watered soil
-                tile_gid = dirt_layer.data[tile_y][tile_x]
+            # Get the GID for the watered tile and tilled dirt tile
+            watered_id = self.get_gid("Tilled_Dirt", 56)
+            dirt_id = self.get_gid(tileset_name="Tilled_Dirt", tile_index=12)
 
-                if tile_gid == 1:  # Check if the tile is tilled
-                    water_layer.data[tile_y][tile_x] = water_id
-                    self.update_map("Watered", water_layer.data)
+            # Get the current tile's GID from the dirt layer
+            tile_gid = dirt_layer.data[tile_y][tile_x]
+
+            # Check if the tile is tilled before watering
+            if tile_gid == dirt_id:
+                # Place the watered tile on the "Watered" layer
+                self.place_tile("Watered", tile_x, tile_y, watered_id)
+                
 
         elif self.toolbox.selected_tool == 4:  # Harvesting tool (e.g., axe)
             self.harvest_plant(tile_x, tile_y)
