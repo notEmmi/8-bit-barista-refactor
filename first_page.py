@@ -9,7 +9,7 @@ import customers
 import shop
 
 class Game:
-    def __init__(self):
+    def __init__(self, chosen_building):
         # Initialize Pygame
         pygame.init()
         pygame.font.init()
@@ -22,7 +22,7 @@ class Game:
         # initializing rain
         self.rain = Rain()
         self.raining = False 
-
+        self.house = chosen_building
         # Create Dark Rain Overlay
         self.rain_overlay = pygame.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.SRCALPHA)
         self.rain_overlay.fill((0, 0, 0, 100))  # Semi-transparent black layer (100/255 opacity)
@@ -186,7 +186,7 @@ class Game:
 
            if obj.id == target_id:
         # Always override this tile's image
-              custom_path = "assets/images/buildings/building1.png"  # Your dynamic path
+              custom_path = self.house  # Your dynamic path
               custom_image = pygame.image.load(custom_path).convert_alpha()
               custom_image = pygame.transform.scale(custom_image, (int(obj.width), int(obj.height)))
               surface.blit(custom_image, (obj_x, obj_y))

@@ -1,5 +1,7 @@
 import pygame
 from pygame import mixer
+import first_page
+from first_page import Game
 def runBuildingCongratz(imagepath):
 # Initialize pygame
 
@@ -53,6 +55,12 @@ def runBuildingCongratz(imagepath):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
+            elif event.type == pygame.KEYDOWN:  
+              if event.key == pygame.K_RETURN:
+               game = Game(img_path)
+               game.run()
+               running = False
         
         # Draw title text
         screen.blit(background,(0,0))
@@ -60,6 +68,10 @@ def runBuildingCongratz(imagepath):
         screen.blit(title_surface1, title_rect1.topleft)
         screen.blit(title_surface2, title_rect2.topleft)
         screen.blit(building,image_rect.topleft)
+
+              
+               
+            
         
         # Draw placeholder for image
         pygame.draw.rect(screen, BLACK, image_rect, 3)  # Black border for visibility
