@@ -1,81 +1,94 @@
 import pygame
 from pygame import mixer
-import first_page
 from first_page import Game
-def runBuildingCongratz(imagepath):
-# Initialize pygame
 
+def runBuildingCongratz(imagepath):
     img_path = imagepath
     pygame.init()
 
     # Screen dimensions
     WIDTH, HEIGHT = 800, 600
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("New Recipe Unlocked")
+    pygame.display.set_caption("Start Adventure")
 
     # Colors
-    WHITE = (255, 255, 255)
     BLACK = (0, 0, 0)
-    LIGHTBROWN = (254, 195, 117)
+    WHITE = (255, 255, 255)
+    BUTTON_COLOR = (245, 173, 66)
+    BUTTON_HOVER = (255, 193, 86)
+    BANNER_COLOR = (255, 226, 179)
 
     # Fonts
-    font_large = pygame.font.Font(pygame.font.match_font("Irish Grover"), 36)
-    font_small = pygame.font.Font(pygame.font.match_font("Irish Grover"), 24)
+    font = pygame.font.Font(pygame.font.match_font("Irish Grover"), 32)
+    banner_font = pygame.font.Font(pygame.font.match_font("Irish Grover"), 36)
 
-    # Text
-    title_text1 = "CONGRATS!!!"
-    title_text2 =  "YOU'VE UNLOCKED A NEW BUILDING!!!"
-    title_surface1 = font_large.render(title_text1, True, BLACK)
-    title_surface2 = font_small.render(title_text2, True, BLACK)
-
+    # Load background and house image
     background = pygame.image.load("images/pinksky.png")
-    background = pygame.transform.scale(background,(WIDTH,HEIGHT))
+    background = pygame.transform.scale(background, (WIDTH, HEIGHT))
 
-    title_rect1 = title_surface1.get_rect(center=(WIDTH // 2, HEIGHT // 6))
-    title_rect2 = title_surface2.get_rect(center=(WIDTH // 2, HEIGHT // 3))
+    building = pygame.image.load(img_path).convert_alpha()
+    building_rect_size = 200
+    building = pygame.transform.scale(building, (building_rect_size, building_rect_size))
+    building_rect = building.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
 
-    # Image placeholder (Centered square for future image)
-    image_rect_size = 200
-    image_rect = pygame.Rect(WIDTH // 2 - image_rect_size // 2, HEIGHT // 2, image_rect_size, image_rect_size)
-    image_rect_surface = pygame.Surface((200,200))
-    image_rect_surface.fill(LIGHTBROWN)
+    # Button
+    button_text = "Start Your Adventure"
+    button_surface = font.render(button_text, True, BLACK)
+    button_width = button_surface.get_width() + 40
+    button_height = button_surface.get_height() + 20
+    button_rect = pygame.Rect(
+        WIDTH // 2 - button_width // 2,
+        HEIGHT // 2 + 100,
+        button_width,
+        button_height
+    )
 
-    building = pygame.image.load(img_path)
-    building = pygame.transform.scale(building,image_rect.size)
+    # Banner
+    banner_height = 60
+    banner_rect = pygame.Rect(0, 0, WIDTH, banner_height)
+    banner_text = "ENJOY YOUR NEW HOME!"
+    banner_surface = banner_font.render(banner_text, True, BLACK)
+    banner_text_rect = banner_surface.get_rect(center=(WIDTH // 2, banner_height // 2))
 
-    
+    # Music
     mixer.init()
     mixer.music.load("tracks/06 - Victory!.mp3")
     mixer.music.play()
-    # Main loop
+
     running = True
     while running:
-        screen.fill(LIGHTBROWN)
-        
+        screen.blit(background, (0, 0))
+        screen.blit(building, building_rect.topleft)
+
+        # Draw banner
+        pygame.draw.rect(screen, BANNER_COLOR, banner_rect)
+        screen.blit(banner_surface, banner_text_rect)
+
+        # Button hover
+        mouse_pos = pygame.mouse.get_pos()
+        is_hovering = button_rect.collidepoint(mouse_pos)
+        button_color = BUTTON_HOVER if is_hovering else BUTTON_COLOR
+
+        pygame.draw.rect(screen, button_color, button_rect, border_radius=10)
+        screen.blit(button_surface, (button_rect.centerx - button_surface.get_width() // 2,
+                                     button_rect.centery - button_surface.get_height() // 2))
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-            elif event.type == pygame.KEYDOWN:  
-              if event.key == pygame.K_RETURN:
-               game = Game(img_path)
-               game.run()
-               running = False
-        
-        # Draw title text
-        screen.blit(background,(0,0))
-        screen.blit(image_rect_surface, (WIDTH // 2 - image_rect_size // 2, HEIGHT // 2) )
-        screen.blit(title_surface1, title_rect1.topleft)
-        screen.blit(title_surface2, title_rect2.topleft)
-        screen.blit(building,image_rect.topleft)
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if button_rect.collidepoint(event.pos):
+                    game = Game(img_path)
+                    game.run()
+                    running = False
 
-              
-               
-            
-        
-        # Draw placeholder for image
-        pygame.draw.rect(screen, BLACK, image_rect, 3)  # Black border for visibility
-        
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    game = Game(img_path)
+                    game.run()
+                    running = False
+
         pygame.display.flip()
 
     pygame.quit()
