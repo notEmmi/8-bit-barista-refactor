@@ -1,9 +1,9 @@
 import pygame  # Import the pygame module
 import sys  # Import the sys module
 import os  # Import the os module
-from Loading import LoadingScreen  # Import the LoadingScreen class
-from placeholder_screen import PlaceholderScreen  # Import the PlaceholderScreen class
 from first_page import Game
+from Building_Selection_Screen import runBuildingSelectionScreen  # Import the building selection screen function
+
 
 # Initialize Pygame
 pygame.init()
@@ -161,19 +161,19 @@ class CharacterSelector:
             error_surface = self.font.render(self.error_message, True, (255, 0, 0))
             self.screen.blit(error_surface, (input_x, input_y + INPUT_BOX_HEIGHT + 10))
 
-    def draw_ok_button(self):
-        # Draw OK button
+    def draw_next_button(self):
+        # Draw Next button
         button_x = WINDOW_WIDTH - BUTTON_WIDTH - 50
         button_y = (WINDOW_HEIGHT - BUTTON_HEIGHT) // 2 + 200
         pygame.draw.rect(self.screen, BROWN, 
                 (button_x, button_y, BUTTON_WIDTH, BUTTON_HEIGHT))
         
         # Draw button text
-        button_text = self.font.render("OK", True, WHITE)
+        button_text = self.font.render("Next", True, WHITE)
         text_rect = button_text.get_rect(center=(button_x + BUTTON_WIDTH//2, button_y + BUTTON_HEIGHT//2))
         self.screen.blit(button_text, text_rect)
 
-        # Check for mouse click to navigate to loading screen
+        # Check for mouse click to navigate to building selection screen
         if pygame.mouse.get_pressed()[0]:
             mouse_x, mouse_y = pygame.mouse.get_pos()
             if button_x < mouse_x < button_x + BUTTON_WIDTH and button_y < mouse_y < button_y + BUTTON_HEIGHT:
@@ -181,10 +181,7 @@ class CharacterSelector:
                     self.error_message = "Name required."
                 else:
                     self.error_message = ""  # Clear the error message
-                    placeholder_screen = PlaceholderScreen()
-                    firstPage = Game()
-                    loading_screen = LoadingScreen(firstPage.run())  # Create a loading screen instance
-                    loading_screen.run()
+                    runBuildingSelectionScreen()  # Navigate to the building selection screen
 
     def handle_key_press(self, event):
         # Handle key press events
@@ -240,7 +237,7 @@ class CharacterSelector:
             self.draw_character_grid()  # Draw the character grid
             self.draw_preview()  # Draw the character preview
             self.draw_input_field()  # Draw the input field
-            self.draw_ok_button()  # Draw the OK button
+            self.draw_next_button()
             
             pygame.display.flip()  # Update the display
 
