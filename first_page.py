@@ -347,6 +347,20 @@ class Game:
         day_font = pygame.font.Font(None, 25)  # Smaller size & thinner weight
 
         # Create HUD Panel Background
+        """Displays 'Day X' on top, with the Weather Icon and Clock properly aligned at the top-right."""
+
+        # Define Panel Dimensions & Styling
+        panel_x_margin = 12  # Space between panel and screen edges
+        panel_y_margin = 8
+        panel_width = 115  # Unified width
+        panel_height = 65  # Height to fit stacked elements
+        border_radius = 8  # Rounded corners
+
+        # Load a Smaller & Thinner Font
+        clock_font = pygame.font.Font(None, 30)  # Smaller size & thinner weight
+        day_font = pygame.font.Font(None, 25)  # Smaller size & thinner weight
+
+        # Create HUD Panel Background
         hud_surface = pygame.Surface((panel_width, panel_height), pygame.SRCALPHA)
         pygame.draw.rect(
             hud_surface, (99, 55, 44, 240), (0, 0, panel_width, panel_height), border_radius=border_radius
@@ -377,7 +391,45 @@ class Game:
         # Clock - Fixed Position (Independent)
         clock_text = f"{self.get_game_time()[0]:02}:{self.get_game_time()[1]:02}"
         time_surface = clock_font.render(clock_text, True, (255, 255, 255))
+        pygame.draw.rect(
+            hud_surface, (99, 55, 44, 240), (0, 0, panel_width, panel_height), border_radius=border_radius
+        )
+
+        # "Day X" - Positioned at the top with internal padding
+        day_text = day_font.render(f"Day {self.current_day}", True, (255, 255, 255))
+        day_rect = day_text.get_rect(midtop=(panel_width // 2, panel_y_margin))  # Centered horizontally
+        hud_surface.blit(day_text, day_rect.topleft)
+
+        # Weather Icon - Adjust Position Based on Type
+        if self.current_weather in self.weather_icons:
+            weather_icon = pygame.transform.scale(self.weather_icons[self.current_weather], (28, 28))
+            icon_x = 8  # Fixed left alignment
+
+            # Adjust icon height based on weather type
+            if self.current_weather == "sunny":
+                icon_y = day_rect.bottom + 5  # Default position
+            elif self.current_weather in ["cloudy", "rainy"]:
+                icon_y = day_rect.bottom + 2  # Move up slightly for balance
+            else:
+                icon_y = day_rect.bottom + 5  # Default fallback
+
+            hud_surface.blit(weather_icon, (icon_x, icon_y))
+        else:
+            print(f"WARNING: Missing weather icon for {self.current_weather}")
+
+        # Clock - Fixed Position (Independent)
+        clock_text = f"{self.get_game_time()[0]:02}:{self.get_game_time()[1]:02}"
+        time_surface = clock_font.render(clock_text, True, (255, 255, 255))
         
+        clock_x = panel_width - 70  # Shift clock right, away from the icon
+        clock_y = day_rect.bottom + 8  # Position slightly lower for visual balance
+
+        hud_surface.blit(time_surface, (clock_x, clock_y))  # Now truly independent
+
+        # Move Panel to the Top-Right of the Screen with Proper Margins
+        screen_x = self.SCREEN_WIDTH - panel_width - panel_x_margin  # Fixed position
+        screen_y = panel_y_margin  # Fixed vertical margin
+        self.screen.blit(hud_surface, (screen_x, screen_y))
         clock_x = panel_width - 70  # Shift clock right, away from the icon
         clock_y = day_rect.bottom + 8  # Position slightly lower for visual balance
 
@@ -712,6 +764,12 @@ class Game:
             # Draw the new day prompt if active
             if self.show_new_day_prompt:
                 self.draw_new_day_prompt()
+
+            # Ensure weather icon is updated dynamically
+            if self.current_weather in self.weather_icons:
+                self.current_weather_icon = self.weather_icons[self.current_weather]
+            else:
+                self.current_weather_icon = None  # Fallback if missing
             
             # Draw HUD
             self.draw_hud()
