@@ -552,7 +552,7 @@
  </layer>
  <objectgroup id="22" name="Buildings" locked="1">
   <object id="49" gid="631" x="528" y="267" width="91.6667" height="117.333"/>
-  <object id="315" gid="632" x="238" y="264" width="74" height="74"/>
+  <object id="315" gid="632" x="238" y="264" width="74" height="74"/> <!--THIS IS THE HOUSE -->
   <object id="316" gid="630" x="377" y="309" width="75" height="84"/>
   <object id="317" gid="633" x="611" y="468" width="86" height="75"/>
  </objectgroup>
