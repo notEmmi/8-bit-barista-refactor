@@ -673,5 +673,6 @@ class Game:
         pygame.quit()
 
 if __name__ == "__main__":
-    game = Game()
+    image_path = "assets/map/house2.png"
+    game = Game(image_path)
     game.run()
