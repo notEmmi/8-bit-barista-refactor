@@ -9,7 +9,7 @@ import customers
 import shop
 
 class Game:
-    def __init__(self):
+    def __init__(self, chosen_building):
         # Initialize Pygame
         pygame.init()
         pygame.font.init()
@@ -22,7 +22,7 @@ class Game:
         # initializing rain
         self.rain = Rain()
         self.raining = False 
-
+        self.house = chosen_building
         # Create Dark Rain Overlay
         self.rain_overlay = pygame.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.SRCALPHA)
         self.rain_overlay.fill((0, 0, 0, 100))  # Semi-transparent black layer (100/255 opacity)
@@ -180,13 +180,21 @@ class Game:
         
         # Draw objects (Trees, buildings, etc.)
         for obj in self.tmx_data.objects:
-            obj_x = obj.x - cam_x
-            obj_y = obj.y - cam_y
+           target_id = 315  # ID of the object using house2.png
+           obj_x = obj.x - cam_x
+           obj_y = obj.y - cam_y
 
-            if obj.gid:  # If object has an image
-                image = self.tmx_data.get_tile_image_by_gid(obj.gid)
-                if image:
-                    surface.blit(image, (obj_x, obj_y))
+           if obj.id == target_id:
+        # Always override this tile's image
+              custom_path = self.house  # Your dynamic path
+              custom_image = pygame.image.load(custom_path).convert_alpha()
+              custom_image = pygame.transform.scale(custom_image, (int(obj.width), int(obj.height)))
+              surface.blit(custom_image, (obj_x, obj_y))
+           else:
+        # Default behavior
+               image = self.tmx_data.get_tile_image_by_gid(obj.gid)
+               if image:
+                   surface.blit(image, (obj_x, obj_y))
         
         # Debug: Draw red collision boxes
         # for rect in self.collidable_objects:
