@@ -122,6 +122,7 @@ class Game:
         self.game_start_time = time.time()  # Real-world start time
         self.time_multiplier = 1  # Normal speed, increased when pressing '1'
       
+        self.backpack = pygame.Rect(0,0,0,0)
 
         # Load and play background music
         self.background_music = os.path.join(self.SOUND_PATH, "1_new_life_master.mp3")
@@ -385,12 +386,12 @@ class Game:
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
-                        mouse_x, mouse_y = event.pos
-                        print(mouse_x, mouse_y)
-                        adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
-                        adjusted_mouse_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
-                        if self.cafe_rect.collidepoint(adjusted_mouse_x, adjusted_mouse_y):
-                         print("Cafe Clicked!")        
+                    mouse_x, mouse_y = event.pos
+                    print(mouse_x, mouse_y)
+                    adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
+                    adjusted_mouse_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
+                    if self.cafe_rect.collidepoint(adjusted_mouse_x, adjusted_mouse_y):
+                        print("Cafe Clicked!")
 
     def use_tool(self, tile_x, tile_y):
         print(f"Using tool at tile ({tile_x}, {tile_y}) with selected tool {self.toolbox.selected_tool}")
@@ -541,8 +542,10 @@ class Game:
                         self.toolbox.select_tool(-1)
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:  # Left mouse button
-                        mouse_x, mouse_y = event.pos
+                    mouse_x, mouse_y = event.pos
+                    if self.backpack.collidepoint(mouse_x, mouse_y):
+                        inventory.run()
+                    elif event.button == 1:  # Left mouse button
 
                         # Adjust mouse position to account for camera and zoom factor
                         adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
@@ -568,7 +571,7 @@ class Game:
             self.screen.blit(zoomed_surface, (0, 0))
             
             self.toolbox.draw(self.screen)
-            inventory.drawBundle(self.screen)
+            self.backpack = inventory.drawBundle(self.screen)
             
             # Draw Clock
             self.draw_time_display()

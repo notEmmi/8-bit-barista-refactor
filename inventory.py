@@ -1,4 +1,5 @@
 import pygame, inventorydata # type: ignore [this is so vscode doesn't yell at me]
+import first_page
 
 def run():
     # Initialize Pygame
@@ -26,7 +27,7 @@ def run():
 
     # Bottom menu buttons
     menuButtons = {
-        "QUIT": pygame.Rect(WIDTH // 2 - 40, 485, 80, 30),
+        "BACK": pygame.Rect(WIDTH // 2 - 40, 485, 80, 30),
         "DELETE": pygame.Rect(WIDTH - 200, 85, 80, 30)
     }
 
@@ -40,7 +41,7 @@ def run():
         # rect for collisionpoint, itemName for display, (row/column inven slot location), rawData
         renderedInventorySlots[str(xPos) + str(yPos)] = (buttonRect, itemName, (rowInt, columnInt), rawData)
         if (rawData == None): return
-        itemImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + str.lower(str.replace(inventorydata.baseItemString(item), " ", "")) + ".png")
+        itemImage = pygame.image.load("assets/images/tools/" + str.lower(str.replace(inventorydata.baseItemString(item), " ", "")) + ".png")
         itemImage = pygame.transform.scale(itemImage, (height, height))
         screen.blit(itemImage, (buttonRect.x + length // 4, buttonRect.y))
 
@@ -115,7 +116,7 @@ def run():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for name, rect in menuButtons.items():
                     if not rect.collidepoint(mousePosition): continue
-                    if name == "QUIT": running = False
+                    if name == "BACK": running = False
                     if name == "DELETE":
                         if itemSelected is not None:
                             inventorydata.putInSlot(None, itemSelectedOriginalX, itemSelectedOriginalY)
@@ -155,9 +156,12 @@ def run():
                         break
         pygame.display.flip()
 
-    pygame.quit()
+    game = first_page.Game()
+    game.run()
 
-def drawBundle(screen):
+def drawBundle(screen) -> pygame.Rect:
     backpackImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + "backpack" + ".png")
     backpackImage = pygame.transform.scale(backpackImage, (64, 64))
-    screen.blit(backpackImage, (32, 550 - 32))
+    rect = pygame.Rect(32, 550 - 32, 64, 64)
+    screen.blit(backpackImage, rect)
+    return rect

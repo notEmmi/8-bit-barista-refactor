@@ -1,4 +1,3 @@
-import sys
 from enum import Enum
 
 class ToolsTiers(Enum):
@@ -21,8 +20,8 @@ three types of items:
 theInventory = [
     [("Axe", ToolsTiers.Wood), "Fishing Rod", None, None],
     [None, ("Hoe", ToolsTiers.Copper), None, ("Milk Bucket", BucketStates.Filled)],
-    [None, None, "Watering Can", None],
-    [None, None, None, ("Wheat", 34)],
+    [None, "Mallet", "Watering Can", None],
+    ["Seed Pouch", None, None, ("Wheat", 34)],
 ]
 
 def baseItemString(item) -> str:
