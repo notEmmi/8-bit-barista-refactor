@@ -98,7 +98,7 @@ class Game:
         self.rain = Rain(rain_sprites=self.RAIN_SPRITES, floor_sprites=self.FLOOR_SPRITES)
 
         # Characters list
-        characters = ["boy1", "boy2", "boy3"]#, "girl1", "girl2", "girl3"]
+        characters = ["boy1", "boy2", "boy3", "girl1", "girl2", "girl3"]
         self.selected_character = load_selected_character()  # Load saved character
 
         print(f"Loaded character: {self.selected_character}")

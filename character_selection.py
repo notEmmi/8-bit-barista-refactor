@@ -114,7 +114,9 @@ class CharacterSelector:
                     if pygame.mouse.get_pressed()[0]:
                         mouse_x, mouse_y = pygame.mouse.get_pos()
                         if x < mouse_x < x + AVATAR_SIZE and y < mouse_y < y + AVATAR_SIZE:
+                            # Update the selected character correctly
                             self.selected_character = character
+                            save_selected_character(character)  # Save the correct character
 
     def draw_preview(self):
         # Draw large character preview
