@@ -8,6 +8,7 @@ import interactions
 import customers
 import shop
 import random
+from pygame_gui import UI_BUTTON_PRESSED
 
 class Game:
     def __init__(self, chosen_building):
@@ -460,6 +461,7 @@ class Game:
             customers_ui= customers.CustomerUI(self)
             customers_ui.run()
         if keys[pygame.K_LSHIFT]: 
+            
             shop_ui = shop.ShopUI(self)
             shop_ui.run()
 

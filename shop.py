@@ -1,9 +1,8 @@
 import pygame
-import pygame_gui
 import first_page
 
 class ShopUI:
-    def __init__(self, game_instance):
+    def __init__(self, game_instance=None):
         pygame.init()
 
         # Constants
@@ -19,30 +18,29 @@ class ShopUI:
         self.GOLD = (255, 215, 0)
         self.game = game_instance
 
-        # Screen and UI setup
+        # Screen setup
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Shop & Inventory UI")
-        self.manager = pygame_gui.UIManager((self.WIDTH, self.HEIGHT))
+        self.font = pygame.font.Font(None, 24)
 
         # Panels
         self.shop_icon = pygame.Rect(10, self.HEIGHT - 60, 50, 50)
         self.shop_panel = pygame.Rect(self.INVENTORY_WIDTH, 0, self.SHOP_WIDTH, self.HEIGHT)
         self.inventory_panel = pygame.Rect(0, 0, self.INVENTORY_WIDTH, self.HEIGHT)
 
-        # Buttons
-        self.back_button = pygame_gui.elements.UIButton(pygame.Rect(10, 10, 80, 40), "Back", self.manager)
-        self.return_button = pygame_gui.elements.UIButton(pygame.Rect(350, 10, 150, 40), "Return to Game", self.manager)
-        self.crops_tab = pygame_gui.elements.UIButton(pygame.Rect(120, 10, 100, 40), "Crops", self.manager)
-        self.upgrades_tab = pygame_gui.elements.UIButton(pygame.Rect(220, 10, 100, 40), "Upgrades", self.manager)
-        self.buy_button = pygame_gui.elements.UIButton(pygame.Rect(self.WIDTH - 100, self.HEIGHT - 80, 80, 40), "Buy", self.manager)
-        self.sell_button = pygame_gui.elements.UIButton(pygame.Rect(self.WIDTH - 200, self.HEIGHT - 80, 80, 40), "Sell", self.manager)
-        self.add_button = pygame_gui.elements.UIButton(pygame.Rect(self.WIDTH - 300, self.HEIGHT - 80, 40, 40), "+", self.manager)
-        self.subtract_button = pygame_gui.elements.UIButton(pygame.Rect(self.WIDTH - 350, self.HEIGHT - 80, 40, 40), "-", self.manager)
-        self.remove_button = pygame_gui.elements.UIButton(pygame.Rect(self.WIDTH - 400, self.HEIGHT - 80, 40, 40), "X", self.manager)
+        # Buttons as Rects
+        self.back_button = pygame.Rect(10, 10, 80, 40)
+        self.return_button = pygame.Rect(350, 10, 150, 40)
+        self.crops_tab = pygame.Rect(120, 10, 100, 40)
+        self.upgrades_tab = pygame.Rect(220, 10, 100, 40)
+        self.buy_button = pygame.Rect(self.WIDTH - 100, self.HEIGHT - 80, 80, 40)
+        self.sell_button = pygame.Rect(self.WIDTH - 200, self.HEIGHT - 80, 80, 40)
+        self.add_button = pygame.Rect(self.WIDTH - 300, self.HEIGHT - 80, 40, 40)
+        self.subtract_button = pygame.Rect(self.WIDTH - 350, self.HEIGHT - 80, 40, 40)
+        self.remove_button = pygame.Rect(self.WIDTH - 400, self.HEIGHT - 80, 40, 40)
 
         # Gold and Inventory
         self.gold = 1000
-        self.gold_text = pygame_gui.elements.UILabel(pygame.Rect(self.INVENTORY_WIDTH - 100, 10, 90, 30), f"{self.gold} 💰", self.manager)
         self.inventory = {}
 
         # Shop Items
@@ -61,93 +59,110 @@ class ShopUI:
         self.shop_open = False
         self.clock = pygame.time.Clock()
 
-        self.toggle_buttons_visibility(True)
+        self.show_sell_add_subtract = True
+
+    def update_gold_display(self):
+        gold_surface = self.font.render(f"{self.gold} 💰", True, self.BLACK)
+        self.screen.blit(gold_surface, (self.INVENTORY_WIDTH - 100, 10))
 
     def toggle_buttons_visibility(self, show):
-        self.sell_button.visible = show
-        self.add_button.visible = show
-        self.subtract_button.visible = show
+        self.show_sell_add_subtract = show
+
+    def draw_button(self, rect, text):
+        pygame.draw.rect(self.screen, self.GRAY, rect)
+        label = self.font.render(text, True, self.BLACK)
+        self.screen.blit(label, (rect.x + 5, rect.y + 10))
 
     def run(self):
         running = True
         while running:
-            time_delta = self.clock.tick(60) / 1000.0
             self.screen.fill(self.WHITE)
+            time_delta = self.clock.tick(60) / 1000.0
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN and not self.shop_open:
-                    if self.shop_icon.collidepoint(event.pos):
-                        self.shop_open = True
-                elif event.type == pygame.MOUSEBUTTONDOWN and self.shop_open:
-                    if self.return_button.rect.collidepoint(event.pos):
-                        running = False
-                        self.game.run()
-                    for item in self.current_shop_items:
-                        if item["rect"].collidepoint(event.pos):
-                            self.cart = item
-                            self.cart_quantity = 1
-                elif event.type == pygame_gui.UI_BUTTON_PRESSED:
-                    if event.ui_element == self.back_button:
-                        self.shop_open = False
-                    elif event.ui_element == self.add_button and self.cart:
-                        if self.cart not in self.shop_items_upgrades:
-                            self.cart_quantity += 1
-                    elif event.ui_element == self.subtract_button and self.cart and self.cart_quantity > 1:
-                        if self.cart not in self.shop_items_upgrades:
-                            self.cart_quantity -= 1
-                    elif event.ui_element == self.remove_button:
-                        self.cart = None
-                        self.cart_quantity = 1
-                    elif event.ui_element == self.buy_button and self.cart:
-                        total_cost = self.cart["price"] * self.cart_quantity
-                        if self.gold >= total_cost:
-                            self.gold -= total_cost
-                            self.inventory[self.cart["name"]] = self.inventory.get(self.cart["name"], 0) + self.cart_quantity
-                            self.gold_text.set_text(f"{self.gold} 💰")
-                            if self.cart in self.shop_items_upgrades:
-                                self.cart["price"] = 0
-                                self.shop_items_upgrades.remove(self.cart)
-                            self.cart = None
-                            self.cart_quantity = 1
-                    elif event.ui_element == self.sell_button and self.cart:
-                        if self.inventory.get(self.cart["name"], 0) >= self.cart_quantity:
-                            self.gold += self.cart["price"] * self.cart_quantity
-                            self.inventory[self.cart["name"]] -= self.cart_quantity
-                            if self.inventory[self.cart["name"]] == 0:
-                                del self.inventory[self.cart["name"]]
-                            self.gold_text.set_text(f"{self.gold} 💰")
-                            self.cart = None
-                            self.cart_quantity = 1
-                    elif event.ui_element == self.crops_tab:
-                        self.current_shop_items = self.shop_items_crops
-                        self.toggle_buttons_visibility(True)
-                    elif event.ui_element == self.upgrades_tab:
-                        self.current_shop_items = self.shop_items_upgrades
-                        self.toggle_buttons_visibility(False)
 
-                self.manager.process_events(event)
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = event.pos
+
+                    if not self.shop_open and self.shop_icon.collidepoint(mouse_pos):
+                        self.shop_open = True
+                    elif self.shop_open:
+                        if self.return_button.collidepoint(mouse_pos):
+                            running = False
+                            if self.game:
+                                self.game.run()
+                        elif self.back_button.collidepoint(mouse_pos):
+                            self.shop_open = False
+                        elif self.crops_tab.collidepoint(mouse_pos):
+                            self.current_shop_items = self.shop_items_crops
+                            self.toggle_buttons_visibility(True)
+                        elif self.upgrades_tab.collidepoint(mouse_pos):
+                            self.current_shop_items = self.shop_items_upgrades
+                            self.toggle_buttons_visibility(False)
+                        elif self.add_button.collidepoint(mouse_pos) and self.cart:
+                            if self.cart not in self.shop_items_upgrades:
+                                self.cart_quantity += 1
+                        elif self.subtract_button.collidepoint(mouse_pos) and self.cart and self.cart_quantity > 1:
+                            if self.cart not in self.shop_items_upgrades:
+                                self.cart_quantity -= 1
+                        elif self.remove_button.collidepoint(mouse_pos):
+                            self.cart = None
+                            self.cart_quantity = 1
+                        elif self.buy_button.collidepoint(mouse_pos) and self.cart:
+                            total_cost = self.cart["price"] * self.cart_quantity
+                            if self.gold >= total_cost:
+                                self.gold -= total_cost
+                                name = self.cart["name"]
+                                self.inventory[name] = self.inventory.get(name, 0) + self.cart_quantity
+                                if self.cart in self.shop_items_upgrades:
+                                    self.cart["price"] = 0
+                                    self.shop_items_upgrades.remove(self.cart)
+                                self.cart = None
+                                self.cart_quantity = 1
+                        elif self.sell_button.collidepoint(mouse_pos) and self.cart:
+                            name = self.cart["name"]
+                            if self.inventory.get(name, 0) >= self.cart_quantity:
+                                self.gold += self.cart["price"] * self.cart_quantity
+                                self.inventory[name] -= self.cart_quantity
+                                if self.inventory[name] == 0:
+                                    del self.inventory[name]
+                                self.cart = None
+                                self.cart_quantity = 1
+                        for item in self.current_shop_items:
+                            if item["rect"].collidepoint(mouse_pos):
+                                self.cart = item
+                                self.cart_quantity = 1
 
             if self.shop_open:
                 pygame.draw.rect(self.screen, self.GRAY, self.inventory_panel)
                 pygame.draw.rect(self.screen, self.DARK_BROWN, self.shop_panel)
+                self.draw_button(self.return_button, "Return To Game")
+                self.draw_button(self.back_button, "Back")
+                self.draw_button(self.crops_tab, "Crops")
+                self.draw_button(self.upgrades_tab, "Upgrades")
+                self.draw_button(self.buy_button, "Buy")
+                if self.show_sell_add_subtract:
+                    self.draw_button(self.sell_button, "Sell")
+                    self.draw_button(self.add_button, "+")
+                    self.draw_button(self.subtract_button, "-")
+                self.draw_button(self.remove_button, "X")
+
                 for item in self.current_shop_items:
                     pygame.draw.rect(self.screen, self.GOLD if item == self.cart else self.WHITE, item["rect"])
-                    font = pygame.font.Font(None, 24)
-                    text_surface = font.render(f"{item['name']} - {item['price']}💰", True, self.BLACK)
-                    self.screen.blit(text_surface, (item["rect"].x + 5, item["rect"].y + 10))
+                    label = self.font.render(f"{item['name']} - {item['price']} 💰", True, self.BLACK)
+                    self.screen.blit(label, (item["rect"].x + 5, item["rect"].y + 10))
 
                 if self.cart:
-                    font = pygame.font.Font(None, 24)
-                    text_surface = font.render(f"{self.cart['name']} x{self.cart_quantity}", True, self.BLACK)
-                    self.screen.blit(text_surface, (self.INVENTORY_WIDTH + 10, 150))
-                    total_cost = self.cart["price"] * self.cart_quantity
-                    total_text = font.render(f"Total: {total_cost} 💰", True, self.BLACK)
-                    self.screen.blit(total_text, (self.WIDTH - 200, self.HEIGHT - 120))
+                    cart_label = self.font.render(f"{self.cart['name']} x{self.cart_quantity}", True, self.BLACK)
+                    self.screen.blit(cart_label, (self.INVENTORY_WIDTH + 10, 150))
+                    total = self.cart["price"] * self.cart_quantity
+                    total_label = self.font.render(f"Total: {total} 💰", True, self.BLACK)
+                    self.screen.blit(total_label, (self.WIDTH - 200, self.HEIGHT - 120))
 
-                self.manager.update(time_delta)
-                self.manager.draw_ui(self.screen)
+                self.update_gold_display()
+
             else:
                 pygame.draw.rect(self.screen, self.BLACK, self.shop_icon)
                 pygame.draw.line(self.screen, self.WHITE, self.shop_icon.topleft, self.shop_icon.bottomright, 3)
