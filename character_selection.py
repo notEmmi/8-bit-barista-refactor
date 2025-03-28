@@ -41,10 +41,18 @@ class CharacterSelector:
         # Load and scale character avatars
         self.character_images = {}
         for character in self.characters:
-            self.character_images[character] = [
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, f"{character}/{character}_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, f"{character}/{character}_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
-            ]
+            avatar = pygame.image.load(os.path.join(ASSET_DIR, f"{character}/{character}_closeup.png"))
+            portrait = pygame.image.load(os.path.join(ASSET_DIR, f"{character}/{character}_portrait.png"))
+
+            # Increase the size by 3 times while maintaining aspect ratio
+            new_width = int(avatar.get_width() * 3)
+            new_height = int(avatar.get_height() * 3)
+            avatar = pygame.transform.scale(avatar, (new_width, new_height))
+
+            # Scale the portrait for the preview
+            portrait = pygame.transform.scale(portrait, (PREVIEW_SIZE, PREVIEW_SIZE))
+
+            self.character_images[character] = [avatar, portrait]
         
         # Input field settings
         self.name_input = ""
@@ -84,20 +92,29 @@ class CharacterSelector:
                     character = characters[index]
                     # Calculate the x and y position for the character avatar
                     x = 50 + col * (AVATAR_SIZE + 30)
-                    y = self.grid_y_offset + row * (AVATAR_SIZE + 30) 
+                    y = self.grid_y_offset + row * (AVATAR_SIZE + 30)
 
-                    # Draw character avatar
+                    # Draw character avatar with highlight if selected
                     if character == self.selected_character:
-                        pygame.draw.rect(self.screen, BROWN, (x-5, y-5, AVATAR_SIZE+10, AVATAR_SIZE+10), 3)  # Draw a highlight around the selected character
-                    pygame.draw.rect(self.screen, WHITE, (x, y, AVATAR_SIZE, AVATAR_SIZE))  # Draw the character avatar background
-                    self.screen.blit(self.character_images[character][0], (x, y))  # Draw the character avatar
-                    
+                        pygame.draw.rect(self.screen, BROWN, (x - 5, y - 5, AVATAR_SIZE + 10, AVATAR_SIZE + 10), 3)
+                    pygame.draw.rect(self.screen, WHITE, (x, y, AVATAR_SIZE, AVATAR_SIZE))  # Draw the box
+
+                    # Load the sprite without resizing
+                    sprite = self.character_images[character][0]
+                    sprite_rect = sprite.get_rect()
+
+                    # Calculate the centered position
+                    centered_x = x + (AVATAR_SIZE - sprite_rect.width) // 2
+                    centered_y = y + (AVATAR_SIZE - sprite_rect.height) // 2
+
+                    # Draw the sprite at the centered position
+                    self.screen.blit(sprite, (centered_x, centered_y))
+
                     # Check for mouse click to select character
                     if pygame.mouse.get_pressed()[0]:
                         mouse_x, mouse_y = pygame.mouse.get_pos()
-                        if x < mouse_x < x + AVATAR_SIZE and y < mouse_y < y + AVATAR_SIZE:  # Check if the mouse is over the character avatar
+                        if x < mouse_x < x + AVATAR_SIZE and y < mouse_y < y + AVATAR_SIZE:
                             self.selected_character = character
-                            save_selected_character(character)   # Save to file
 
     def draw_preview(self):
         # Draw large character preview
