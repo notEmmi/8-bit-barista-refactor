@@ -33,6 +33,9 @@ class StartMenu:
         self.CREDITS = "credits"
         self.current_screen = self.MENU  # Start at the menu
 
+        self.isFromGame = False
+        self.chosenBuilding = ""
+
         # Define Buttons
         button_width, button_height = 200, 60
         button_x = (self.WIDTH - button_width) // 2
@@ -133,7 +136,7 @@ class StartMenu:
                                 print(f"{button.text} button clicked!")
 
             elif self.current_screen == self.OPTIONS:
-                new_screen = options_menu.show_options(events)
+                new_screen = options_menu.show_options(events, self.isFromGame, self.chosenBuilding)
                 if new_screen == "menu":
                     self.current_screen = self.MENU
 

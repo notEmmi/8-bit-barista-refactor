@@ -8,6 +8,7 @@ import interactions
 import customers
 import shop
 import random
+import start_menu
 
 class Game:
     def __init__(self, chosen_building):
@@ -147,6 +148,8 @@ class Game:
         pygame.mixer.music.play(-1)  # Play on repeat
 
         self.toolbox = Toolbox()
+
+        self.pauseButton = pygame.Rect(0, 0, 0, 0)
 
     def load_map(self, map_file):
         """Load TMX map and extract collidable objects."""
@@ -490,6 +493,7 @@ class Game:
             # Handle mouse input for tool usage
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click
                 mouse_x, mouse_y = event.pos
+                if self.pauseButton.collidepoint(mouse_x, mouse_y): return self.pauseTheGame()
                 adjusted_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
                 adjusted_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
                 tile_x, tile_y = int(adjusted_x // self.TILE_WIDTH), int(adjusted_y // self.TILE_HEIGHT)
@@ -622,7 +626,22 @@ class Game:
             if layer.name == layer_name:
                 layer.data = new_data
                 break
+
+    def drawPause(self) -> pygame.Rect:
+        pauseButtonImage = pygame.image.load("assets/buttons/pause.png")
+        pauseButtonImage = pygame.transform.scale(pauseButtonImage, (64, 64))
+        rect = pygame.Rect(16, 16, 64, 64)
+        self.screen.blit(pauseButtonImage, rect)
+        return rect
         
+    def pauseTheGame(self):
+        self.is_paused = True
+        pauseMenu = start_menu.StartMenu()
+        pauseMenu.current_screen = "options"
+        pauseMenu.isFromGame = True
+        pauseMenu.chosenBuilding = self.house
+        pauseMenu.run()
+
     def run(self):
         # Main Game Loop
         running = True
@@ -656,6 +675,8 @@ class Game:
 
                 # Handle Events
                 keys = pygame.key.get_pressed()
+                if keys[pygame.K_ESCAPE]:
+                    self.pauseTheGame()
                 moving = False
 
                 # Movement Logic (Player Now Restricted to Map Bounds)
@@ -774,11 +795,13 @@ class Game:
             # Draw HUD
             self.draw_hud()
 
+            #draw pause button
+            self.pauseButton = self.drawPause()
+
             pygame.display.flip()  # Update display
             clock.tick(FPS)
 
         pygame.quit()
-
 
 if __name__ == "__main__":
     image_path = "assets/map/house2.png"
