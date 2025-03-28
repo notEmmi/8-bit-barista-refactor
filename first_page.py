@@ -541,26 +541,14 @@ class Game:
                     if pygame.K_0 == event.key or pygame.K_6 <= event.key <= pygame.K_9:
                         self.toolbox.select_tool(-1)
 
-                elif event.type == pygame.MOUSEBUTTONDOWN:
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click
                     mouse_x, mouse_y = event.pos
-                    if self.backpack.collidepoint(mouse_x, mouse_y):
-                        inventory.run()
-                    elif event.button == 1:  # Left mouse button
-
-                        # Adjust mouse position to account for camera and zoom factor
-                        adjusted_mouse_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
-                        adjusted_mouse_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
-
-                        # Calculate the tile position based on the adjusted mouse position
-                        tile_x = adjusted_mouse_x // self.TILE_WIDTH
-                        tile_y = adjusted_mouse_y // self.TILE_HEIGHT
-                        print(f"Mouse Position: ({mouse_x}, {mouse_y})")
-                        print(f"Adjusted Mouse Position: ({adjusted_mouse_x}, {adjusted_mouse_y})")
-                        print(f"Tile Coordinates: ({tile_x}, {tile_y})")
-
-
-                        # Use the tool on the clicked tile
-                        self.use_tool(int(tile_x), int(tile_y))
+                    if self.backpack.collidepoint(mouse_x, mouse_y): return inventory.run()
+                    adjusted_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
+                    adjusted_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
+                    tile_x, tile_y = int(adjusted_x // self.TILE_WIDTH), int(adjusted_y // self.TILE_HEIGHT)
+                    print(f"Mouse: ({mouse_x}, {mouse_y}), Adjusted: ({adjusted_x}, {adjusted_y}), Tile: ({tile_x}, {tile_y})")
+                    self.use_tool(tile_x, tile_y)
 
             # Update & Draw Rain (Only if raining)
             if self.raining:
