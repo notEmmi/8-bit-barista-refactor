@@ -454,7 +454,9 @@ class Game:
 
         # Trigger interactions, customers, or shop with respective keys
         if keys[pygame.K_TAB]: interactions.runInteractions()
-        if keys[pygame.K_CAPSLOCK]: customers.runCustomers()
+        if keys[pygame.K_CAPSLOCK]: 
+            customers_ui= customers.CustomerUI(self)
+            customers_ui.run()
         if keys[pygame.K_LSHIFT]: 
             shop_ui = shop.ShopUI(self)
             shop_ui.run()
