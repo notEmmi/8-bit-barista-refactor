@@ -3,7 +3,7 @@ import sys  # Import the sys module
 import os  # Import the os module
 from first_page import Game
 from Building_Selection_Screen import runBuildingSelectionScreen  # Import the building selection screen function
-
+from character_utils import save_selected_character, load_selected_character
 
 # Initialize Pygame
 pygame.init()
@@ -33,41 +33,23 @@ class CharacterSelector:
     def __init__(self):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))  # Create the game window
         pygame.display.set_caption("Character Selection")  # Set the window title
+
+        self.selected_character = load_selected_character()
+        # List of characters
+        self.characters = ["boy1", "boy2", "boy3", "girl1", "girl2", "girl3"]
         
         # Load and scale character avatars
-        self.character_images = {
-            "boy1": [
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy1/boy1_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy1/boy1_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
-            ],
-            "girl1": [
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl1/girl1_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl1/girl1_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
-            ],
-            "boy2": [
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy2/boy2_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy2/boy2_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
-            ],
-            "girl2": [
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl2/girl2_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl2/girl2_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
-            ],
-            "boy3": [
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy3/boy3_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy3/boy3_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
-            ],
-            "girl3": [
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl3/girl3_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl3/girl3_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
-            ],
-            # Add more character images here
-        }
+        self.character_images = {}
+        for character in self.characters:
+            self.character_images[character] = [
+                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, f"{character}/{character}_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
+                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, f"{character}/{character}_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
+            ]
         
         # Input field settings
         self.name_input = ""
         self.input_active = False
         self.font = pygame.font.Font(None, 32)
-        self.selected_character = "boy1"
         self.error_message = ""
 
         # UI Element Positions
@@ -115,6 +97,7 @@ class CharacterSelector:
                         mouse_x, mouse_y = pygame.mouse.get_pos()
                         if x < mouse_x < x + AVATAR_SIZE and y < mouse_y < y + AVATAR_SIZE:  # Check if the mouse is over the character avatar
                             self.selected_character = character
+                            save_selected_character(character)   # Save to file
 
     def draw_preview(self):
         # Draw large character preview
