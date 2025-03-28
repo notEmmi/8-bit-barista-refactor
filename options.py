@@ -79,6 +79,7 @@ class OptionsMenu:
     def show_options(self, events, isFromGame: bool, chosenBuilding: str):
         """Show options menu."""
         self.screen.fill(self.LIGHT_BROWN)
+        pygame.display.set_caption("OPTIONS MENU")
 
         # Draw Background Panels
         middle_rect = pygame.Rect(30, 20, self.WIDTH - 60, self.HEIGHT - 40)
@@ -119,11 +120,10 @@ class OptionsMenu:
                         elif name == "ADVANCED":
                             return "advanced"
                         elif name == "BACK":
-                            if (not isFromGame): return "menu"
-                            else:
+                            if (isFromGame):
                                 game = first_page.Game(chosenBuilding)
                                 game.run()
-                                return "menu"
+                            return "menu"
 
                 # Check Sliders (`+` and `-` buttons)
                 for name, (min_x, max_x, y_pos) in self.slider_rects.items():
