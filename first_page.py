@@ -453,7 +453,9 @@ class Game:
                 self.time_multiplier = new_multiplier
 
         # Trigger interactions, customers, or shop with respective keys
-        if keys[pygame.K_TAB]: interactions.runInteractions()
+        if keys[pygame.K_TAB]: 
+            interactions_ui= interactions.InteractionsUI(self)
+            interactions_ui.run()
         if keys[pygame.K_CAPSLOCK]: 
             customers_ui= customers.CustomerUI(self)
             customers_ui.run()
