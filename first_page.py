@@ -8,6 +8,7 @@ import interactions
 import customers
 import shop
 import random
+from pygame_gui import UI_BUTTON_PRESSED
 
 class Game:
     def __init__(self, chosen_building):
@@ -453,9 +454,16 @@ class Game:
                 self.time_multiplier = new_multiplier
 
         # Trigger interactions, customers, or shop with respective keys
-        if keys[pygame.K_TAB]: interactions.runInteractions()
-        if keys[pygame.K_CAPSLOCK]: customers.runCustomers()
-        if keys[pygame.K_LSHIFT]: shop.runShop()
+        if keys[pygame.K_TAB]: 
+            interactions_ui= interactions.InteractionsUI(self)
+            interactions_ui.run()
+        if keys[pygame.K_CAPSLOCK]: 
+            customers_ui= customers.CustomerUI(self)
+            customers_ui.run()
+        if keys[pygame.K_LSHIFT]: 
+            
+            shop_ui = shop.ShopUI(self)
+            shop_ui.run()
 
         # Set specific times with 'n' (5 PM) and 'm' (1:30 AM)
         if keys[pygame.K_n] and not self.is_paused: self.set_game_time(17, 0)
