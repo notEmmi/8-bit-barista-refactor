@@ -465,9 +465,9 @@ class Game:
         # if keys[pygame.K_TAB]: 
             # interactions_ui= interactions.InteractionsUI(self)
             # interactions_ui.run()
-        # if keys[pygame.K_CAPSLOCK]: 
-        #     customers_ui= customers.CustomerUI(self)
-        #     customers_ui.run()
+        if keys[pygame.K_CAPSLOCK]: 
+            customers_ui= customers.CustomerUI(self)
+            customers_ui.run()
         # if keys[pygame.K_LSHIFT]: 
             # shop_ui = shop.ShopUI(self)
             # shop_ui.run()
@@ -516,6 +516,8 @@ class Game:
                         print(f"{building_name.capitalize()} clicked!")
                         if building_name == "cafe":
                             # Open the cafe UI
+                            interactions_ui = interactions.InteractionsUI(self)
+                            interactions_ui.run()
                             customers_ui = customers.CustomerUI(self)
                             customers_ui.run()
                         elif building_name == "store":
