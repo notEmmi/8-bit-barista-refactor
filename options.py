@@ -76,7 +76,7 @@ class OptionsMenu:
             text = pygame.font.Font(pygame.font.match_font('courier'), 16).render(texture, True, self.WHITE)
             self.screen.blit(text, (x_positions[i] - text.get_width() // 2, 354))
 
-    def show_options(self, events, isFromGame: bool, chosenBuilding: str):
+    def show_options(self, events, isFromGame: bool, chosenBuilding: str, gameData: tuple):
         """Show options menu."""
         self.screen.fill(self.LIGHT_BROWN)
         pygame.display.set_caption("OPTIONS MENU")
@@ -121,7 +121,7 @@ class OptionsMenu:
                             return "advanced"
                         elif name == "BACK":
                             if (isFromGame):
-                                game = first_page.Game(chosenBuilding)
+                                game = first_page.Game(chosenBuilding, True, gameData)
                                 game.run()
                             return "menu"
 
