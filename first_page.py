@@ -8,7 +8,10 @@ from character_utils import load_selected_character
 import interactions
 import customers
 import shop
+import inventory
 import random
+import start_menu
+from pygame_gui import UI_BUTTON_PRESSED
 
 class Game:
     def __init__(self, chosen_building):
@@ -23,7 +26,7 @@ class Game:
 
         # initializing rain
         self.rain = Rain()
-        self.raining = False 
+        self.raining = False
 
         # Initalize cloudy weather
         self.cloudy = Cloudy()
@@ -144,6 +147,7 @@ class Game:
         self.game_start_time = time.time()  # Real-world start time
         self.time_multiplier = 1  # Normal speed, increased when pressing ''
       
+        self.backpack = pygame.Rect(0,0,0,0)
 
         # Load and play background music
         self.background_music = os.path.join(self.SOUND_PATH, "1_new_life_master.mp3")
@@ -151,6 +155,8 @@ class Game:
         pygame.mixer.music.play(-1)  # Play on repeat
 
         self.toolbox = Toolbox()
+
+        self.pauseButton = pygame.Rect(0, 0, 0, 0)
 
     def load_map(self, map_file):
         """Load TMX map and extract collidable objects."""
@@ -457,14 +463,24 @@ class Game:
                 self.time_multiplier = new_multiplier
 
         # Trigger interactions, customers, or shop with respective keys
-        if keys[pygame.K_TAB]: interactions.runInteractions()
-        if keys[pygame.K_CAPSLOCK]: customers.runCustomers()
-        if keys[pygame.K_LSHIFT]: shop.runShop()
+        if keys[pygame.K_TAB]: 
+            interactions_ui= interactions.InteractionsUI(self)
+            interactions_ui.run()
+        if keys[pygame.K_CAPSLOCK]: 
+            customers_ui= customers.CustomerUI(self)
+            customers_ui.run()
+        if keys[pygame.K_LSHIFT]: 
+            
+            shop_ui = shop.ShopUI(self)
+            shop_ui.run()
 
         # Set specific times with 'n' (5 PM) and 'm' (1:30 AM)
         if keys[pygame.K_n] and not self.is_paused: self.set_game_time(17, 0)
         if keys[pygame.K_m] and not self.is_paused: self.set_game_time(1, 30)
 
+        # open inventory
+        if keys[pygame.K_e]: inventory.run()
+        
         # Handle events (e.g., quitting, toggling weather, tool selection)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -494,6 +510,7 @@ class Game:
             # Handle mouse input for tool usage
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click
                 mouse_x, mouse_y = event.pos
+                if self.pauseButton.collidepoint(mouse_x, mouse_y): return self.pauseTheGame()
                 adjusted_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
                 adjusted_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
                 tile_x, tile_y = int(adjusted_x // self.TILE_WIDTH), int(adjusted_y // self.TILE_HEIGHT)
@@ -626,7 +643,22 @@ class Game:
             if layer.name == layer_name:
                 layer.data = new_data
                 break
+
+    def drawPause(self) -> pygame.Rect:
+        pauseButtonImage = pygame.image.load("assets/buttons/pause.png")
+        pauseButtonImage = pygame.transform.scale(pauseButtonImage, (64, 64))
+        rect = pygame.Rect(16, 16, 64, 64)
+        self.screen.blit(pauseButtonImage, rect)
+        return rect
         
+    def pauseTheGame(self):
+        self.is_paused = True
+        pauseMenu = start_menu.StartMenu()
+        pauseMenu.current_screen = "options"
+        pauseMenu.isFromGame = True
+        pauseMenu.chosenBuilding = self.house
+        pauseMenu.run()
+
     def run(self):
         # Main Game Loop
         running = True
@@ -660,6 +692,8 @@ class Game:
 
                 # Handle Events
                 keys = pygame.key.get_pressed()
+                if keys[pygame.K_ESCAPE]:
+                    self.pauseTheGame()
                 moving = False
 
                 # Movement Logic (Player Now Restricted to Map Bounds)
@@ -764,6 +798,7 @@ class Game:
             self.screen.blit(zoomed_surface, (0, 0))
             
             self.toolbox.draw(self.screen)
+            self.backpack = inventory.drawBundle(self.screen)
 
             # Draw the new day prompt if active
             if self.show_new_day_prompt:
@@ -777,11 +812,14 @@ class Game:
             
             # Draw HUD
             self.draw_hud()
+
+            #draw pause button
+            self.pauseButton = self.drawPause()
+
             pygame.display.flip()  # Update display
             clock.tick(FPS)
 
         pygame.quit()
-
 
 if __name__ == "__main__":
     image_path = "assets/map/house2.png"
