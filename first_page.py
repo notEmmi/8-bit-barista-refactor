@@ -7,6 +7,7 @@ from toolbar import Toolbox
 import interactions
 import customers
 import shop
+import inventory
 import random
 import start_menu
 from pygame_gui import UI_BUTTON_PRESSED
@@ -24,7 +25,7 @@ class Game:
 
         # initializing rain
         self.rain = Rain()
-        self.raining = False 
+        self.raining = False
 
         # Initalize cloudy weather
         self.cloudy = Cloudy()
@@ -142,6 +143,7 @@ class Game:
         self.game_start_time = time.time()  # Real-world start time
         self.time_multiplier = 1  # Normal speed, increased when pressing ''
       
+        self.backpack = pygame.Rect(0,0,0,0)
 
         # Load and play background music
         self.background_music = os.path.join(self.SOUND_PATH, "1_new_life_master.mp3")
@@ -472,6 +474,9 @@ class Game:
         if keys[pygame.K_n] and not self.is_paused: self.set_game_time(17, 0)
         if keys[pygame.K_m] and not self.is_paused: self.set_game_time(1, 30)
 
+        # open inventory
+        if keys[pygame.K_e]: inventory.run()
+        
         # Handle events (e.g., quitting, toggling weather, tool selection)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -789,6 +794,7 @@ class Game:
             self.screen.blit(zoomed_surface, (0, 0))
             
             self.toolbox.draw(self.screen)
+            self.backpack = inventory.drawBundle(self.screen)
 
             # Draw the new day prompt if active
             if self.show_new_day_prompt:
