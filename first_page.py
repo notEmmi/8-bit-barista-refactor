@@ -14,7 +14,7 @@ import start_menu
 from pygame_gui import UI_BUTTON_PRESSED
 
 class Game:
-    def __init__(self, chosen_building):
+    def __init__(self, chosen_building, fromPriorMenu = False, gameData = None):
         # Initialize Pygame
         pygame.init()
         pygame.font.init()
@@ -155,6 +155,9 @@ class Game:
         self.toolbox = Toolbox()
 
         self.pauseButton = pygame.Rect(0, 0, 0, 0)
+
+        self.gameData = gameData
+        if fromPriorMenu: self.loadGameState()
 
     def load_map(self, map_file):
         """Load TMX map and extract collidable and building objects."""
@@ -486,7 +489,7 @@ class Game:
         if keys[pygame.K_m] and not self.is_paused: self.set_game_time(1, 30)
 
         # open inventory
-        if keys[pygame.K_e]: inventory.run(self.house)
+        if keys[pygame.K_e]: inventory.run(self.house, self.saveGameState())
         
         # Handle events (e.g., quitting, toggling weather, tool selection)
         for event in pygame.event.get():
@@ -518,7 +521,7 @@ class Game:
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click
                 mouse_x, mouse_y = event.pos
                 if self.pauseButton.collidepoint(mouse_x, mouse_y): return self.pauseTheGame()
-                elif self.backpack.collidepoint(mouse_x, mouse_y): return inventory.run(self.house)
+                elif self.backpack.collidepoint(mouse_x, mouse_y): return inventory.run(self.house, self.saveGameState())
                 adjusted_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
                 adjusted_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
                 tile_x, tile_y = int(adjusted_x // self.TILE_WIDTH), int(adjusted_y // self.TILE_HEIGHT)
@@ -683,8 +686,37 @@ class Game:
         pauseMenu.current_screen = "options"
         pauseMenu.isFromGame = True
         pauseMenu.chosenBuilding = self.house
+        pauseMenu.gameData = self.saveGameState()
         pauseMenu.run()
 
+    def loadGameState(self):
+        print("loading game state")
+        time = self.gameData[0]
+        day = self.gameData[1]
+        position = self.gameData[2]
+        house = self.gameData[3]
+        weather = self.gameData[4]
+        character = self.gameData[5]
+        direction = self.gameData[6]
+        self.house = house
+        self.player_x = position[0]
+        self.player_y = position[1]
+        self.set_game_time(time[0], time[1])
+        self.current_weather = weather
+        self.selected_character = character
+        self.current_day = day
+        self.player_direction = direction
+    
+    def saveGameState(self):
+        theGameTime = self.get_game_time()
+        day = self.current_day
+        position = (self.player_x, self.player_y)
+        house = self.house
+        weather = self.current_weather
+        character = self.selected_character
+        direction = self.player_direction
+        return (theGameTime, day, position, house, weather, character, direction)
+    
     def run(self):
         # Main Game Loop
         running = True
@@ -718,8 +750,7 @@ class Game:
 
                 # Handle Events
                 keys = pygame.key.get_pressed()
-                if keys[pygame.K_ESCAPE]:
-                    self.pauseTheGame()
+                if keys[pygame.K_ESCAPE]: self.pauseTheGame()
                 moving = False
 
                 # Movement Logic (Player Now Restricted to Map Bounds)
