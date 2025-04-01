@@ -1,0 +1,93 @@
+import pygame
+import Building_Confirm_Selection_Screen
+def runBuildingSelectionScreen():
+# Initialize pygame
+    pygame.init()
+
+    # Screen settings
+    SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
+    SCREEN_COLOR = (30, 30, 30)  # Dark background
+    SQUARE_SIZE = 160
+    PADDING = 20
+    ROWS, COLS = 2, 3  # 2 rows, 3 columns
+    HOVER_COLOR = (144, 238, 144)
+    SQUARE_COLOR = (0,0,0) 
+
+    # Create the screen
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("Centered Squares with Images")
+
+    background = pygame.image.load("assets/images/others/sky.png")
+    background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
+    sign = pygame.image.load("images/buildingSign.png")
+    sign = pygame.transform.scale(sign, (SCREEN_WIDTH/2, SCREEN_HEIGHT/5))
+
+    # Calculate total width and height occupied by squares including padding
+    total_width = COLS * SQUARE_SIZE + (COLS - 1) * PADDING
+    total_height = ROWS * SQUARE_SIZE + (ROWS - 1) * PADDING
+
+    # Calculate the starting position to center the grid
+    start_x = (SCREEN_WIDTH - total_width) // 2
+    start_y = (SCREEN_HEIGHT - total_height) // 2
+
+    # Load images (Replace with actual file paths)
+    image_paths = ["assets/images/buildings/building1.png", "assets/images/buildings/building2.png", "assets/images/buildings/building3.png", "assets/images/buildings/building4.png", "assets/images/buildings/building5.png", "assets/images/buildings/building6.png"]
+    images = [pygame.image.load(path) for path in image_paths]
+    resized_images = [pygame.transform.scale(img, (SQUARE_SIZE, SQUARE_SIZE)) for img in images]
+
+    # Store square positions and references
+    squares = []
+    for row in range(ROWS):
+        for col in range(COLS):
+            x = start_x + col * (SQUARE_SIZE + PADDING)
+            y = start_y + row * (SQUARE_SIZE + PADDING)
+            squares.append({"rect": pygame.Rect(x, y, SQUARE_SIZE, SQUARE_SIZE), "image": resized_images[row * COLS + col],"image_path": image_paths[row * COLS + col]})
+
+    # Main loop
+    running = True
+    while running:
+        
+
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        
+        # Event handling
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+             for square in squares:
+              if square["rect"].collidepoint((mouse_x, mouse_y)):
+               print("Square clicked!")  # Replace with any action
+             
+               Building_Confirm_Selection_Screen.runConfirmationScreen(square["image_path"])
+               running = False
+        
+        # Draw the squares with images
+        screen.blit(background, (0,0))
+        screen.blit(sign, (SCREEN_WIDTH/4,5))
+        
+
+        for square in squares:
+            if square["rect"].collidepoint((mouse_x, mouse_y)):
+                square["hover"] = True
+            else:
+                square["hover"] = False
+
+            color = HOVER_COLOR if square["hover"] else SQUARE_COLOR
+            pygame.draw.rect(screen, color, square["rect"])
+
+        for square in squares:
+         pygame.draw.rect(screen, (255, 255, 255), square["rect"], 2)  # White border
+         screen.blit(square["image"], (square["rect"].x, square["rect"].y))
+
+
+        
+        
+        pygame.display.flip()
+
+    pygame.quit()
+
+if __name__ == "__main__":
+ runBuildingSelectionScreen()

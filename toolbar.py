@@ -28,23 +28,41 @@ class Toolbox:
         self.slot_margin = 10
         self.corner_radius = 10  # For rounded corners
 
+        self.seed_inventory_open = False
+        self.selected_seed = None  # Track the selected seed
+        self.seed_slots = ["wheat", "tomato"]  # Example seed list
+        self.seed_icons = {
+            "wheat": pygame.image.load(os.path.join(self.BASE_DIR, "assets", "images", "plants", "wheat1.png")),
+            "tomato": pygame.image.load(os.path.join(self.BASE_DIR, "assets", "images", "plants", "tomato1.png"))
+        }
+
     def select_tool(self, index):
+        if self.seed_inventory_open and list(self.tools.keys())[self.selected_tool] == "seedpouch":
+            # If seed pouch is open, only allow deselecting it
+            if index == self.selected_tool:
+                self.selected_tool = -1  # Deselect the seed pouch
+                self.close_seed_inventory()
+            return
+
         if 0 <= index < len(self.tools):
-            self.selected_tool = index  # Change selected tool
-    
-    def use_tool(self):
-        if self.selected_tool == 0:
-            print("Using hoe")
+            if self.selected_tool == index:
+                self.selected_tool = -1  # Deselect the tool if it's already selected
+                if list(self.tools.keys())[index] == "seedpouch":
+                    self.close_seed_inventory()  # Close inventory if seed pouch is deselected
+            else:
+                self.selected_tool = index  # Change to the new selected tool
+                if list(self.tools.keys())[index] == "seedpouch":
+                    self.open_seed_inventory()  # Open inventory if seed pouch is selected
 
-        elif self.selected_tool == 1:
-            print("Using mallet")
-        elif self.selected_tool == 2:
-            print("Using seedpouch")
-        elif self.selected_tool == 3:
-            print("Using watercan")
-        
+    def open_seed_inventory(self):
+        # Placeholder for opening the seed inventory
+        print("Seed inventory opened")
+        self.seed_inventory_open = True
 
-
+    def close_seed_inventory(self):
+        # Close the seed inventory
+        print("Seed inventory closed")
+        self.seed_inventory_open = False
 
     def draw(self, surface):
         screen_width, screen_height = surface.get_size()
@@ -62,6 +80,36 @@ class Toolbox:
                         (box_x, box_y, box_width, box_height), 
                         border_radius=self.corner_radius)
         
+        # Draw the seed inventory if open
+        if self.seed_inventory_open:
+            inventory_height = box_height  # Same height as the toolbar
+            inventory_y = box_y - inventory_height - 10  # 10px padding above the toolbar
+            
+            # Draw the inventory background
+            pygame.draw.rect(surface, self.background_color, 
+                            (box_x, inventory_y, box_width, inventory_height), 
+                            border_radius=self.corner_radius)
+            
+            # Draw seed slots
+            for i, seed in enumerate(self.seed_slots):
+                slot_x = box_x + self.slot_margin + i * (self.slot_width + self.slot_margin)
+                slot_y = inventory_y + self.slot_margin
+                
+                # Draw slot background
+                pygame.draw.rect(surface, self.slot_color, 
+                                (slot_x, slot_y, self.slot_width, self.slot_height),
+                                border_radius=self.corner_radius)
+                
+                # Highlight selected seed
+                if self.selected_seed == i:
+                    pygame.draw.rect(surface, self.highlight_color, 
+                                    (slot_x - 2, slot_y - 2, self.slot_width + 4, self.slot_height + 4), 
+                                    width=3, border_radius=self.corner_radius)
+                
+                # Draw the seed icon
+                scaled_seed_icon = pygame.transform.scale(self.seed_icons[seed], (self.slot_width - 20, self.slot_height - 20))
+                surface.blit(scaled_seed_icon, (slot_x + 10, slot_y + 10))
+        
         # Draw the tool slots
         tool_list = list(self.tools.items())
         for i in range(min(self.rows * self.cols, len(tool_list))):
@@ -77,8 +125,8 @@ class Toolbox:
                             (slot_x, slot_y, self.slot_width, self.slot_height),
                             border_radius=self.corner_radius)
             
-            # Highlight selected tool
-            if i == self.selected_tool:
+            # Highlight selected tool only if a tool is selected
+            if self.selected_tool != -1 and i == self.selected_tool:
                 pygame.draw.rect(surface, self.highlight_color, 
                                 (slot_x - 2, slot_y - 2, self.slot_width + 4, self.slot_height + 4), 
                                 width=3, border_radius=self.corner_radius)
@@ -89,3 +137,7 @@ class Toolbox:
                 # Scale the image to fit in the slot with some padding
                 scaled_image = pygame.transform.scale(tool_image, (self.slot_width - 20, self.slot_height - 20))
                 surface.blit(scaled_image, (slot_x + 10, slot_y + 10))
+
+    def select_seed(self, index):
+        if 0 <= index < len(self.seed_slots):
+            self.selected_seed = index if self.selected_seed != index else None
