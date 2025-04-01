@@ -691,13 +691,13 @@
   <object id="153" gid="651" x="728" y="727.667" width="16" height="17"/>
  </objectgroup>
  <objectgroup id="25" name="Collisions">
-  <object id="247" x="242.75" y="200.625" width="64" height="51.7159">
+  <object id="247" x="242.75" y="200.625" width="64" height="55.2159">
    <properties>
     <property name="building" value="house"/>
     <property name="collidable" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="249" x="378.432" y="245.545" width="72.25" height="52.6818">
+  <object id="249" x="378.432" y="240.545" width="72.25" height="62.6818">
    <properties>
     <property name="building" value="cafe"/>
     <property name="collidable" type="bool" value="true"/>
@@ -708,7 +708,7 @@
     <property name="collidable" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="252" x="617.75" y="408" width="71.5" height="47.25">
+  <object id="252" x="617.75" y="403.5" width="71.5" height="60.25">
    <properties>
     <property name="building" value="store"/>
     <property name="collidable" type="bool" value="true"/>
