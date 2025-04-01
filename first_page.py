@@ -511,7 +511,7 @@ class Game:
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click
                 mouse_x, mouse_y = event.pos
                 if self.pauseButton.collidepoint(mouse_x, mouse_y): return self.pauseTheGame()
-                elif self.backpack.collidepoint(mouse_x, mouse_y): return inventory.run()
+                elif self.backpack.collidepoint(mouse_x, mouse_y): return inventory.run(self.house)
                 adjusted_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
                 adjusted_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
                 tile_x, tile_y = int(adjusted_x // self.TILE_WIDTH), int(adjusted_y // self.TILE_HEIGHT)
