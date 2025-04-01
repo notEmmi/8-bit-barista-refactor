@@ -6,6 +6,7 @@ import ErrorScreen as ErrorScreen
 from Loading import LoadingScreen
 from start_menu import StartMenu
 import bcrypt
+from registration import RegistrationApp
 
 
 
@@ -30,7 +31,8 @@ class LoginScreen:
 
         self.username_box = pygame.Rect(200, 100, 200, 40)
         self.password_box = pygame.Rect(200, 160, 200, 40)
-        self.login_button = pygame.Rect(175, 230, 150, 50)
+        self.login_button = pygame.Rect(self.WIDTH//2 - 160, 230, 140, 50)
+        self.new_user_button = pygame.Rect(self.WIDTH//2 + 20, 230, 140, 50)
 
         self.username = ""
         self.password = ""
@@ -81,7 +83,8 @@ class LoginScreen:
 
         pygame.draw.rect(self.screen, (180, 140, 255) if self.active_box == "username" else (200, 200, 200), self.username_box, 2)  # LIGHT_PURPLE / GRAY
         pygame.draw.rect(self.screen, (180, 140, 255) if self.active_box == "password" else (200, 200, 200), self.password_box, 2)
-        pygame.draw.rect(self.screen, (100, 0, 100), self.login_button)  # DARK_PURPLE
+        pygame.draw.rect(self.screen, (100, 0, 100), self.login_button)
+        pygame.draw.rect(self.screen, (100, 0, 100), self.new_user_button)  # DARK_PURPLE
 
         self.screen.blit(self.title_text, (175, 30))  # TITLE_TEXT_LOC
         self.screen.blit(self.username_text, (30, 100))  # USERNAME_TEXT_LOC
@@ -96,6 +99,9 @@ class LoginScreen:
 
         login_text = self.font.render("Log In", True, (255, 255, 255))
         self.screen.blit(login_text, (self.login_button.x + 40, self.login_button.y + 10))
+
+        new_user_text = self.font.render("New User", True, (255, 255, 255))
+        self.screen.blit(new_user_text, (self.new_user_button.x + 10, self.new_user_button.y + 10))
 
         pygame.display.flip()
 
@@ -134,6 +140,11 @@ class LoginScreen:
                         self.active_box = "password"
                     elif self.login_button.collidepoint(event.pos):
                         self.try_login()
+                    elif self.new_user_button.collidepoint(event.pos):
+                     registration_page = RegistrationApp()  # You can define this class elsewhere
+                     registration_page.run()  # You can define this screen class elsewhere
+                     
+                     self.running = False
                     else:
                         self.active_box = None
                 elif event.type == pygame.KEYDOWN:

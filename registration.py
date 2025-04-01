@@ -90,5 +90,6 @@ class RegistrationApp:
         sys.exit()
 
 ##Example usage
-registration_app = RegistrationApp()
-registration_app.run()
+if __name__ == "__main__":
+    app = RegistrationApp()
+    app.run()
