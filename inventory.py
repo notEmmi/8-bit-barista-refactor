@@ -1,7 +1,7 @@
 import pygame, inventorydata # type: ignore [this is so vscode doesn't yell at me]
 import first_page
 
-def run():
+def run(chosen_house):
     # Initialize Pygame
     pygame.init()
 
@@ -156,7 +156,7 @@ def run():
                         break
         pygame.display.flip()
 
-    game = first_page.Game()
+    game = first_page.Game(chosen_house)
     game.run()
 
 def drawBundle(screen) -> pygame.Rect:
