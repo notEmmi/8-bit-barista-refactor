@@ -109,18 +109,18 @@ class Game:
         self.ANIMATION_FRAMES = {}
         for character in characters:
             self.ANIMATION_FRAMES[character] = {
-                "down": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "down_1.png")),
-                         pygame.image.load(os.path.join(self.SPRITE_PATH, character, "down_2.png"))],
-                "up": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "up_1.png")),
-                       pygame.image.load(os.path.join(self.SPRITE_PATH, character, "up_2.png"))],
-                "left": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "left_1.png")),
-                         pygame.image.load(os.path.join(self.SPRITE_PATH, character, "left_2.png"))],
-                "right": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "right_1.png")),
-                          pygame.image.load(os.path.join(self.SPRITE_PATH, character, "right_2.png"))],
-                "idle_down": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "down_idle.png"))],
-                "idle_up": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "up_idle.png"))],
-                "idle_left": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "left_idle.png"))],
-                "idle_right": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "right_idle.png"))],
+                "down": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "down_1.png")).convert_alpha(),
+                         pygame.image.load(os.path.join(self.SPRITE_PATH, character, "down_2.png")).convert_alpha()],
+                "up": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "up_1.png")).convert_alpha(),
+                       pygame.image.load(os.path.join(self.SPRITE_PATH, character, "up_2.png")).convert_alpha()],
+                "left": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "left_1.png")).convert_alpha(),
+                         pygame.image.load(os.path.join(self.SPRITE_PATH, character, "left_2.png")).convert_alpha()],
+                "right": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "right_1.png")).convert_alpha(),
+                          pygame.image.load(os.path.join(self.SPRITE_PATH, character, "right_2.png")).convert_alpha()],
+                "idle_down": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "down_idle.png")).convert_alpha()],
+                "idle_up": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "up_idle.png")).convert_alpha()],
+                "idle_left": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "left_idle.png")).convert_alpha()],
+                "idle_right": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "right_idle.png")).convert_alpha()],
             }
 
         # Get sprite size
