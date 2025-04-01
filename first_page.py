@@ -52,8 +52,6 @@ class Game:
 
         # Camera Zoom Factor (2x Zoom)
         self.ZOOM_FACTOR = 2.0
-        ## rectangles for click detection
-        self.cafe_rect = pygame.Rect(377, 309, 77, 84)
 
         # Adjusted Screen Size for the Camera View
         self.CAMERA_WIDTH = int(self.SCREEN_WIDTH / self.ZOOM_FACTOR)
@@ -159,13 +157,22 @@ class Game:
         self.pauseButton = pygame.Rect(0, 0, 0, 0)
 
     def load_map(self, map_file):
-        """Load TMX map and extract collidable objects."""
+        """Load TMX map and extract collidable and building objects."""
         self.tmx_data = pytmx.load_pygame(map_file, load_all_tiles=True)
         self.collidable_objects = [
             pygame.Rect(obj.x, obj.y, obj.width, obj.height)
             for obj in self.tmx_data.objects
             if obj.name == "Collisions" or obj.properties.get("collidable", False)
         ]
+        self.buildings_object = {
+            obj.properties.get("building"): pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+            for obj in self.tmx_data.objects
+            if obj.properties.get("building")
+        }
+
+        # Debug: Draw red circles around building objects
+        for building_name, rect in self.buildings_object.items():
+            pygame.draw.circle(self.screen, (255, 0, 0), (rect.centerx, rect.centery), 10, 2)
 
     def move_player(self, move_x, move_y):
         # Calculate new position and define player's hitbox
@@ -463,16 +470,16 @@ class Game:
                 self.time_multiplier = new_multiplier
 
         # Trigger interactions, customers, or shop with respective keys
-        if keys[pygame.K_TAB]: 
-            interactions_ui= interactions.InteractionsUI(self)
-            interactions_ui.run()
-        if keys[pygame.K_CAPSLOCK]: 
-            customers_ui= customers.CustomerUI(self)
-            customers_ui.run()
-        if keys[pygame.K_LSHIFT]: 
-            
-            shop_ui = shop.ShopUI(self)
-            shop_ui.run()
+        # The following keybinds have been replaced by left click
+        # if keys[pygame.K_TAB]: 
+            # interactions_ui= interactions.InteractionsUI(self)
+            # interactions_ui.run()
+        # if keys[pygame.K_CAPSLOCK]: 
+        #     customers_ui= customers.CustomerUI(self)
+        #     customers_ui.run()
+        # if keys[pygame.K_LSHIFT]: 
+            # shop_ui = shop.ShopUI(self)
+            # shop_ui.run()
 
         # Set specific times with 'n' (5 PM) and 'm' (1:30 AM)
         if keys[pygame.K_n] and not self.is_paused: self.set_game_time(17, 0)
@@ -507,7 +514,7 @@ class Game:
                     else:
                         self.toolbox.select_tool(event.key - pygame.K_1)
 
-            # Handle mouse input for tool usage
+            # Handle mouse input for tool usage and building interactions
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click
                 mouse_x, mouse_y = event.pos
                 if self.pauseButton.collidepoint(mouse_x, mouse_y): return self.pauseTheGame()
@@ -516,6 +523,24 @@ class Game:
                 adjusted_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
                 tile_x, tile_y = int(adjusted_x // self.TILE_WIDTH), int(adjusted_y // self.TILE_HEIGHT)
                 print(f"Mouse: ({mouse_x}, {mouse_y}), Adjusted: ({adjusted_x}, {adjusted_y}), Tile: ({tile_x}, {tile_y})")
+
+                # Check if the mouse click is within any building rectangle first
+                for building_name, rect in self.buildings_object.items():
+                    if rect.collidepoint(adjusted_x, adjusted_y):
+                        print(f"{building_name.capitalize()} clicked!")
+                        if building_name == "cafe":
+                            # Open the cafe UI
+                            interactions_ui = interactions.InteractionsUI(self)
+                            interactions_ui.run()
+                            # customers_ui = customers.CustomerUI(self)
+                            # customers_ui.run()
+                        elif building_name == "store":
+                            # Open the store UI
+                            shop_ui = shop.ShopUI(self)
+                            shop_ui.run()
+                        return  # Exit early if a building was clicked
+
+                # If no building was clicked, use the tool
                 self.use_tool(tile_x, tile_y)
 
     def place_tile(self, layer_name, tile_x, tile_y, tile_gid):

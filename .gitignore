@@ -1,2 +1,4 @@
 __pycache__/
+*.pyc
 utility/tile_properties_output.txt
+selected_character.txt
