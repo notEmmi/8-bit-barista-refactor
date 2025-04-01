@@ -59,6 +59,8 @@ class StartMenu:
             self.coffee_img = pygame.transform.scale(self.coffee_img, (235, 235))
         except:
             self.coffee_img = None
+        
+        self.gameData = None
 
     def draw_blurred_shadow(self, surface, rect, blur_radius=10, offset_x=8, offset_y=8, border_radius=12):
         """Draws a smooth, blurred shadow for UI elements."""
@@ -142,7 +144,7 @@ class StartMenu:
                                 print(f"{button.text} button clicked!")
 
             elif self.current_screen == self.OPTIONS:
-                new_screen = options_menu.show_options(events, self.isFromGame, self.chosenBuilding)
+                new_screen = options_menu.show_options(events, self.isFromGame, self.chosenBuilding, self.gameData)
                 if new_screen == "menu":
                     self.current_screen = self.MENU
                 elif new_screen == "controls":
