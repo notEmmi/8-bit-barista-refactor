@@ -607,7 +607,7 @@
  </layer>
  <objectgroup id="22" name="Buildings" locked="1">
   <object id="49" gid="631" x="528" y="267" width="91.6667" height="117.333"/>
-  <object id="315" gid="632" x="238" y="264" width="74" height="74"/> <!--THIS IS THE HOUSE -->
+  <object id="315" gid="632" x="238" y="264" width="74" height="74"/>
   <object id="316" gid="630" x="377" y="309" width="75" height="84"/>
   <object id="317" gid="633" x="611" y="468" width="86" height="75"/>
  </objectgroup>
@@ -690,14 +690,16 @@
   <object id="151" gid="651" x="368.667" y="768.333" width="16" height="17"/>
   <object id="153" gid="651" x="728" y="727.667" width="16" height="17"/>
  </objectgroup>
- <objectgroup id="25" name="Collisions" locked="1">
-  <object id="247" x="242.75" y="200.625" width="64" height="51.7159">
+ <objectgroup id="25" name="Collisions">
+  <object id="247" x="242.75" y="200.625" width="64" height="55.2159">
    <properties>
+    <property name="building" value="house"/>
     <property name="collidable" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="249" x="378.432" y="245.545" width="72.25" height="52.6818">
+  <object id="249" x="378.432" y="240.545" width="72.25" height="62.6818">
    <properties>
+    <property name="building" value="cafe"/>
     <property name="collidable" type="bool" value="true"/>
    </properties>
   </object>
@@ -706,8 +708,9 @@
     <property name="collidable" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="252" x="617.75" y="408" width="71.5" height="47.25">
+  <object id="252" x="617.75" y="403.5" width="71.5" height="60.25">
    <properties>
+    <property name="building" value="store"/>
     <property name="collidable" type="bool" value="true"/>
    </properties>
   </object>
