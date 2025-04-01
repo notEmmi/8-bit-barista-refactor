@@ -4,11 +4,13 @@ import os
 import time
 from weather import Rain, Raindrop, FloorDrop, Cloudy
 from toolbar import Toolbox
+from character_utils import load_selected_character
 import interactions
 import customers
 import shop
 import inventory
 import random
+import start_menu
 from pygame_gui import UI_BUTTON_PRESSED
 
 class Game:
@@ -63,7 +65,6 @@ class Game:
 
         # File Paths
         self.BASE_DIR = os.path.dirname(__file__)
-        self.SPRITE_PATH = os.path.join(self.BASE_DIR, "assets", "sprite")
         self.MAP_PATH = os.path.join(self.BASE_DIR, "assets", "map")
         self.SOUND_PATH = os.path.join(self.BASE_DIR, "assets", "sounds")
 
@@ -99,30 +100,34 @@ class Game:
         # Initialize Rain system with loaded textures
         self.rain = Rain(rain_sprites=self.RAIN_SPRITES, floor_sprites=self.FLOOR_SPRITES)
 
-        # Load Individual Sprite Images
-        self.ANIMATION_FRAMES = {
-            "down": [pygame.image.load(os.path.join(self.SPRITE_PATH, "down_1.png")),
-                 pygame.image.load(os.path.join(self.SPRITE_PATH, "down_2.png"))],
-            "up": [pygame.image.load(os.path.join(self.SPRITE_PATH, "up_1.png")),
-               pygame.image.load(os.path.join(self.SPRITE_PATH, "up_2.png"))],
-            "left": [pygame.image.load(os.path.join(self.SPRITE_PATH, "left_1.png")),
-                 pygame.image.load(os.path.join(self.SPRITE_PATH, "left_2.png"))],
-            "right": [pygame.image.load(os.path.join(self.SPRITE_PATH, "right_1.png")),
-                  pygame.image.load(os.path.join(self.SPRITE_PATH, "right_2.png"))],
-            "idle_down": [pygame.image.load(os.path.join(self.SPRITE_PATH, "down_idle.png"))],
-            "idle_up": [pygame.image.load(os.path.join(self.SPRITE_PATH, "up_idle.png"))],
-            "idle_left": [pygame.image.load(os.path.join(self.SPRITE_PATH, "left_idle.png"))],
-            "idle_right": [pygame.image.load(os.path.join(self.SPRITE_PATH, "right_idle.png"))],
-        }
+        # Characters list
+        characters = ["boy1", "boy2", "boy3", "girl1", "girl2", "girl3"]
+        self.selected_character = load_selected_character()  # Load saved character
 
-        # Apply transparency fix by setting colorkey for character sprites
-        for direction, frames in self.ANIMATION_FRAMES.items():
-            for i in range(len(frames)):
-                frames[i] = frames[i].convert_alpha()  # Ensure transparency is preserved
-                frames[i].set_colorkey((0, 0, 0))  # Remove black background (if transparency is lost)
+        print(f"Loaded character: {self.selected_character}")
+        
+        self.SPRITE_PATH = os.path.join(self.BASE_DIR, "assets", "images", "character-selection")
+
+        # Manually load sprite sheets for all characters
+        self.ANIMATION_FRAMES = {}
+        for character in characters:
+            self.ANIMATION_FRAMES[character] = {
+                "down": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "down_1.png")).convert_alpha(),
+                         pygame.image.load(os.path.join(self.SPRITE_PATH, character, "down_2.png")).convert_alpha()],
+                "up": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "up_1.png")).convert_alpha(),
+                       pygame.image.load(os.path.join(self.SPRITE_PATH, character, "up_2.png")).convert_alpha()],
+                "left": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "left_1.png")).convert_alpha(),
+                         pygame.image.load(os.path.join(self.SPRITE_PATH, character, "left_2.png")).convert_alpha()],
+                "right": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "right_1.png")).convert_alpha(),
+                          pygame.image.load(os.path.join(self.SPRITE_PATH, character, "right_2.png")).convert_alpha()],
+                "idle_down": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "down_idle.png")).convert_alpha()],
+                "idle_up": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "up_idle.png")).convert_alpha()],
+                "idle_left": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "left_idle.png")).convert_alpha()],
+                "idle_right": [pygame.image.load(os.path.join(self.SPRITE_PATH, character, "right_idle.png")).convert_alpha()],
+            }
 
         # Get sprite size
-        self.SPRITE_WIDTH, self.SPRITE_HEIGHT = self.ANIMATION_FRAMES["down"][0].get_width(), self.ANIMATION_FRAMES["down"][0].get_height()
+        self.SPRITE_WIDTH, self.SPRITE_HEIGHT = self.ANIMATION_FRAMES[self.selected_character]["down"][0].get_width(), self.ANIMATION_FRAMES[self.selected_character]["down"][0].get_height()
 
         # Player Setup (Start in the middle of the map)
         self.player_x, self.player_y = self.MAP_WIDTH // 2, self.MAP_HEIGHT // 2
@@ -150,6 +155,8 @@ class Game:
         pygame.mixer.music.play(-1)  # Play on repeat
 
         self.toolbox = Toolbox()
+
+        self.pauseButton = pygame.Rect(0, 0, 0, 0)
 
     def load_map(self, map_file):
         """Load TMX map and extract collidable objects."""
@@ -503,6 +510,7 @@ class Game:
             # Handle mouse input for tool usage
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click
                 mouse_x, mouse_y = event.pos
+                if self.pauseButton.collidepoint(mouse_x, mouse_y): return self.pauseTheGame()
                 adjusted_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
                 adjusted_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
                 tile_x, tile_y = int(adjusted_x // self.TILE_WIDTH), int(adjusted_y // self.TILE_HEIGHT)
@@ -635,7 +643,22 @@ class Game:
             if layer.name == layer_name:
                 layer.data = new_data
                 break
+
+    def drawPause(self) -> pygame.Rect:
+        pauseButtonImage = pygame.image.load("assets/buttons/pause.png")
+        pauseButtonImage = pygame.transform.scale(pauseButtonImage, (64, 64))
+        rect = pygame.Rect(16, 16, 64, 64)
+        self.screen.blit(pauseButtonImage, rect)
+        return rect
         
+    def pauseTheGame(self):
+        self.is_paused = True
+        pauseMenu = start_menu.StartMenu()
+        pauseMenu.current_screen = "options"
+        pauseMenu.isFromGame = True
+        pauseMenu.chosenBuilding = self.house
+        pauseMenu.run()
+
     def run(self):
         # Main Game Loop
         running = True
@@ -669,6 +692,8 @@ class Game:
 
                 # Handle Events
                 keys = pygame.key.get_pressed()
+                if keys[pygame.K_ESCAPE]:
+                    self.pauseTheGame()
                 moving = False
 
                 # Movement Logic (Player Now Restricted to Map Bounds)
@@ -728,8 +753,8 @@ class Game:
                 self.camera_y = max(0, min(new_camera_y, self.MAP_HEIGHT - self.CAMERA_HEIGHT))
 
                 # Draw Player at Correct Position Relative to Camera
-                self.camera_surface.blit(self.ANIMATION_FRAMES[self.player_direction][self.animation_index], 
-                                        (self.player_x - self.camera_x, self.player_y - self.camera_y))
+                self.camera_surface.blit(self.ANIMATION_FRAMES[self.selected_character][self.player_direction][self.animation_index], 
+                        (self.player_x - self.camera_x, self.player_y - self.camera_y))
 
                 # Scale up the camera surface to the main screen
                 zoomed_surface = pygame.transform.scale(self.camera_surface, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
@@ -788,11 +813,13 @@ class Game:
             # Draw HUD
             self.draw_hud()
 
+            #draw pause button
+            self.pauseButton = self.drawPause()
+
             pygame.display.flip()  # Update display
             clock.tick(FPS)
 
         pygame.quit()
-
 
 if __name__ == "__main__":
     image_path = "assets/map/house2.png"
