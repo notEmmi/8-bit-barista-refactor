@@ -1,7 +1,6 @@
 import pygame, inventorydata # type: ignore [this is so vscode doesn't yell at me]
-import first_page
 
-def run(chosen_house, gameData):
+def run(gameInstance):
     # Initialize Pygame
     pygame.init()
 
@@ -116,7 +115,9 @@ def run(chosen_house, gameData):
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for name, rect in menuButtons.items():
                     if not rect.collidepoint(mousePosition): continue
-                    if name == "BACK": running = False
+                    if name == "BACK":
+                        running = False
+                        return gameInstance.run()
                     if name == "DELETE":
                         if itemSelected is not None:
                             inventorydata.putInSlot(None, itemSelectedOriginalX, itemSelectedOriginalY)
@@ -155,9 +156,6 @@ def run(chosen_house, gameData):
                         itemSelectedOriginalY = -1
                         break
         pygame.display.flip()
-
-    game = first_page.Game(chosen_house, True, gameData)
-    game.run()
 
 def drawBundle(screen) -> pygame.Rect:
     backpackImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + "backpack" + ".png")
