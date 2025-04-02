@@ -31,12 +31,14 @@ class ControlsMenu:
         # keybinds
         self.keybinds = {
             "UP": "W",
-            "DOWN": "A",
-            "LEFT": "S",
+            "DOWN": "S",
+            "LEFT": "A",
             "RIGHT": "D",
-            "SHOP": "LSHIFT",
-            "INTERACTIONS": "TAB",
-            "CUSTOMERS": "CAPITAL",
+            "INVENTORY": "E",
+            "PRIMARY ACTION": "C",
+            "SECONDARY ACTION": "X",
+            "PAUSE": "ESCAPE",
+            "TOOLBAR SLOTS": "1 to 5",
         }
         self.keybindSquares = {}
 
