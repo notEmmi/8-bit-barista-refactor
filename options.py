@@ -1,8 +1,7 @@
 import pygame
-import first_page
 
 class OptionsMenu:
-    def __init__(self):
+    def __init__(self, gameInstance = None):
         # Initialize Pygame
         pygame.init()
 
@@ -44,6 +43,8 @@ class OptionsMenu:
             "BACK": pygame.Rect(self.WIDTH // 2 - 40, 485, 80, 30)
         }
 
+        self.currentGameInstance = gameInstance
+
     def draw_slider(self, name, y_pos, value):
         """Draw sliders with `+` and `-` buttons."""
         min_x, max_x = 280, 520
@@ -76,7 +77,7 @@ class OptionsMenu:
             text = pygame.font.Font(pygame.font.match_font('courier'), 16).render(texture, True, self.WHITE)
             self.screen.blit(text, (x_positions[i] - text.get_width() // 2, 354))
 
-    def show_options(self, events, isFromGame: bool, chosenBuilding: str, gameData: tuple):
+    def show_options(self, events):
         """Show options menu."""
         self.screen.fill(self.LIGHT_BROWN)
         pygame.display.set_caption("OPTIONS MENU")
@@ -120,10 +121,9 @@ class OptionsMenu:
                         elif name == "ADVANCED":
                             return "advanced"
                         elif name == "BACK":
-                            if (isFromGame):
-                                game = first_page.Game(chosenBuilding, True, gameData)
-                                game.run()
-                            return "menu"
+                            if (self.currentGameInstance is None): return "menu"
+                            self.currentGameInstance.is_paused = False
+                            self.currentGameInstance.run()
 
                 # Check Sliders (`+` and `-` buttons)
                 for name, (min_x, max_x, y_pos) in self.slider_rects.items():

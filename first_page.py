@@ -59,7 +59,7 @@ class Game:
 
         # self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.FULLSCREEN)
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
-        pygame.display.set_caption("My Pygame Game")
+        pygame.display.set_caption("8-Bit Barista")
 
         # File Paths
         self.BASE_DIR = os.path.dirname(__file__)
@@ -489,7 +489,7 @@ class Game:
         if keys[pygame.K_m] and not self.is_paused: self.set_game_time(1, 30)
 
         # open inventory
-        if keys[pygame.K_e]: inventory.run(self.house, self.saveGameState())
+        if keys[pygame.K_e]: inventory.run(self)
         
         # Handle events (e.g., quitting, toggling weather, tool selection)
         for event in pygame.event.get():
@@ -521,7 +521,7 @@ class Game:
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click
                 mouse_x, mouse_y = event.pos
                 if self.pauseButton.collidepoint(mouse_x, mouse_y): return self.pauseTheGame()
-                elif self.backpack.collidepoint(mouse_x, mouse_y): return inventory.run(self.house, self.saveGameState())
+                elif self.backpack.collidepoint(mouse_x, mouse_y): return inventory.run(self)
                 adjusted_x = (mouse_x // self.ZOOM_FACTOR) + self.camera_x
                 adjusted_y = (mouse_y // self.ZOOM_FACTOR) + self.camera_y
                 tile_x, tile_y = int(adjusted_x // self.TILE_WIDTH), int(adjusted_y // self.TILE_HEIGHT)
@@ -682,11 +682,9 @@ class Game:
         
     def pauseTheGame(self):
         self.is_paused = True
-        pauseMenu = start_menu.StartMenu()
+        pauseMenu = start_menu.StartMenu(self)
         pauseMenu.current_screen = "options"
         pauseMenu.isFromGame = True
-        pauseMenu.chosenBuilding = self.house
-        pauseMenu.gameData = self.saveGameState()
         pauseMenu.run()
 
     def loadGameState(self):
@@ -698,6 +696,8 @@ class Game:
         weather = self.gameData[4]
         character = self.gameData[5]
         direction = self.gameData[6]
+        raining = self.gameData[7]
+        cloudy = self.gameData[8]
         self.house = house
         self.player_x = position[0]
         self.player_y = position[1]
@@ -706,6 +706,8 @@ class Game:
         self.selected_character = character
         self.current_day = day
         self.player_direction = direction
+        self.raining = raining
+        self.cloudy_weather = cloudy
     
     def saveGameState(self):
         theGameTime = self.get_game_time()
@@ -715,11 +717,14 @@ class Game:
         weather = self.current_weather
         character = self.selected_character
         direction = self.player_direction
-        return (theGameTime, day, position, house, weather, character, direction)
+        raining = self.raining
+        cloudy = self.cloudy_weather
+        return (theGameTime, day, position, house, weather, character, direction, raining, cloudy)
     
     def run(self):
         # Main Game Loop
         running = True
+        pygame.display.set_caption("8-Bit Barista")
         clock = pygame.time.Clock()
         FPS = 60
 

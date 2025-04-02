@@ -8,7 +8,7 @@ from keybinds import ControlsMenu
 from character_selection import CharacterSelector  # Import CharacterSelector
 
 class StartMenu:
-    def __init__(self):
+    def __init__(self, gameInstance = None):
         # Initialize Pygame
         pygame.init()
 
@@ -38,7 +38,8 @@ class StartMenu:
         self.current_screen = self.MENU  # Start at the menu
 
         self.isFromGame = False
-        self.chosenBuilding = ""
+
+        self.currentGameInstance = gameInstance
 
         # Define Buttons
         button_width, button_height = 200, 60
@@ -59,8 +60,6 @@ class StartMenu:
             self.coffee_img = pygame.transform.scale(self.coffee_img, (235, 235))
         except:
             self.coffee_img = None
-        
-        self.gameData = None
 
     def draw_blurred_shadow(self, surface, rect, blur_radius=10, offset_x=8, offset_y=8, border_radius=12):
         """Draws a smooth, blurred shadow for UI elements."""
@@ -117,7 +116,7 @@ class StartMenu:
 
     def run(self):
         running = True
-        options_menu = OptionsMenu()  # Create an instance of OptionsMenu
+        options_menu = OptionsMenu(self.currentGameInstance)  # Create an instance of OptionsMenu
         advanced_menu = AdvancedMenu()
         controls_menu = ControlsMenu()
         credits = CreditsScreen()  # Create an instance of CreditsScreen
@@ -144,7 +143,7 @@ class StartMenu:
                                 print(f"{button.text} button clicked!")
 
             elif self.current_screen == self.OPTIONS:
-                new_screen = options_menu.show_options(events, self.isFromGame, self.chosenBuilding, self.gameData)
+                new_screen = options_menu.show_options(events)
                 if new_screen == "menu":
                     self.current_screen = self.MENU
                 elif new_screen == "controls":
