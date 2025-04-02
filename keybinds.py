@@ -30,14 +30,15 @@ class ControlsMenu:
 
         # keybinds
         self.keybinds = {
-            "MOVE UP": "W",
-            "MOVE DOWN": "A",
-            "MOVE LEFT": "S",
-            "MOVE RIGHT": "D",
-            "PRIMARY ACTION": "C",
-            "SECONDARY ACTION": "X",
+            "UP": "W",
+            "DOWN": "A",
+            "LEFT": "S",
+            "RIGHT": "D",
+            "SHOP": "LSHIFT",
+            "INTERACTIONS": "TAB",
+            "CUSTOMERS": "CAPITAL",
         }
-        self.toggleSquares = {}
+        self.keybindSquares = {}
 
         # Bottom menu buttons
         self.menuButtons = {
@@ -47,16 +48,15 @@ class ControlsMenu:
         self.running = True
 
     # Function to draw a toggle
-    def drawToggle(self, name, yPos, value):
-        min_x, max_x = 550, 590
-        length = max_x - min_x
-        buttonRect = pygame.Rect(min_x, yPos, length, length)
-        self.toggleSquares[name] = (buttonRect, value)
+    def drawKeybind(self, name, yPos, xPos, value):
+        keybindXPos, length = 475, 30
+        buttonRect = pygame.Rect(keybindXPos, yPos, length * 3.75, length)
+        self.keybindSquares[name] = (buttonRect, value)
         actionLabel = self.actionText.render(name, True, self.WHITE)
-        self.screen.blit(actionLabel, (min_x // 2 - 50, yPos + 10))
+        self.screen.blit(actionLabel, (xPos, yPos + 10))
         pygame.draw.rect(self.screen, self.BRIGHT_BROWN, buttonRect, border_radius=7)
         keybindValueLabel = self.keybindValueText.render(value, True, self.WHITE)
-        self.screen.blit(keybindValueLabel, (min_x + 15, yPos + 10))
+        self.screen.blit(keybindValueLabel, (keybindXPos + (buttonRect.width // 2 - keybindValueLabel.get_width() // 2), yPos + 7.5))
 
     def run(self):
         # Main Loop
@@ -67,7 +67,6 @@ class ControlsMenu:
             # Middle Dark Background
             middle_rect = pygame.Rect(30, 20, self.WIDTH - 60, self.HEIGHT - 40)
             shadow_offset = 6
-            shadow_rect = middle_rect.move(shadow_offset, shadow_offset)
             shadow_surface = pygame.Surface((middle_rect.width, middle_rect.height), pygame.SRCALPHA)
             shadow_surface.fill((0, 0, 0, 0))  # Fully transparent
             pygame.draw.rect(shadow_surface, (20, 20, 20, 50), shadow_surface.get_rect(), border_radius=12)
@@ -76,7 +75,6 @@ class ControlsMenu:
             
             # Inner Panel
             panel_rect = pygame.Rect(180, 50, 450, 500)
-            shadow_rect_inner = panel_rect.move(shadow_offset, shadow_offset)
             shadow_surface_inner = pygame.Surface((panel_rect.width, panel_rect.height), pygame.SRCALPHA)
             shadow_surface_inner.fill((0, 0, 0, 0))  # Fully transparent
             pygame.draw.rect(shadow_surface_inner, (20, 20, 20, 50), shadow_surface_inner.get_rect(), border_radius=12)
@@ -87,11 +85,13 @@ class ControlsMenu:
             titleLabel = self.titleText.render("KEYBINDS", True, self.WHITE)
             self.screen.blit(titleLabel, (self.WIDTH // 2 - titleLabel.get_width() // 2, 85))
             
-            # Draw Sliders
-            yOffset = 300 - (len(self.keybinds) * 25)
+            # Draw keybinds
+            # if 6, reset y offset
+            yOffset = 300 - (6 * 25)
+            xOffset = 225
             for name, value in self.keybinds.items():
-                self.drawToggle(name, yOffset, value)
-                yOffset += 50
+                self.drawKeybind(name, yOffset, xOffset, value)
+                yOffset += 35
 
             # draw menuButtons
             for name, rect in self.menuButtons.items():
@@ -114,8 +114,9 @@ class ControlsMenu:
                     for name, rect in self.menuButtons.items():
                         if not rect.collidepoint(mousePosition): continue
                         return "options"
-                    for actionName, rectAndValue in self.toggleSquares.items():
+                    for actionName, rectAndValue in self.keybindSquares.items():
                         if not rectAndValue[0].collidepoint(mousePosition): continue
                         print(f"{actionName} clicked. keybind: {self.keybinds[actionName]}")
             
             pygame.display.flip()
+        return "options"
