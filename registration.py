@@ -31,6 +31,8 @@ class RegistrationApp:
         self.password_box = pygame.Rect(270, 130, 200, 32)
         self.register_button = pygame.Rect(190, 190, 100, 40)
         self.back_button = pygame.Rect(320, 190, 170, 40)
+        
+    
 
     def hash_password(self, password):
         salt = bcrypt.gensalt()
@@ -59,13 +61,19 @@ class RegistrationApp:
     def draw(self):
         self.screen.fill(self.WHITE)
 
+        background = pygame.image.load("images/reg_page_background.png")
+        pygame.transform.scale(background, (self.WIDTH, self.HEIGHT))
+        self.screen.blit(background, (0, 0))
+
         # Labels
-        username_lbl = self.font.render("Username:", True, self.BLACK)
-        password_lbl = self.font.render("Password:", True, self.BLACK)
+        username_lbl = self.font.render("Username:", True, self.WHITE)
+        password_lbl = self.font.render("Password:", True, self.WHITE)
         self.screen.blit(username_lbl, (150, 85))
         self.screen.blit(password_lbl, (150, 135))
 
         # Input boxes
+        
+
         pygame.draw.rect(self.screen, self.GRAY if self.active_box != "username" else self.PURPLE, self.username_box, 2)
         pygame.draw.rect(self.screen, self.GRAY if self.active_box != "password" else self.PURPLE, self.password_box, 2)
 

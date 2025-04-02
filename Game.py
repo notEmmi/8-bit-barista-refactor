@@ -1,5 +1,12 @@
+from registration import RegistrationApp
 
-import Log_In as Log_In
 
-loginUI = Log_In.LoginScreen()
-loginUI.run()
+registerationUI = RegistrationApp()
+registerationUI.run()
+
+
+
+# import Log_In as Log_In
+
+# loginUI = Log_In.LoginScreen()
+# loginUI.run()
