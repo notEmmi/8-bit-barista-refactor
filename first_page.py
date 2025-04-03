@@ -730,6 +730,9 @@ class Game:
 
         last_grow_time = self.get_game_time()[0]  # Track the last hour plants were grown
 
+        # Popup state and fade effect variables
+        popup_shown = True  # Show popup initially
+
         while running:
             self.screen.fill((0, 0, 0))  # Clear screen
             self.handle_input()  # Handle key inputs
@@ -817,6 +820,57 @@ class Game:
                 # Draw Player at Correct Position Relative to Camera
                 self.camera_surface.blit(self.ANIMATION_FRAMES[self.selected_character][self.player_direction][self.animation_index], 
                         (self.player_x - self.camera_x, self.player_y - self.camera_y))
+
+
+                fade_alpha = None
+
+                # **Popup and fade logic**
+                if popup_shown:
+                    # Load and display the WASD image
+                    try:
+                        wasd_image = pygame.image.load("wasd_image.png")
+                    except pygame.error as e:
+                        print("Error loading image:", e)
+                        wasd_image = pygame.Surface((200, 100))  # Temporary placeholder surface for debugging
+
+                    # Resize the image to a reasonable size (e.g., 200x100)
+                    wasd_image = pygame.transform.scale(wasd_image, (70, 40))  # Adjust size as needed
+
+                    # Initialize the alpha value for fading (only once when the popup is shown)
+                    if fade_alpha is None:  # Initialize fade_alpha only once when popup is shown
+                        fade_alpha = 255  # Start with the image fully visible
+
+                    # Calculate position of popup above the player's head
+                    popup_x = self.player_x - (wasd_image.get_width() // 2) - self.camera_x + 9  # Centered relative to camera
+                    popup_y = self.player_y - wasd_image.get_height() - 10 - self.camera_y  # 20 pixels above the player
+
+                    # Ensure the image stays within the screen bounds
+                    if popup_x < 0:
+                        popup_x = 0
+                    elif popup_x + wasd_image.get_width() > self.SCREEN_WIDTH:
+                        popup_x = self.SCREEN_WIDTH - wasd_image.get_width()
+
+                    if popup_y < 0:
+                        popup_y = 0
+                    elif popup_y + wasd_image.get_height() > self.SCREEN_HEIGHT:
+                        popup_y = self.SCREEN_HEIGHT - wasd_image.get_height()
+
+                    # Update the alpha value of the image to control its fading
+                    wasd_image.set_alpha(fade_alpha)
+
+                    # Blit the WASD image above the player's head, adjusted for camera movement
+                    self.camera_surface.blit(wasd_image, (popup_x, popup_y))
+
+                    # Check for WASD key press to start fading out
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]:
+                    #     # Start the fade-out process once a WASD key is pressed
+                    #     if fade_alpha > 0:
+                    #         fade_alpha -= 5  # Adjust fade speed (decreases over time)
+
+                    # # Optional: If you want to make sure the popup disappears completely when faded
+                    # if fade_alpha <= 0:
+                        popup_shown = False  # Hide the popup completely when it has faded out
 
                 # Scale up the camera surface to the main screen
                 zoomed_surface = pygame.transform.scale(self.camera_surface, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
