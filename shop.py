@@ -29,7 +29,6 @@ class ShopUI:
         self.inventory_panel = pygame.Rect(0, 0, self.INVENTORY_WIDTH, self.HEIGHT)
 
         # Buttons as Rects
-        self.back_button = pygame.Rect(10, 10, 80, 40)
         self.return_button = pygame.Rect(350, 10, 150, 40)
         self.crops_tab = pygame.Rect(120, 10, 100, 40)
         self.upgrades_tab = pygame.Rect(220, 10, 100, 40)
@@ -75,8 +74,9 @@ class ShopUI:
 
     def run(self):
         running = True
+        self.shop_open = True  # Ensure the shop opens immediately
+
         while running:
-            self.screen.fill(self.WHITE)
             time_delta = self.clock.tick(60) / 1000.0
 
             for event in pygame.event.get():
@@ -86,15 +86,11 @@ class ShopUI:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = event.pos
 
-                    if not self.shop_open and self.shop_icon.collidepoint(mouse_pos):
-                        self.shop_open = True
-                    elif self.shop_open:
+                    if self.shop_open:
                         if self.return_button.collidepoint(mouse_pos):
                             running = False
                             if self.game:
                                 self.game.run()
-                        elif self.back_button.collidepoint(mouse_pos):
-                            self.shop_open = False
                         elif self.crops_tab.collidepoint(mouse_pos):
                             self.current_shop_items = self.shop_items_crops
                             self.toggle_buttons_visibility(True)
@@ -139,7 +135,6 @@ class ShopUI:
                 pygame.draw.rect(self.screen, self.GRAY, self.inventory_panel)
                 pygame.draw.rect(self.screen, self.DARK_BROWN, self.shop_panel)
                 self.draw_button(self.return_button, "Return To Game")
-                self.draw_button(self.back_button, "Back")
                 self.draw_button(self.crops_tab, "Crops")
                 self.draw_button(self.upgrades_tab, "Upgrades")
                 self.draw_button(self.buy_button, "Buy")
@@ -162,11 +157,6 @@ class ShopUI:
                     self.screen.blit(total_label, (self.WIDTH - 200, self.HEIGHT - 120))
 
                 self.update_gold_display()
-
-            else:
-                pygame.draw.rect(self.screen, self.BLACK, self.shop_icon)
-                pygame.draw.line(self.screen, self.WHITE, self.shop_icon.topleft, self.shop_icon.bottomright, 3)
-                pygame.draw.line(self.screen, self.WHITE, self.shop_icon.topright, self.shop_icon.bottomleft, 3)
 
             pygame.display.flip()
 

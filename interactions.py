@@ -24,7 +24,7 @@ class InteractionsUI:
         self.bodyText = pygame.font.Font(pygame.font.match_font('courier'), 18)
 
         # State variables
-        self.currentScene = "exterior"
+        self.currentScene = "interior"  # Skip the first page by starting at "interior"
         self.previousScene = "NONE"
         self.waitingResponse = "I'm still waiting..."
         self.acceptedResponse = "Thanks!"
@@ -35,7 +35,7 @@ class InteractionsUI:
 
         self.mainButtons = {
             "Enter Shop": ("exterior", "interior", "PROBABLY_ILLEGAL_ASSETS/shop.png"),
-            "Exit Shop": ("interior", "exterior", "PROBABLY_ILLEGAL_ASSETS/exit.png"),
+            # "Exit Shop": ("interior", "exterior", "PROBABLY_ILLEGAL_ASSETS/exit.png"),  # Commented out
             "View Customer Order": ("interior", "customerOrder", "PROBABLY_ILLEGAL_ASSETS/customer.png"),
             "Complete Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/complete.png"),
             "Close": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/close.png"),
@@ -56,10 +56,12 @@ class InteractionsUI:
     def drawMainButton(self, name, xPos, yPos, buttonInformation):
         length = 300
         buttonRect = pygame.Rect(xPos // 2 + 60, yPos, length // 2, length // 2)
-        if name == "Exit Shop":
-            buttonRect = buttonRect.scale_by(0.3).move(-85, -110)
-        elif name == "Enter Shop":
+        # if name == "Exit Shop":  # Commented out
+        #     buttonRect = buttonRect.scale_by(0.3).move(-85, -110)
+        if name == "Enter Shop":
             buttonRect = buttonRect.scale_by(2).move(185, 50)
+        elif name == "View Customer Order":
+            buttonRect = buttonRect.move(self.WIDTH // 2 - buttonRect.width // 2 - buttonRect.x, 0)  # Center horizontally
         elif name == "Complete Order":
             buttonRect = buttonRect.move(75, 25)
         elif name == "Reject Order":
