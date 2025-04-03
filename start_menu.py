@@ -5,7 +5,6 @@ from options import OptionsMenu
 from credits import CreditsScreen
 from advanced import AdvancedMenu
 from keybinds import ControlsMenu
-from character_selection import CharacterSelector  # Import CharacterSelector
 
 class StartMenu:
     def __init__(self):
@@ -119,6 +118,7 @@ class StartMenu:
         advanced_menu = AdvancedMenu()
         controls_menu = ControlsMenu()
         credits = CreditsScreen()  # Create an instance of CreditsScreen
+        from character_selection import CharacterSelector  # Import CharacterSelector
         character_selector = CharacterSelector()  # Create an instance of CharacterSelector
         while running:
             events = pygame.event.get()
