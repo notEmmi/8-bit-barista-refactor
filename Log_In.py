@@ -108,6 +108,9 @@ class LoginScreen:
     def try_login(self):
         print(f"Logging in with:\nUsername: {self.username}\nPassword: {self.password}")
         if not self.check_username(self.username):
+            ErrorScreen.runError()
+            self.running = False
+            
             print("Invalid username!")
             return
 
