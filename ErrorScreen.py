@@ -1,6 +1,6 @@
 import pygame
 from pygame import mixer
-import Log_In
+
 
 def runError():
 # Initialize Pygame
@@ -63,7 +63,9 @@ def runError():
                     running = False
                 elif event.key == pygame.K_RETURN:
                    # Call function from screen2.py
-                   Log_In.run_logIn()
+                   from Log_In import LoginScreen
+                   login_screen = LoginScreen()
+                   login_screen.run()
                    running = False
                 
         clock.tick(30)
