@@ -34,9 +34,18 @@ class PetSelector:
         
         
         self.dogsList = ["assets/images/pets/greydog.png", "assets/images/pets/yellowdog.png", "assets/images/pets/browndog.png"]
-        self.dogRect = pygame.Rect(self.WIDTH/2 -70, self.HEIGHT/1.5, 150,150)
+        self.dogRect = pygame.Rect(self.WIDTH/1.3, self.HEIGHT/1.7, 150,150)
         self.dog = pygame.image.load("assets/images/pets/greydog.png")
         self.dog = pygame.transform.scale(self.dog, (150,150))
+
+
+        self.catList = ["assets/images/pets/greycat.png", "assets/images/pets/yellowcat.png", "assets/images/pets/browncat.png"]
+        self.catRect = pygame.Rect(self.WIDTH/10, self.HEIGHT/1.6, 150,150)
+        self.cat = pygame.image.load("assets/images/pets/greycat.png")
+        self.cat = pygame.transform.scale(self.cat, (150,150))
+       
+       
+       
         self.arrowPressCount =0
         
     def parseDogListRight(self):
@@ -66,6 +75,7 @@ class PetSelector:
                     running = False
                 
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    
                     if self.rightarrowRect.collidepoint(event.pos):
                        self.dog = self.parseDogListRight()
                        self.dog = pygame.image.load(self.dogsList[self.arrowPressCount])
@@ -87,7 +97,8 @@ class PetSelector:
             self.screen.blit(self.leftarrow, self.leftarrowRect.topleft)
             
             
-            self.screen.blit(self.dog, self.dogRect.topleft) # RGB color
+            self.screen.blit(self.dog, self.dogRect.topleft)
+            self.screen.blit(self.cat, self.catRect.topleft) 
 
             # Update the display
             pygame.display.flip()
