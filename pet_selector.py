@@ -33,22 +33,24 @@ class PetSelector:
         
         self.dogsList = ["assets/images/pets/greydog.png", "assets/images/pets/yellowdog.png", "assets/images/pets/browndog.png"]
         self.dogRect = pygame.Rect(self.WIDTH/2 -70, self.HEIGHT/1.5, 150,150)
-        self.dog = pygame.image.load(self.dogsList[0])
+        self.dog = pygame.image.load("assets/images/pets/greydog.png")
         self.dog = pygame.transform.scale(self.dog, (150,150))
         self.arrowPressCount =0
         
     def parseDogListRight(self):
         
-            self.dog = self.dogsList[self.arrowPressCount]
+            
             if self.arrowPressCount < 2:
                 self.arrowPressCount +=1
+                self.dog = self.dogsList[self.arrowPressCount]
                 return
 
     def parseDogListLeft(self):
         
-            self.dog = self.dogsList[self.arrowPressCount]
-            if self.arrowPressCount <= 2 and self.arrowPressCount >=0 :
+            
+            if  self.arrowPressCount >0:
                 self.arrowPressCount -=1
+                self.dog = self.dogsList[self.arrowPressCount]
                 return
         
 
