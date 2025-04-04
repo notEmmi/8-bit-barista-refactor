@@ -17,7 +17,9 @@ class PetSelector:
 
         self.background = pygame.image.load("images/petScreenBkgrnd.png")
         self.background = pygame.transform.scale(self.background, (self.WIDTH, self.HEIGHT))
-
+        
+        self.sign = pygame.image.load("assets/images/others/petsign.png")
+        self.sign = pygame.transform.scale(self.sign, (self.WIDTH/4, self.HEIGHT/4))
 
         self.rightarrowRect = pygame.Rect(self.WIDTH -150, self.HEIGHT/2, 50, 50)  # Placeholder for arrow rectangle
         self.rightArrowsurface = pygame.Surface((self.rightarrowRect.width, self.rightarrowRect.height))
@@ -77,6 +79,7 @@ class PetSelector:
             # Fill the screen with white (or any color you like)
             self.screen.fill((255, 255, 255))
             self.screen.blit(self.background, (0,0))
+            self.screen.blit(self.sign, (self.WIDTH/2 - 100, self.HEIGHT/6))
             self.screen.blit(self.rightArrowsurface, self.rightarrowRect.topleft)
             self.screen.blit(self.rightarrow, self.rightarrowRect.topleft) 
 
