@@ -21,14 +21,24 @@ class PetSelector:
         self.sign = pygame.image.load("assets/images/others/petsign.png")
         self.sign = pygame.transform.scale(self.sign, (self.WIDTH/4, self.HEIGHT/4))
 
-        self.rightarrowRect = pygame.Rect(self.WIDTH -150, self.HEIGHT/2, 50, 50)  # Placeholder for arrow rectangle
-        self.rightArrowsurface = pygame.Surface((self.rightarrowRect.width, self.rightarrowRect.height))
-        self.rightarrow = pygame.image.load("images/rightarrow.png")
-        self.rightarrow = pygame.transform.scale(self.rightarrow, (50, 50))
+        self.rightarrowRect1 = pygame.Rect(self.WIDTH -150, self.HEIGHT/2, 50, 50)  # Placeholder for arrow rectangle
+        self.rightarrow1 = pygame.image.load("images/rightarrow.png")
+        self.rightarrow1 = pygame.transform.scale(self.rightarrow1, (50, 50))
 
-        self.leftarrowRect = pygame.Rect((self.WIDTH-self.WIDTH)+100, self.HEIGHT/2, 50, 50)  # Placeholder for arrow rectangle
-        self.leftarrow = pygame.image.load("images/leftarrow.png")
-        self.leftarrow = pygame.transform.scale(self.leftarrow, (50, 50))
+        self.leftarrowRect1 = pygame.Rect((self.WIDTH-self.WIDTH)+100, self.HEIGHT/2, 50, 50)  # Placeholder for arrow rectangle
+        self.leftarrow1 = pygame.image.load("images/leftarrow.png")
+        self.leftarrow1 = pygame.transform.scale(self.leftarrow1, (50, 50))
+
+        self.rightarrowRect2 = pygame.Rect((self.WIDTH-self.WIDTH)+150, self.HEIGHT/2, 50, 50)  # Placeholder for arrow rectangle
+        self.rightarrow2 = pygame.image.load("images/rightarrow.png")
+        self.rightarrow2 = pygame.transform.scale(self.rightarrow2, (50, 50))
+
+        self.leftarrowRect2 = pygame.Rect(self.WIDTH -200, self.HEIGHT/2, 50, 50)  # Placeholder for arrow rectangle
+        self.leftarrow2 = pygame.image.load("images/leftarrow.png")
+        self.leftarrow2 = pygame.transform.scale(self.leftarrow2, (50, 50))
+
+
+        
         
         
         
@@ -46,24 +56,39 @@ class PetSelector:
        
        
        
-        self.arrowPressCount =0
+        self.arrowPressCountdog =0
+        self.arrowPressCountcat =0
         
     def parseDogListRight(self):
         
             
-            if self.arrowPressCount < 2:
-                self.arrowPressCount +=1
-                self.dog = self.dogsList[self.arrowPressCount]
+            if self.arrowPressCountdog < 2:
+                self.arrowPressCountdog +=1
+                self.dog = self.dogsList[self.arrowPressCountdog]
                 return
 
     def parseDogListLeft(self):
         
             
-            if  self.arrowPressCount >0:
-                self.arrowPressCount -=1
-                self.dog = self.dogsList[self.arrowPressCount]
+            if  self.arrowPressCountdog >0:
+                self.arrowPressCountdog -=1
+                self.dog = self.dogsList[self.arrowPressCountdog]
                 return
+    def parsecatListLeft(self):
         
+            
+            if self.arrowPressCountcat < 2:
+                self.arrowPressCountcat +=1
+                self.cat = self.catList[self.arrowPressCountcat]
+                return
+            
+    def parsecatListRight(self):
+        
+            
+            if self.arrowPressCountcat < 2:
+                self.arrowPressCountcat +=1
+                self.cat = self.catList[self.arrowPressCountcat]
+                return
 
     def run(self):
         # Main game loop
@@ -76,26 +101,42 @@ class PetSelector:
                 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     
-                    if self.rightarrowRect.collidepoint(event.pos):
+                    if self.rightarrowRect1.collidepoint(event.pos):
                        self.dog = self.parseDogListRight()
-                       self.dog = pygame.image.load(self.dogsList[self.arrowPressCount])
+                       self.dog = pygame.image.load(self.dogsList[self.arrowPressCountdog])
                        self.dog = pygame.transform.scale(self.dog, (150,150))
-                    elif self.leftarrowRect.collidepoint(event.pos):
+                    elif self.leftarrowRect2.collidepoint(event.pos):
                        self.dog = self.parseDogListLeft()
-                       self.dog = pygame.image.load(self.dogsList[self.arrowPressCount])
+                       self.dog = pygame.image.load(self.dogsList[self.arrowPressCountdog])
                        self.dog = pygame.transform.scale(self.dog, (150,150))
+                    
+                    
+                    elif self.rightarrowRect2.collidepoint(event.pos):
+                       self.cat = self.parsecatListRight()
+                       self.cat = pygame.image.load(self.catList[self.arrowPressCountcat])
+                       self.cat = pygame.transform.scale(self.cat, (150,150))
+                    elif self.leftarrowRect1.collidepoint(event.pos):
+                       self.cat = self.parsecatListLeft()
+                       self.cat = pygame.image.load(self.catList[self.arrowPressCountcat])
+                       self.cat = pygame.transform.scale(self.cat, (150,150))
                      
 
             # Fill the screen with white (or any color you like)
             self.screen.fill((255, 255, 255))
             self.screen.blit(self.background, (0,0))
             self.screen.blit(self.sign, (self.WIDTH/2 - 100, self.HEIGHT/6))
-            self.screen.blit(self.rightArrowsurface, self.rightarrowRect.topleft)
-            self.screen.blit(self.rightarrow, self.rightarrowRect.topleft) 
-
-            pygame.draw.rect(self.screen, self.WHITE, self.leftarrowRect)
-            self.screen.blit(self.leftarrow, self.leftarrowRect.topleft)
             
+            
+
+            pygame.draw.rect(self.screen, self.WHITE, self.leftarrowRect1)
+            pygame.draw.rect(self.screen, self.WHITE, self.rightarrowRect1)
+            pygame.draw.rect(self.screen, self.WHITE, self.leftarrowRect2)
+            pygame.draw.rect(self.screen, self.WHITE, self.rightarrowRect2)
+            
+            self.screen.blit(self.leftarrow1, self.leftarrowRect1.topleft)
+            self.screen.blit(self.rightarrow1, self.rightarrowRect1.topleft)
+            self.screen.blit(self.rightarrow2, self.rightarrowRect2.topleft)
+            self.screen.blit(self.leftarrow2, self.leftarrowRect2.topleft)
             
             self.screen.blit(self.dog, self.dogRect.topleft)
             self.screen.blit(self.cat, self.catRect.topleft) 
