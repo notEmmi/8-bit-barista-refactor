@@ -100,6 +100,14 @@ class Toolbox:
                                 (slot_x, slot_y, self.slot_width, self.slot_height),
                                 border_radius=self.corner_radius)
                 
+                font = pygame.font.Font(None, 14)
+
+                text_surface = font.render(str(i+1), True, (255, 255, 255))
+                font_x = slot_x + self.slot_width - text_surface.get_width() - 5
+                font_y = slot_y + 5
+                
+                surface.blit(text_surface, (font_x, font_y))
+                
                 # Highlight selected seed
                 if self.selected_seed == i:
                     pygame.draw.rect(surface, self.highlight_color, 
@@ -124,7 +132,16 @@ class Toolbox:
             pygame.draw.rect(surface, self.slot_color, 
                             (slot_x, slot_y, self.slot_width, self.slot_height),
                             border_radius=self.corner_radius)
+
+            #Render Slot Number
+            font = pygame.font.Font(None, 14)
+
+            text_surface = font.render(str(i+1), True, (255, 255, 255))
+            font_x = slot_x + self.slot_width - text_surface.get_width() - 5
+            font_y = slot_y + 5
             
+            surface.blit(text_surface, (font_x, font_y))
+
             # Highlight selected tool only if a tool is selected
             if self.selected_tool != -1 and i == self.selected_tool:
                 pygame.draw.rect(surface, self.highlight_color, 
