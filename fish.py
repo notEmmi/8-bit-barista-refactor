@@ -25,7 +25,6 @@ fishing_tile = pygame.Rect(300, 100, 50, 50)
 # Track the fish shown on the tile
 current_tile_fish_index = random.randint(0, 2)
 
-
 # Load fish images
 fish_images = [
     pygame.transform.scale(pygame.image.load('fish_images/Orange.png').convert_alpha(), (25, 25)),
@@ -83,8 +82,6 @@ while True:
         white_slider.x = ui_rect.x
         slider_direction = 1
 
-
-
     # Fishing minigame
     if fishing_minigame:
         white_slider.x += slider_speed * slider_direction
@@ -98,7 +95,6 @@ while True:
                 current_tile_fish_index = random.randint(0, 2)  # New fish on the tile!
             else:
                 shake_timer = 10
-
 
     # Screen shake effect
     if shake_timer > 0:
@@ -118,7 +114,6 @@ while True:
         fish_x = fishing_tile.x + (fishing_tile.width // 2) - (fish_img.get_width() // 2)
         fish_y = fishing_tile.y + (fishing_tile.height // 2) - (fish_img.get_height() // 2)
         screen.blit(fish_img, (fish_x, fish_y))
-
 
     # Player
     pygame.draw.rect(screen, (255, 0, 0), player)
