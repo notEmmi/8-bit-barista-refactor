@@ -1,7 +1,7 @@
 import pygame
 
 class OptionsMenu:
-    def __init__(self):
+    def __init__(self, gameInstance = None):
         # Initialize Pygame
         pygame.init()
 
@@ -43,6 +43,8 @@ class OptionsMenu:
             "BACK": pygame.Rect(self.WIDTH // 2 - 40, 485, 80, 30)
         }
 
+        self.currentGameInstance = gameInstance
+
     def draw_slider(self, name, y_pos, value):
         """Draw sliders with `+` and `-` buttons."""
         min_x, max_x = 280, 520
@@ -78,6 +80,7 @@ class OptionsMenu:
     def show_options(self, events):
         """Show options menu."""
         self.screen.fill(self.LIGHT_BROWN)
+        pygame.display.set_caption("OPTIONS MENU")
 
         # Draw Background Panels
         middle_rect = pygame.Rect(30, 20, self.WIDTH - 60, self.HEIGHT - 40)
@@ -118,7 +121,9 @@ class OptionsMenu:
                         elif name == "ADVANCED":
                             return "advanced"
                         elif name == "BACK":
-                            return "menu"
+                            if (self.currentGameInstance is None): return "menu"
+                            self.currentGameInstance.is_paused = False
+                            self.currentGameInstance.run()
 
                 # Check Sliders (`+` and `-` buttons)
                 for name, (min_x, max_x, y_pos) in self.slider_rects.items():
@@ -144,7 +149,6 @@ class OptionsMenu:
                 self.sliders[self.active_slider] = max(0, min(1, (mouse_pos[0] - min_x) / (max_x - min_x)))
 
         return "options"
-
 
 # Example Usage
 # options_menu = OptionsMenu()

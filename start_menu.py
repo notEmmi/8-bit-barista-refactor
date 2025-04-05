@@ -3,10 +3,11 @@ import sys
 import os
 from options import OptionsMenu
 from credits import CreditsScreen
-from character_selection import CharacterSelector  # Import CharacterSelector
+from advanced import AdvancedMenu
+from keybinds import ControlsMenu
 
 class StartMenu:
-    def __init__(self):
+    def __init__(self, gameInstance = None):
         # Initialize Pygame
         pygame.init()
 
@@ -31,7 +32,13 @@ class StartMenu:
         self.OPTIONS = "options"
         self.CHARACTER_SELECTION = "character_selection"
         self.CREDITS = "credits"
+        self.CONTROLS = "controls"
+        self.ADVANCED = "advanced"
         self.current_screen = self.MENU  # Start at the menu
+
+        self.isFromGame = False
+
+        self.currentGameInstance = gameInstance
 
         # Define Buttons
         button_width, button_height = 200, 60
@@ -108,8 +115,11 @@ class StartMenu:
 
     def run(self):
         running = True
-        options_menu = OptionsMenu()  # Create an instance of OptionsMenu
+        options_menu = OptionsMenu(self.currentGameInstance)  # Create an instance of OptionsMenu
+        advanced_menu = AdvancedMenu()
+        controls_menu = ControlsMenu()
         credits = CreditsScreen()  # Create an instance of CreditsScreen
+        from character_selection import CharacterSelector  # Import CharacterSelector
         character_selector = CharacterSelector()  # Create an instance of CharacterSelector
         while running:
             events = pygame.event.get()
@@ -136,6 +146,10 @@ class StartMenu:
                 new_screen = options_menu.show_options(events)
                 if new_screen == "menu":
                     self.current_screen = self.MENU
+                elif new_screen == "controls":
+                    self.current_screen = self.CONTROLS
+                elif new_screen == "advanced":
+                    self.current_screen = self.ADVANCED
 
             elif self.current_screen == self.CREDITS:
                 new_screen = credits.show_credits(self.screen, events)  # Store return value      
@@ -145,6 +159,14 @@ class StartMenu:
             elif self.current_screen == self.CHARACTER_SELECTION:
                 character_selector.run()  # Run the character selection screen
                 self.current_screen = self.MENU  # After character selection, return to menu
+
+            elif self.current_screen == self.ADVANCED:
+                advanced_button_callback = advanced_menu.run()
+                if advanced_button_callback == "options": self.current_screen = self.OPTIONS
+
+            elif self.current_screen == self.CONTROLS:
+                controls_button_callback = controls_menu.run()
+                if controls_button_callback == "options": self.current_screen = self.OPTIONS
 
             pygame.display.flip()  # Update screen
 

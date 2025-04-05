@@ -1,9 +1,9 @@
 import pygame  # Import the pygame module
 import sys  # Import the sys module
 import os  # Import the os module
-from Loading import LoadingScreen  # Import the LoadingScreen class
-from placeholder_screen import PlaceholderScreen  # Import the PlaceholderScreen class
 from first_page import Game
+from Building_Selection_Screen import runBuildingSelectionScreen  # Import the building selection screen function
+from character_utils import save_selected_character, load_selected_character
 
 # Initialize Pygame
 pygame.init()
@@ -33,41 +33,31 @@ class CharacterSelector:
     def __init__(self):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))  # Create the game window
         pygame.display.set_caption("Character Selection")  # Set the window title
+
+        self.selected_character = load_selected_character()
+        # List of characters
+        self.characters = ["boy1", "boy2", "boy3", "girl1", "girl2", "girl3"]
         
         # Load and scale character avatars
-        self.character_images = {
-            "boy1": [
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy1/boy1_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy1/boy1_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
-            ],
-            "girl1": [
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl1/girl1_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl1/girl1_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
-            ],
-            "boy2": [
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy2/boy2_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy2/boy2_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
-            ],
-            "girl2": [
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl2/girl2_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl2/girl2_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
-            ],
-            "boy3": [
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy3/boy3_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "boy3/boy3_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
-            ],
-            "girl3": [
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl3/girl3_closeup.png")), (AVATAR_SIZE, AVATAR_SIZE)),
-                pygame.transform.scale(pygame.image.load(os.path.join(ASSET_DIR, "girl3/girl3_portrait.png")), (PREVIEW_SIZE, PREVIEW_SIZE))
-            ],
-            # Add more character images here
-        }
+        self.character_images = {}
+        for character in self.characters:
+            avatar = pygame.image.load(os.path.join(ASSET_DIR, f"{character}/{character}_closeup.png"))
+            portrait = pygame.image.load(os.path.join(ASSET_DIR, f"{character}/{character}_portrait.png"))
+
+            # Increase the size by 3 times while maintaining aspect ratio
+            new_width = int(avatar.get_width() * 3)
+            new_height = int(avatar.get_height() * 3)
+            avatar = pygame.transform.scale(avatar, (new_width, new_height))
+
+            # Scale the portrait for the preview
+            portrait = pygame.transform.scale(portrait, (PREVIEW_SIZE, PREVIEW_SIZE))
+
+            self.character_images[character] = [avatar, portrait]
         
         # Input field settings
         self.name_input = ""
         self.input_active = False
         self.font = pygame.font.Font(None, 32)
-        self.selected_character = "boy1"
         self.error_message = ""
 
         # UI Element Positions
@@ -102,19 +92,31 @@ class CharacterSelector:
                     character = characters[index]
                     # Calculate the x and y position for the character avatar
                     x = 50 + col * (AVATAR_SIZE + 30)
-                    y = self.grid_y_offset + row * (AVATAR_SIZE + 30) 
+                    y = self.grid_y_offset + row * (AVATAR_SIZE + 30)
 
-                    # Draw character avatar
+                    # Draw character avatar with highlight if selected
                     if character == self.selected_character:
-                        pygame.draw.rect(self.screen, BROWN, (x-5, y-5, AVATAR_SIZE+10, AVATAR_SIZE+10), 3)  # Draw a highlight around the selected character
-                    pygame.draw.rect(self.screen, WHITE, (x, y, AVATAR_SIZE, AVATAR_SIZE))  # Draw the character avatar background
-                    self.screen.blit(self.character_images[character][0], (x, y))  # Draw the character avatar
-                    
+                        pygame.draw.rect(self.screen, BROWN, (x - 5, y - 5, AVATAR_SIZE + 10, AVATAR_SIZE + 10), 3)
+                    pygame.draw.rect(self.screen, WHITE, (x, y, AVATAR_SIZE, AVATAR_SIZE))  # Draw the box
+
+                    # Load the sprite without resizing
+                    sprite = self.character_images[character][0]
+                    sprite_rect = sprite.get_rect()
+
+                    # Calculate the centered position
+                    centered_x = x + (AVATAR_SIZE - sprite_rect.width) // 2
+                    centered_y = y + (AVATAR_SIZE - sprite_rect.height) // 2
+
+                    # Draw the sprite at the centered position
+                    self.screen.blit(sprite, (centered_x, centered_y))
+
                     # Check for mouse click to select character
                     if pygame.mouse.get_pressed()[0]:
                         mouse_x, mouse_y = pygame.mouse.get_pos()
-                        if x < mouse_x < x + AVATAR_SIZE and y < mouse_y < y + AVATAR_SIZE:  # Check if the mouse is over the character avatar
+                        if x < mouse_x < x + AVATAR_SIZE and y < mouse_y < y + AVATAR_SIZE:
+                            # Update the selected character correctly
                             self.selected_character = character
+                            save_selected_character(character)  # Save the correct character
 
     def draw_preview(self):
         # Draw large character preview
@@ -161,19 +163,19 @@ class CharacterSelector:
             error_surface = self.font.render(self.error_message, True, (255, 0, 0))
             self.screen.blit(error_surface, (input_x, input_y + INPUT_BOX_HEIGHT + 10))
 
-    def draw_ok_button(self):
-        # Draw OK button
+    def draw_next_button(self):
+        # Draw Next button
         button_x = WINDOW_WIDTH - BUTTON_WIDTH - 50
         button_y = (WINDOW_HEIGHT - BUTTON_HEIGHT) // 2 + 200
         pygame.draw.rect(self.screen, BROWN, 
                 (button_x, button_y, BUTTON_WIDTH, BUTTON_HEIGHT))
         
         # Draw button text
-        button_text = self.font.render("OK", True, WHITE)
+        button_text = self.font.render("Next", True, WHITE)
         text_rect = button_text.get_rect(center=(button_x + BUTTON_WIDTH//2, button_y + BUTTON_HEIGHT//2))
         self.screen.blit(button_text, text_rect)
 
-        # Check for mouse click to navigate to loading screen
+        # Check for mouse click to navigate to building selection screen
         if pygame.mouse.get_pressed()[0]:
             mouse_x, mouse_y = pygame.mouse.get_pos()
             if button_x < mouse_x < button_x + BUTTON_WIDTH and button_y < mouse_y < button_y + BUTTON_HEIGHT:
@@ -181,10 +183,7 @@ class CharacterSelector:
                     self.error_message = "Name required."
                 else:
                     self.error_message = ""  # Clear the error message
-                    placeholder_screen = PlaceholderScreen()
-                    firstPage = Game()
-                    loading_screen = LoadingScreen(firstPage.run())  # Create a loading screen instance
-                    loading_screen.run()
+                    runBuildingSelectionScreen()  # Navigate to the building selection screen
 
     def handle_key_press(self, event):
         # Handle key press events
@@ -240,7 +239,7 @@ class CharacterSelector:
             self.draw_character_grid()  # Draw the character grid
             self.draw_preview()  # Draw the character preview
             self.draw_input_field()  # Draw the input field
-            self.draw_ok_button()  # Draw the OK button
+            self.draw_next_button()
             
             pygame.display.flip()  # Update the display
 
