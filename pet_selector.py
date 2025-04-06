@@ -40,7 +40,7 @@ class PetSelector:
         self.leftarrow2 = pygame.image.load("images/leftarrow.png")
         self.leftarrow2 = pygame.transform.scale(self.leftarrow2, (50, 50))
 
-
+        
         
         
         
@@ -60,11 +60,16 @@ class PetSelector:
 
 
         self.selectionRect = pygame.Rect(self.WIDTH/2 -60, self.HEIGHT/1.6, 150,150)
+        
+        self.isThisYourChoiceRect = pygame.Rect(self.WIDTH/2 -150, self.HEIGHT/2.2, 300, 100)
+        self.choice = pygame.image.load("images/choicesign.png")
+        self.choice = pygame.transform.scale(self.choice, (300,100))
        
        
        
         self.arrowPressCountdog =0
         self.arrowPressCountcat =0
+        self.madeachoice =0
         
     def parseDogListRight(self):
         
@@ -116,7 +121,7 @@ class PetSelector:
                        self.dog = self.parseDogListLeft()
                        self.dog = pygame.image.load(self.dogsList[self.arrowPressCountdog])
                        self.dog = pygame.transform.scale(self.dog, (150,150))
-                    
+                         
                     
                     elif self.rightarrowRect2.collidepoint(event.pos):
                        self.cat = self.parsecatListRight()
@@ -129,6 +134,14 @@ class PetSelector:
                     elif self.dogRect.collidepoint(event.pos):
                          print("clicked dog rect")
                          self.selection = self.dog
+                         self.madeachoice =1
+                    elif self.catRect.collidepoint(event.pos):
+                         print("clicked dog rect")
+                         self.selection = self.cat
+                         self.madeachoice =1
+                   
+                         
+                         
                     
 
             # Fill the screen with white (or any color you like)
@@ -151,6 +164,9 @@ class PetSelector:
             self.screen.blit(self.dog, self.dogRect.topleft)
             self.screen.blit(self.cat, self.catRect.topleft) 
             self.screen.blit(self.selection, self.selectionRect)
+            if self.madeachoice >0:
+                 self.screen.blit(self.choice, self.isThisYourChoiceRect.topleft)
+             
             
 
             # Update the display
