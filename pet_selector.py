@@ -14,6 +14,9 @@ class PetSelector:
         self.clock = pygame.time.Clock()
         self.FPS = 60
         self.WHITE = (255, 255, 255)
+        self.BROWN = (240, 161, 36)
+        self.selection = pygame.image.load("images/questionmark.png")
+        self.selection = pygame.transform.scale(self.selection, (150,150))
 
         self.background = pygame.image.load("images/petScreenBkgrnd.png")
         self.background = pygame.transform.scale(self.background, (self.WIDTH, self.HEIGHT))
@@ -53,6 +56,10 @@ class PetSelector:
         self.catRect = pygame.Rect(self.WIDTH/10, self.HEIGHT/1.6, 150,150)
         self.cat = pygame.image.load("assets/images/pets/greycat.png")
         self.cat = pygame.transform.scale(self.cat, (150,150))
+
+
+
+        self.selectionRect = pygame.Rect(self.WIDTH/2 -60, self.HEIGHT/1.6, 150,150)
        
        
        
@@ -77,8 +84,8 @@ class PetSelector:
     def parsecatListLeft(self):
         
             
-            if self.arrowPressCountcat < 2:
-                self.arrowPressCountcat +=1
+            if self.arrowPressCountcat >0:
+                self.arrowPressCountcat -=1
                 self.cat = self.catList[self.arrowPressCountcat]
                 return
             
@@ -119,7 +126,10 @@ class PetSelector:
                        self.cat = self.parsecatListLeft()
                        self.cat = pygame.image.load(self.catList[self.arrowPressCountcat])
                        self.cat = pygame.transform.scale(self.cat, (150,150))
-                     
+                    elif self.dogRect.collidepoint(event.pos):
+                         print("clicked dog rect")
+                         self.selection = self.dog
+                    
 
             # Fill the screen with white (or any color you like)
             self.screen.fill((255, 255, 255))
@@ -128,18 +138,20 @@ class PetSelector:
             
             
 
-            pygame.draw.rect(self.screen, self.WHITE, self.leftarrowRect1)
+            pygame.draw.rect(self.screen, self.BROWN, self.leftarrowRect1)
             pygame.draw.rect(self.screen, self.WHITE, self.rightarrowRect1)
-            pygame.draw.rect(self.screen, self.WHITE, self.leftarrowRect2)
+            pygame.draw.rect(self.screen, self.BROWN, self.leftarrowRect2)
             pygame.draw.rect(self.screen, self.WHITE, self.rightarrowRect2)
+            
             
             self.screen.blit(self.leftarrow1, self.leftarrowRect1.topleft)
             self.screen.blit(self.rightarrow1, self.rightarrowRect1.topleft)
             self.screen.blit(self.rightarrow2, self.rightarrowRect2.topleft)
             self.screen.blit(self.leftarrow2, self.leftarrowRect2.topleft)
-            
             self.screen.blit(self.dog, self.dogRect.topleft)
             self.screen.blit(self.cat, self.catRect.topleft) 
+            self.screen.blit(self.selection, self.selectionRect)
+            
 
             # Update the display
             pygame.display.flip()
