@@ -139,6 +139,11 @@ class PetSelector:
                          print("clicked dog rect")
                          self.selection = self.cat
                          self.madeachoice =1
+                    elif self.isThisYourChoiceRect.collidepoint(event.pos):
+                         if self.madeachoice >0:
+                            from confirm_pet_screen import confirmPet
+                            confirm_pet = confirmPet()
+                            confirm_pet.run()
                    
                          
                          
