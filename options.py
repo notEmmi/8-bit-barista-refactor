@@ -1,4 +1,5 @@
 import pygame
+from music_selector import MusicSelector
 
 class OptionsMenu:
     def __init__(self, gameInstance = None):
@@ -120,11 +121,16 @@ class OptionsMenu:
                         if name == "CONTROLS":
                             return "controls"
                         elif name == "MUSIC TRACK":
-                            return "music_track"
+                            music_selector = MusicSelector(
+                                self.screen, self.WIDTH, self.HEIGHT, 
+                                ["Chill Mode", "Epic Adventure", "Relaxing Vibes"]
+                            )
+                            return music_selector.run()
                         elif name == "ADVANCED":
                             return "advanced"
                         elif name == "BACK":
-                            if (self.currentGameInstance is None): return "menu"
+                            if self.currentGameInstance is None:
+                                return "menu"
                             self.currentGameInstance.is_paused = False
                             self.currentGameInstance.run()
 
