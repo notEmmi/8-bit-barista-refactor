@@ -38,8 +38,9 @@ class OptionsMenu:
 
         # Buttons
         self.buttons = {
-            "CONTROLS": pygame.Rect(250, 420, 100, 35),
-            "ADVANCED": pygame.Rect(460, 420, 100, 35),
+            "CONTROLS": pygame.Rect(200, 420, 100, 35),
+            "MUSIC TRACK": pygame.Rect(330, 420, 140, 35),
+            "ADVANCED": pygame.Rect(500, 420, 100, 35),
             "BACK": pygame.Rect(self.WIDTH // 2 - 40, 485, 80, 30)
         }
 
@@ -118,6 +119,8 @@ class OptionsMenu:
                     if rect.collidepoint(mouse_pos):
                         if name == "CONTROLS":
                             return "controls"
+                        elif name == "MUSIC TRACK":
+                            return "music_track"
                         elif name == "ADVANCED":
                             return "advanced"
                         elif name == "BACK":
