@@ -122,10 +122,14 @@ class OptionsMenu:
                             return "controls"
                         elif name == "MUSIC TRACK":
                             music_selector = MusicSelector(
-                                self.screen, self.WIDTH, self.HEIGHT, 
-                                ["Chill Mode", "Epic Adventure", "Relaxing Vibes"]
+                                self.screen, self.WIDTH, self.HEIGHT,
+                                current_track_index=0,  # Default to the first track
+                                current_track_path=self.currentGameInstance.background_music  # Pass the current track
                             )
-                            return music_selector.run()
+                            next_screen, selected_track = music_selector.run()
+                            if selected_track:
+                                self.currentGameInstance.background_music = selected_track  # Save the confirmed track
+                            return next_screen
                         elif name == "ADVANCED":
                             return "advanced"
                         elif name == "BACK":

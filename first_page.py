@@ -12,6 +12,7 @@ import inventory
 import random
 import start_menu
 from pygame_gui import UI_BUTTON_PRESSED
+from music_selector import MusicSelector
 
 class Game:
     def __init__(self, chosen_building, fromPriorMenu = False, gameData = None):
@@ -721,6 +722,22 @@ class Game:
         cloudy = self.cloudy_weather
         return (theGameTime, day, position, house, weather, character, direction, raining, cloudy)
     
+    def handle_music_selection(self):
+        """Handle music selection and update background music if confirmed."""
+        music_selector = MusicSelector(self.screen, self.SCREEN_WIDTH, self.SCREEN_HEIGHT)
+        next_screen, selected_track = music_selector.run()
+
+        if next_screen == "options" and selected_track:
+            # Stop current music and load the new track
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load(selected_track)
+            pygame.mixer.music.play(-1)
+
+            # Save the confirmed track
+            self.background_music = selected_track
+
+        return next_screen
+
     def run(self):
         # Main Game Loop
         running = True
