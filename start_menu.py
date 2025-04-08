@@ -1,8 +1,8 @@
 import pygame
 import sys
 import os
+import json
 from options import OptionsMenu
-from credits import CreditsScreen
 from advanced import AdvancedMenu
 from keybinds import ControlsMenu
 
@@ -31,7 +31,6 @@ class StartMenu:
         self.MENU = "menu"
         self.OPTIONS = "options"
         self.CHARACTER_SELECTION = "character_selection"
-        self.CREDITS = "credits"
         self.CONTROLS = "controls"
         self.ADVANCED = "advanced"
         self.current_screen = self.MENU  # Start at the menu
@@ -45,12 +44,22 @@ class StartMenu:
         button_x = (self.WIDTH - button_width) // 2
         button_spacing = 90
         button_start_y = 220
-        self.buttons = [
-            self.Button("START", button_x, button_start_y, button_width, button_height, self.CHARACTER_SELECTION),
-            self.Button("OPTIONS", button_x, button_start_y + button_spacing, button_width, button_height, self.OPTIONS),
-            self.Button("CREDITS", button_x, button_start_y + 2 * button_spacing, button_width, button_height, self.CREDITS),
-            self.Button("EXIT", (self.WIDTH - 150) // 2, button_start_y + 3 * button_spacing, 150, 55, None)
-        ]
+
+        # Check if save file exists
+        self.save_file = "save_game.json"
+        self.buttons = []
+
+        if self.check_save_exists():
+            # If a save file exists, show both "Continue" and "New Game"
+            self.buttons.append(self.Button("CONTINUE", button_x, button_start_y - button_spacing, button_width, button_height, self.load_game))
+            self.buttons.append(self.Button("NEW GAME", button_x, button_start_y, button_width, button_height, self.confirm_new_game))
+        else:
+            # If no save file, only show "New Game"
+            self.buttons.append(self.Button("NEW GAME", button_x, button_start_y, button_width, button_height, self.start_new_game))
+
+        # Add "Options" and "Exit" buttons
+        self.buttons.append(self.Button("OPTIONS", button_x, button_start_y + button_spacing, button_width, button_height, self.show_options))
+        self.buttons.append(self.Button("EXIT", (self.WIDTH - 150) // 2, button_start_y + 2 * button_spacing, 150, 55, self.exit_game))
 
         # Load Coffee Cup Image
         try:
@@ -60,6 +69,40 @@ class StartMenu:
         except:
             self.coffee_img = None
 
+    def check_save_exists(self, filename="save_game.json"):
+        """Check if a save file exists."""
+        return os.path.exists(filename)
+
+    def confirm_new_game(self):
+        """Show a confirmation dialog to overwrite the current save file."""
+        confirmation_dialog = self.ConfirmationDialog(self.screen)
+        if confirmation_dialog.run():
+            self.start_new_game()
+
+    def start_new_game(self):
+        """Starts a new game and overwrites the current save file."""
+        # Implement logic to start a new game and overwrite the save file
+        self.currentGameInstance.start_new_game()  # Assuming a method for this
+        self.save_game()  # Overwrite the save file
+        self.current_screen = "game"  # Transition to the game screen
+
+    def load_game(self):
+        """Load the game from the save file and transition to the game screen."""
+        self.currentGameInstance.load_game()  # Assuming a method to load the saved game
+        self.current_screen = "game"  # Transition to the game screen
+
+    def save_game(self):
+        """Save the game data to a file (overwrite the existing save)."""
+        game_data = {
+            "player": self.currentGameInstance.player_data,  # Assume you have player data
+            "environment": self.currentGameInstance.environment_data,  # Same for environment
+            "time": self.currentGameInstance.time_data,  # Time-related info
+            # Add other game state variables
+        }
+        with open(self.save_file, 'w') as save_file:
+            json.dump(game_data, save_file)
+        print("Game saved successfully!")
+    
     def draw_blurred_shadow(self, surface, rect, blur_radius=10, offset_x=8, offset_y=8, border_radius=12):
         """Draws a smooth, blurred shadow for UI elements."""
         shadow_surface = pygame.Surface((rect.width + offset_x * 2, rect.height + offset_y * 2), pygame.SRCALPHA)
@@ -118,7 +161,6 @@ class StartMenu:
         options_menu = OptionsMenu(self.currentGameInstance)  # Create an instance of OptionsMenu
         advanced_menu = AdvancedMenu()
         controls_menu = ControlsMenu()
-        credits = CreditsScreen()  # Create an instance of CreditsScreen
         from character_selection import CharacterSelector  # Import CharacterSelector
         character_selector = CharacterSelector()  # Create an instance of CharacterSelector
         while running:
@@ -137,10 +179,17 @@ class StartMenu:
                         for button in self.buttons:
                             if button.is_clicked(pygame.mouse.get_pos()):
                                 if button.action:
-                                    self.current_screen = button.action
+                                    if button.text == "CONTINUE":
+                                        button.acion()
+                                    else:
+                                        self.current_screen = button.action
                                 if button.text == "EXIT":
                                     running = False
                                 print(f"{button.text} button clicked!")
+            
+            elif self.current_screen == "game":
+                self.currentGameInstance.run()
+                running = False
 
             elif self.current_screen == self.OPTIONS:
                 new_screen = options_menu.show_options(events)
@@ -150,11 +199,6 @@ class StartMenu:
                     self.current_screen = self.CONTROLS
                 elif new_screen == "advanced":
                     self.current_screen = self.ADVANCED
-
-            elif self.current_screen == self.CREDITS:
-                new_screen = credits.show_credits(self.screen, events)  # Store return value      
-                if new_screen == "menu":  # If "BACK" is clicked in credits.py
-                    self.current_screen = self.MENU  # Switch back to start menu
 
             elif self.current_screen == self.CHARACTER_SELECTION:
                 character_selector.run()  # Run the character selection screen

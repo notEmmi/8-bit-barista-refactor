@@ -11,6 +11,7 @@ import shop
 import inventory
 import random
 import start_menu
+import json
 from pygame_gui import UI_BUTTON_PRESSED
 
 class Game:
@@ -158,6 +159,46 @@ class Game:
 
         self.gameData = gameData
         if fromPriorMenu: self.loadGameState()
+
+        # Default game data
+        self.player_data = {
+            "name": "John Doe",
+            "character": "default",
+            "day": 1,
+            "time": "5:30 AM",
+            "weather": "sunny",
+            "environment": {},
+            "position": {"x": 0, "y": 0}
+        }
+
+        if gameData:
+            self.load_game(gameData)
+
+    def save_game(self, filename="save_game.json"):
+        game_data = {
+            "player": self.player_data,
+            "environment": self.player_data["environment"],
+            "weather": self.player_data["weather"],
+            "position": self.player_data["position"],
+            "time": self.player_data["time"],
+            "day": self.player_data["day"]
+        }
+
+        with open(filename, 'w') as save_file:
+            json.dump(game_data, save_file)
+        print("Game saved successfully!")
+
+    def load_game(self, filename="save_game.json"):
+        try:
+            with open(filename, 'r') as save_file:
+                game_data = json.load(save_file)
+                self.player_data.update(game_data)
+            print("Game loaded successfully!")
+        except FileNotFoundError:
+            print("No save file found. Starting a new game.")
+
+    def check_save_exists(self, filename="save_game.json"):
+        return os.path.exists(filename)
 
     def load_map(self, map_file):
         """Load TMX map and extract collidable and building objects."""
