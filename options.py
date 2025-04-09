@@ -1,4 +1,4 @@
-import pygame
+import pygame, settingsdata
 
 class OptionsMenu:
     def __init__(self, gameInstance = None):
@@ -24,17 +24,20 @@ class OptionsMenu:
 
         # Sliders (Volume Controls)
         self.sliders = {
-            "Master Volume": 0.5,
-            "Music": 0.5,
-            "SFX": 0.5
+            "Master Volume": settingsdata.volumes[0],
+            "Music": settingsdata.volumes[1],
+            "SFX": settingsdata.volumes[2]
         }
         self.slider_rects = {}
         self.active_slider = None
 
         # Texture Settings
+        j = 0
+        for j in range(len(settingsdata.textureQualitySettings)):
+            if settingsdata.textureQualitySettings[j]: break
         self.textures = ["Low", "Med", "High"]
         self.texture_rects = []  # Stores hitboxes for texture buttons
-        self.selected_texture = "High"
+        self.selected_texture = self.textures[j]
 
         # Buttons
         self.buttons = {
@@ -76,6 +79,11 @@ class OptionsMenu:
             pygame.draw.circle(self.screen, color, (x_positions[i], 385), 8)
             text = pygame.font.Font(pygame.font.match_font('courier'), 16).render(texture, True, self.WHITE)
             self.screen.blit(text, (x_positions[i] - text.get_width() // 2, 354))
+    
+    def findVolumeToUpdate(self, slider: str, volume):
+        if slider == "Master Volume": settingsdata.updateMasterVolume(volume)
+        elif slider == "Music": settingsdata.updateMusicVolume(volume)
+        elif slider == "SFX": settingsdata.updateSFXVolume(volume)
 
     def show_options(self, events):
         """Show options menu."""
@@ -128,9 +136,13 @@ class OptionsMenu:
                 # Check Sliders (`+` and `-` buttons)
                 for name, (min_x, max_x, y_pos) in self.slider_rects.items():
                     if min_x - 30 < mouse_pos[0] < min_x - 10 and y_pos - 8 < mouse_pos[1] < y_pos + 12:
-                        self.sliders[name] = max(0, self.sliders[name] - 0.1)
+                        volume = max(0, self.sliders[name] - 0.1)
+                        self.sliders[name] = volume
+                        self.findVolumeToUpdate(name, volume)
                     elif max_x + 10 < mouse_pos[0] < max_x + 30 and y_pos - 8 < mouse_pos[1] < y_pos + 12:
-                        self.sliders[name] = min(1, self.sliders[name] + 0.1)
+                        volume = min(1, self.sliders[name] + 0.1)
+                        self.sliders[name] = volume
+                        self.findVolumeToUpdate(name, volume)
                     else:
                         handle_x = min_x + int(self.sliders[name] * (max_x - min_x))
                         if handle_x - 10 < mouse_pos[0] < handle_x + 10 and y_pos - 10 < mouse_pos[1] < y_pos + 10:
@@ -140,13 +152,16 @@ class OptionsMenu:
                 for i, texture_rect in enumerate(self.texture_rects):
                     if texture_rect.collidepoint(mouse_pos):
                         self.selected_texture = self.textures[i]
+                        settingsdata.updateTextureQuality(self.selected_texture)
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 self.active_slider = None
 
             elif event.type == pygame.MOUSEMOTION and self.active_slider:
                 min_x, max_x, y_pos = self.slider_rects[self.active_slider]
-                self.sliders[self.active_slider] = max(0, min(1, (mouse_pos[0] - min_x) / (max_x - min_x)))
+                volume = max(0, min(1, (mouse_pos[0] - min_x) / (max_x - min_x)))
+                self.sliders[self.active_slider] = volume
+                self.findVolumeToUpdate(self.active_slider, volume)
 
         return "options"
 

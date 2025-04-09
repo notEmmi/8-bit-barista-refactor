@@ -11,6 +11,7 @@ import shop
 import inventory
 import random
 import start_menu
+import settingsdata
 from pygame_gui import UI_BUTTON_PRESSED
 
 class Game:
@@ -150,6 +151,7 @@ class Game:
         # Load and play background music
         self.background_music = os.path.join(self.SOUND_PATH, "1_new_life_master.mp3")
         pygame.mixer.music.load(self.background_music)
+        pygame.mixer.music.set_volume(settingsdata.volumes[0] * settingsdata.volumes[1])
         pygame.mixer.music.play(-1)  # Play on repeat
 
         self.toolbox = Toolbox()
