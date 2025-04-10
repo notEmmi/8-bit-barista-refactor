@@ -1,4 +1,6 @@
 import pygame, settingsdata
+from music_selector import MusicSelector
+
 
 class OptionsMenu:
     def __init__(self, gameInstance = None):
@@ -41,8 +43,9 @@ class OptionsMenu:
 
         # Buttons
         self.buttons = {
-            "CONTROLS": pygame.Rect(250, 420, 100, 35),
-            "ADVANCED": pygame.Rect(460, 420, 100, 35),
+            "CONTROLS": pygame.Rect(200, 420, 100, 35),
+            "MUSIC TRACK": pygame.Rect(330, 420, 140, 35),
+            "ADVANCED": pygame.Rect(500, 420, 100, 35),
             "BACK": pygame.Rect(self.WIDTH // 2 - 40, 485, 80, 30)
         }
 
@@ -126,10 +129,21 @@ class OptionsMenu:
                     if rect.collidepoint(mouse_pos):
                         if name == "CONTROLS":
                             return "controls"
+                        elif name == "MUSIC TRACK":
+                            music_selector = MusicSelector(
+                                self.screen, self.WIDTH, self.HEIGHT,
+                                current_track_index=0,  # Default to the first track
+                                current_track_path=self.currentGameInstance.background_music  # Pass the current track
+                            )
+                            next_screen, selected_track = music_selector.run()
+                            if selected_track:
+                                self.currentGameInstance.background_music = selected_track  # Save the confirmed track
+                            return next_screen
                         elif name == "ADVANCED":
                             return "advanced"
                         elif name == "BACK":
-                            if (self.currentGameInstance is None): return "menu"
+                            if self.currentGameInstance is None:
+                                return "menu"
                             self.currentGameInstance.is_paused = False
                             self.currentGameInstance.run()
 
