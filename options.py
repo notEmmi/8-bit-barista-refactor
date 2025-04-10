@@ -1,6 +1,4 @@
 import pygame, settingsdata
-from music_selector import MusicSelector
-
 
 class OptionsMenu:
     def __init__(self, gameInstance = None):
@@ -43,11 +41,12 @@ class OptionsMenu:
 
         # Buttons
         self.buttons = {
-            "CONTROLS": pygame.Rect(200, 420, 100, 35),
-            "MUSIC TRACK": pygame.Rect(330, 420, 140, 35),
-            "ADVANCED": pygame.Rect(500, 420, 100, 35),
+            "CONTROLS": pygame.Rect(250, 420, 100, 35),
+            "ADVANCED": pygame.Rect(460, 420, 100, 35),
             "BACK": pygame.Rect(self.WIDTH // 2 - 40, 485, 80, 30)
         }
+
+        self.masterVolumeMuteButton = pygame.Rect((self.WIDTH // 2) - 8, (self.HEIGHT // 2) - 168, 18, 18)
 
         self.currentGameInstance = gameInstance
 
@@ -70,6 +69,15 @@ class OptionsMenu:
         plus_text = self.button_font.render("+", True, self.WHITE)
         self.screen.blit(minus_text, minus_text.get_rect(center=(min_x - 22, y_pos + 3)))
         self.screen.blit(plus_text, plus_text.get_rect(center=(max_x + 26, y_pos + 3)))
+
+        if (name != "Master Volume"): return
+
+        pygame.draw.rect(self.screen, (201, 125, 96), self.masterVolumeMuteButton, border_radius=3)
+        if (settingsdata.volumes[0] == 0.0): 
+            muteToggleText = self.button_font.render("V", True, (255, 255, 255))
+        else:
+            muteToggleText = self.button_font.render("X", True, (255, 255, 255))
+        self.screen.blit(muteToggleText, plus_text.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2 - 160)))
 
     def draw_textures(self):
         """Draw texture options."""
@@ -125,25 +133,17 @@ class OptionsMenu:
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Check Buttons
+                if self.masterVolumeMuteButton.collidepoint(mouse_pos):
+                    settingsdata.toggleMuteMasterVolume()
+                    self.sliders["Master Volume"] = settingsdata.volumes[0]
                 for name, rect in self.buttons.items():
                     if rect.collidepoint(mouse_pos):
                         if name == "CONTROLS":
                             return "controls"
-                        elif name == "MUSIC TRACK":
-                            music_selector = MusicSelector(
-                                self.screen, self.WIDTH, self.HEIGHT,
-                                current_track_index=0,  # Default to the first track
-                                current_track_path=self.currentGameInstance.background_music  # Pass the current track
-                            )
-                            next_screen, selected_track = music_selector.run()
-                            if selected_track:
-                                self.currentGameInstance.background_music = selected_track  # Save the confirmed track
-                            return next_screen
                         elif name == "ADVANCED":
                             return "advanced"
                         elif name == "BACK":
-                            if self.currentGameInstance is None:
-                                return "menu"
+                            if (self.currentGameInstance is None): return "menu"
                             self.currentGameInstance.is_paused = False
                             self.currentGameInstance.run()
 
