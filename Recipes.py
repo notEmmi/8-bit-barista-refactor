@@ -1,6 +1,5 @@
 import pygame
 import Popular
-import settingsdata
 from pygame import mixer
 
 class Recipes:
@@ -56,7 +55,6 @@ class Recipes:
         
         # Load and play background music
         mixer.music.load("tracks/08 - Shop.mp3")
-        mixer.music.set_volume(settingsdata.volumes[0] * settingsdata.volumes[1])
         mixer.music.play()
         
     def draw_text(self, surface, text, rect, font, color):

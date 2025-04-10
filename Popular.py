@@ -1,6 +1,5 @@
 import pygame
 import Unlock
-import settingsdata
 from pygame import mixer
 
 # Initialize pygame
@@ -94,7 +93,6 @@ def runPopular():
     popularFont = pygame.font.Font(pygame.font.match_font("Irish Grover"), 48)
     mixer.init()
     mixer.music.load("tracks/08 - Shop.mp3")
-    mixer.music.set_volume(settingsdata.volumes[0] * settingsdata.volumes[1])
     mixer.music.play()
     def draw_text(surface, text, rect, font, color):
         text_surface = font.render(text, True, color)
