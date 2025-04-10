@@ -19,7 +19,7 @@ muteMasterVolumeToggleContainer = [0.0]
 def updateMasterVolume(value):
     if not isinstance(value, float) and not isinstance(value, int): return
     volumes[0] = value
-    print(f"master volue (volumes[0]): {volumes[0]}")
+    print(f"master volume (volumes[0]): {volumes[0]}")
     mixer.music.set_volume(volumes[0] * volumes[1])
     print(f"updated music to {volumes[0] * volumes[1]} (volumes[0] * volumes[1])")
     for i in range(mixer.get_num_channels()):
@@ -63,11 +63,11 @@ def updateScreenShake(value):
     print(f"updated rainAnimations to {booleanSettings[2]}")
 
 def toggleMuteMasterVolume():
-    if (muteMasterVolumeToggleContainer[0] == 0.0):
+    if (volumes[0] != 0.0):
         muteMasterVolumeToggleContainer[0] = volumes[0]
         volumes[0] = 0.0
     else:
         tempMasterVolume = muteMasterVolumeToggleContainer[0]
-        muteMasterVolumeToggleContainer[0] = volumes[0]
+        if (volumes[0] != 0.0): muteMasterVolumeToggleContainer[0] = volumes[0]
         volumes[0] = tempMasterVolume
     updateMasterVolume(volumes[0])
