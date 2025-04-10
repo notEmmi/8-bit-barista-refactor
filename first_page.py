@@ -13,7 +13,7 @@ import random
 import start_menu
 import subprocess
 from pygame_gui import UI_BUTTON_PRESSED
-#from fish import run_fishing_minigame
+from fish import run_fishing_minigame
 
 class Game:
     def __init__(self, chosen_building, fromPriorMenu = False, gameData = None):
@@ -543,39 +543,40 @@ class Game:
 
                 clicked_gid = self.water_layer.data[tile_y][tile_x]
                 if clicked_gid in self.water_gids:
-                    print("water tile clicked! Launching fishing game...")
-                    result = subprocess.Popen(["python", "fish.py"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                    print("Water tile clicked! Launching fishing game...")
+                    self.gold += run_fishing_minigame()
+                    # result = subprocess.Popen(["python", "fish.py"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-                    # Capture the output from the subprocess
-                    stdout, stderr = result.communicate()
+                    # # Capture the output from the subprocess
+                    # stdout, stderr = result.communicate()
 
-                    # Ensure no errors occurred and the output is not empty
-                    if result.returncode == 0 and stdout.strip():
-                        try:
-                            # Split the output by lines and get the last line, which should be the gold value
-                            output_lines = stdout.strip().splitlines()
+                    # # Ensure no errors occurred and the output is not empty
+                    # if result.returncode == 0 and stdout.strip():
+                    #     try:
+                    #         # Split the output by lines and get the last line, which should be the gold value
+                    #         output_lines = stdout.strip().splitlines()
 
-                            # If the output contains the Pygame version info or anything unexpected, filter it out
-                            gold_value_str = None
-                            for line in output_lines:
-                                # Try to find a numeric line (this should be the gold value)
-                                if line.isdigit():
-                                    gold_value_str = line
-                                    break
+                    #         # If the output contains the Pygame version info or anything unexpected, filter it out
+                    #         gold_value_str = None
+                    #         for line in output_lines:
+                    #             # Try to find a numeric line (this should be the gold value)
+                    #             if line.isdigit():
+                    #                 gold_value_str = line
+                    #                 break
 
-                            if gold_value_str:
-                                # Try converting the last line to an integer
-                                self.gold += int(gold_value_str)
-                            else:
-                                print(f"Error: No valid gold output found in '{stdout}'.")
+                    #         if gold_value_str:
+                    #             # Try converting the last line to an integer
+                    #             self.gold += int(gold_value_str)
+                    #         else:
+                    #             print(f"Error: No valid gold output found in '{stdout}'.")
 
-                        except ValueError:
-                            print(f"Error: The output '{stdout}' cannot be converted to an integer.")
-                    else:
-                        if result.returncode != 0:
-                            print("Error:", stderr)  # Handle any errors that occurred during execution of fish.py
-                        else:
-                            print("No valid gold output received from fish.py.")
+                    #     except ValueError:
+                    #         print(f"Error: The output '{stdout}' cannot be converted to an integer.")
+                    # else:
+                    #     if result.returncode != 0:
+                    #         print("Error:", stderr)  # Handle any errors that occurred during execution of fish.py
+                    #     else:
+                    #         print("No valid gold output received from fish.py.")
                 # Check if the mouse click is within any building rectangle first
                 for building_name, rect in self.buildings_object.items():
                     if rect.collidepoint(adjusted_x, adjusted_y):
