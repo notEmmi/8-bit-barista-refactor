@@ -1,7 +1,7 @@
 import pygame
 import sys
 class PetSelector:
-    def __init__(self): ## pass a pet type that will be used to decide between lists of pngs to choose from
+    def __init__(self, img_path): ## pass a pet type that will be used to decide between lists of pngs to choose from
         # Initialize Pygame
         pygame.init()
 
@@ -10,6 +10,7 @@ class PetSelector:
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Pet Selector")
         
+        self.building = img_path
         # Set up clock for frame rate
         self.clock = pygame.time.Clock()
         self.FPS = 60
@@ -17,7 +18,7 @@ class PetSelector:
         self.BROWN = (240, 161, 36)
         self.selection = pygame.image.load("images/questionmark.png")
         self.selection = pygame.transform.scale(self.selection, (150,150))
-
+ 
         self.background = pygame.image.load("images/petScreenBkgrnd.png")
         self.background = pygame.transform.scale(self.background, (self.WIDTH, self.HEIGHT))
         
@@ -64,12 +65,13 @@ class PetSelector:
         self.isThisYourChoiceRect = pygame.Rect(self.WIDTH/2 -150, self.HEIGHT/2.2, 300, 100)
         self.choice = pygame.image.load("images/choicesign.png")
         self.choice = pygame.transform.scale(self.choice, (300,100))
-       
+        self.petChoice = "assets/images/pets/greydog.png"
        
        
         self.arrowPressCountdog =0
         self.arrowPressCountcat =0
         self.madeachoice =0
+        
         
     def parseDogListRight(self):
         
@@ -135,15 +137,19 @@ class PetSelector:
                          print("clicked dog rect")
                          self.selection = self.dog
                          self.madeachoice =1
+                         self.petChoice = self.dogsList[self.arrowPressCountdog]
                     elif self.catRect.collidepoint(event.pos):
-                         print("clicked dog rect")
+                         print("clicked cat rect")
                          self.selection = self.cat
                          self.madeachoice =1
+                         self.petChoice = self.catList[self.arrowPressCountcat]
                     elif self.isThisYourChoiceRect.collidepoint(event.pos):
                          if self.madeachoice >0:
-                            from confirm_pet_screen import confirmPet
-                            confirm_pet = confirmPet()
-                            confirm_pet.run()
+                            
+                            from first_page import Game
+                            game = Game(self.building, self.petChoice)
+                            game.run()
+                            running = False
                    
                          
                          
@@ -185,5 +191,5 @@ class PetSelector:
         sys.exit()
 
 if __name__ == "__main__":
-    pet_selector = PetSelector()
+    pet_selector = PetSelector("assets/images/buildings/building1.png")
     pet_selector.run()
