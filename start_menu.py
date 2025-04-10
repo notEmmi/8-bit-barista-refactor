@@ -46,10 +46,8 @@ class StartMenu:
 
         self.isFromGame = False
 
-        # Initialize the game instance here, if not already initialized
-        if gameInstance is None:
-            from first_page import Game
-            self.currentGameInstance = Game(chosen_building=None)  # Pass the required arguments for Game initialization
+        # Initialize the game instance only when needed
+        self.currentGameInstance = None  # Initially, it's None
 
         # Define Buttons
         button_width, button_height = 200, 60
@@ -78,6 +76,11 @@ class StartMenu:
     def start_new_game(self):
         """Transition to character selection screen for new game."""
         print("Starting new game...")
+
+            # Initialize the game instance
+        if self.currentGameInstance is None:
+            from first_page import Game
+            self.currentGameInstance = Game(chosen_building=None)  # Initialize if not already
 
         # Initialize or reset the game state as needed
         self.currentGameInstance.player_data["name"] = self.player_name
@@ -197,8 +200,12 @@ class StartMenu:
                                 print(f"{button.text} button clicked!")
             
             elif self.current_screen == self.GAME:
-                self.currentGameInstance.run()
-                running = False
+                # Ensure the game instance is created if it wasn't
+                if self.currentGameInstance is None:
+                    from first_page import Game
+                    self.currentGameInstance = Game(chosen_building=None)  # Initialize if not already
+                self.currentGameInstance.run()  # Start the game loop when we enter the game screen
+                running = False  # Exit the main loop to prevent further iterations if game is over
 
             elif self.current_screen == self.OPTIONS:
                 new_screen = options_menu.show_options(events)
@@ -211,7 +218,8 @@ class StartMenu:
 
             elif self.current_screen == self.CHARACTER_SELECTION:
                 character_selector.run()  # Run the character selection screen
-                self.current_screen = self.MENU  # After character selection, return to menu
+                self.current_screen = self.GAME  # After character selection, return to menu
+                print(f"Current Screen: {self.current_screen}")
 
             elif self.current_screen == self.ADVANCED:
                 advanced_button_callback = advanced_menu.run()

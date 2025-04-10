@@ -157,6 +157,8 @@ class Game:
 
         self.pauseButton = pygame.Rect(0, 0, 0, 0)
 
+        self.save_file = "save_game.json"
+
         self.player_data = {
             "name": "John Doe",  # Default name
             "character": "boy1",  # Default character
@@ -186,6 +188,10 @@ class Game:
 
     def save_game(self):
         """Save the game data to a file."""
+        if not hasattr(self, 'save_file'):
+            print("Error: save_file attribute is missing!")
+            return
+
         game_data = {
             "player": self.player_data["name"],
             "character": self.player_data["character"],
@@ -193,9 +199,13 @@ class Game:
             "environment": self.environment_data  # Save environment data (time, day, weather)
         }
 
-        with open(self.save_file, 'w') as save_file:
-            json.dump(game_data, save_file)
-        print("Game saved successfully!")
+        # Ensure the save file path is defined before attempting to open it
+        try:
+            with open(self.save_file, 'w') as save_file:
+                json.dump(game_data, save_file)
+            print("Game saved successfully!")
+        except Exception as e:
+            print(f"Error saving game: {e}")
 
     def load_game(self, filename="save_game.json"):
         """Load the saved game data from the file."""
@@ -212,6 +222,28 @@ class Game:
 
     def check_save_exists(self, filename="save_game.json"):
         return os.path.exists(filename)
+    
+    def update_player_name(self, new_name):
+        """Update the player's name and save the game."""
+        self.player_data["name"] = new_name
+        self.save_game()  # Save the updated game state
+
+    def update_player_character(self, new_character):
+        """Update the player's character and save the game."""
+        self.player_data["character"] = new_character
+        self.save_game()  # Save the updated game state
+
+    def update_player_position(self, x, y):
+        """Update the player's position and save the game."""
+        self.player_data["position"] = {"x": x, "y": y}
+        self.save_game()  # Save the updated game state
+
+    def update_game_time(self, day, time, weather):
+        """Update the game's environment data and save the game."""
+        self.environment_data["day"] = day
+        self.environment_data["time"] = time
+        self.environment_data["weather"] = weather
+        self.save_game()  # Save the updated game state
 
     def load_map(self, map_file):
         """Load TMX map and extract collidable and building objects."""
