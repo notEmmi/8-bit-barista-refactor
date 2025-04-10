@@ -7,7 +7,7 @@ from Loading import LoadingScreen
 from start_menu import StartMenu
 import bcrypt
 from registration import RegistrationApp
-
+import settingsdata
 
 
 
@@ -33,6 +33,7 @@ class LoginScreen:
         self.password_box = pygame.Rect(200, 160, 200, 40)
         self.login_button = pygame.Rect(self.WIDTH//2 - 160, 230, 140, 50)
         self.new_user_button = pygame.Rect(self.WIDTH//2 + 20, 230, 140, 50)
+        self.muteVolumeButton = pygame.Rect(self.WIDTH - 150, self.HEIGHT - 60, 140, 50)
 
         self.username = ""
         self.password = ""
@@ -65,6 +66,7 @@ class LoginScreen:
 
     def play_music(self):
         mixer.music.load("assets/sounds/LogInTrack.mp3")
+        mixer.music.set_volume(settingsdata.volumes[0] * settingsdata.volumes[1])
         mixer.music.play()
 
     def check_username(self, username):
@@ -85,6 +87,7 @@ class LoginScreen:
         pygame.draw.rect(self.screen, (180, 140, 255) if self.active_box == "password" else (200, 200, 200), self.password_box, 2)
         pygame.draw.rect(self.screen, (100, 0, 100), self.login_button)
         pygame.draw.rect(self.screen, (100, 0, 100), self.new_user_button)  # DARK_PURPLE
+        pygame.draw.rect(self.screen, (100, 0, 100), self.muteVolumeButton)
 
         self.screen.blit(self.title_text, (175, 30))  # TITLE_TEXT_LOC
         self.screen.blit(self.username_text, (30, 100))  # USERNAME_TEXT_LOC
@@ -102,6 +105,13 @@ class LoginScreen:
 
         new_user_text = self.font.render("New User", True, (255, 255, 255))
         self.screen.blit(new_user_text, (self.new_user_button.x + 10, self.new_user_button.y + 10))
+
+        if (settingsdata.volumes[0] == 0.0): 
+            muteToggleText = self.font.render("Unmute", True, (255, 255, 255))
+            self.screen.blit(muteToggleText, (self.muteVolumeButton.x + 20, self.muteVolumeButton.y + 10))
+        else:
+            muteToggleText = self.font.render("Mute", True, (255, 255, 255))
+            self.screen.blit(muteToggleText, (self.muteVolumeButton.x + 40, self.muteVolumeButton.y + 10))
 
         pygame.display.flip()
 
@@ -146,8 +156,10 @@ class LoginScreen:
                     elif self.new_user_button.collidepoint(event.pos):
                      registration_page = RegistrationApp()  # You can define this class elsewhere
                      registration_page.run()  # You can define this screen class elsewhere
-                     
                      self.running = False
+                    elif self.muteVolumeButton.collidepoint(event.pos):
+                     settingsdata.toggleMuteMasterVolume()
+                     
                     else:
                         self.active_box = None
                 elif event.type == pygame.KEYDOWN:
