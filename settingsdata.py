@@ -14,6 +14,8 @@ class TextureQuality(Enum):
 
 textureQualitySettings = [False, False, True]
 
+muteMasterVolumeToggleContainer = [0.0]
+
 def updateMasterVolume(value):
     if not isinstance(value, float) and not isinstance(value, int): return
     volumes[0] = value
@@ -59,3 +61,13 @@ def updateScreenShake(value):
     if not isinstance(value, bool): return
     booleanSettings[2] = value
     print(f"updated rainAnimations to {booleanSettings[2]}")
+
+def toggleMuteMasterVolume():
+    if (muteMasterVolumeToggleContainer[0] == 0.0):
+        muteMasterVolumeToggleContainer[0] = volumes[0]
+        volumes[0] = 0.0
+    else:
+        tempMasterVolume = muteMasterVolumeToggleContainer[0]
+        muteMasterVolumeToggleContainer[0] = volumes[0]
+        volumes[0] = tempMasterVolume
+    updateMasterVolume(volumes[0])
