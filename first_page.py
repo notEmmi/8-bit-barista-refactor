@@ -160,7 +160,7 @@ class Game:
         self.save_file = "save_game.json"
 
         self.player_data = {
-            "name": "John Doe",  # Default name
+            "name": "Player",  # Default name
             "character": "boy1",  # Default character
             "position": {"x": 0, "y": 0}
         }
@@ -223,27 +223,10 @@ class Game:
     def check_save_exists(self, filename="save_game.json"):
         return os.path.exists(filename)
     
-    def update_player_name(self, new_name):
-        """Update the player's name and save the game."""
-        self.player_data["name"] = new_name
-        self.save_game()  # Save the updated game state
-
-    def update_player_character(self, new_character):
-        """Update the player's character and save the game."""
-        self.player_data["character"] = new_character
-        self.save_game()  # Save the updated game state
-
-    def update_player_position(self, x, y):
-        """Update the player's position and save the game."""
-        self.player_data["position"] = {"x": x, "y": y}
-        self.save_game()  # Save the updated game state
-
-    def update_game_time(self, day, time, weather):
-        """Update the game's environment data and save the game."""
-        self.environment_data["day"] = day
-        self.environment_data["time"] = time
-        self.environment_data["weather"] = weather
-        self.save_game()  # Save the updated game state
+    def after_character_selection(self, selected_character):
+        """Update the character and save the game."""
+        self.selected_character = selected_character
+        self.saveGameState()  # Save the updated game state
 
     def load_map(self, map_file):
         """Load TMX map and extract collidable and building objects."""
@@ -778,28 +761,43 @@ class Game:
         pauseMenu.run()
 
     def loadGameState(self):
-        print("loading game state")
-        time = self.gameData[0]
-        day = self.gameData[1]
-        position = self.gameData[2]
-        house = self.gameData[3]
-        weather = self.gameData[4]
-        character = self.gameData[5]
-        direction = self.gameData[6]
-        raining = self.gameData[7]
-        cloudy = self.gameData[8]
-        self.house = house
-        self.player_x = position[0]
-        self.player_y = position[1]
-        self.set_game_time(time[0], time[1])
-        self.current_weather = weather
-        self.selected_character = character
-        self.current_day = day
-        self.player_direction = direction
-        self.raining = raining
-        self.cloudy_weather = cloudy
+        """Load the game state from a JSON file."""
+        print("Loading game state...")
+        try:
+            with open('save_game.json', 'r') as save_file:
+                game_data = json.load(save_file)
+
+            # Load the data into the game's attributes
+            time = game_data["time"]
+            day = game_data["day"]
+            position = game_data["position"]
+            house = game_data["house"]
+            weather = game_data["weather"]
+            character = game_data["character"]
+            direction = game_data["direction"]
+            raining = game_data["raining"]
+            cloudy = game_data["cloudy"]
+
+            # Update the game state
+            self.house = house
+            self.player_x = position[0]
+            self.player_y = position[1]
+            self.set_game_time(time[0], time[1])
+            self.current_weather = weather
+            self.selected_character = character
+            self.current_day = day
+            self.player_direction = direction
+            self.raining = raining
+            self.cloudy_weather = cloudy
+
+            print("Game loaded successfully!")
+        except FileNotFoundError:
+            print("No save file found. Starting a new game.")
+        except Exception as e:
+            print(f"Error loading game: {e}")
     
     def saveGameState(self):
+        """Save the current game state to a JSON file."""
         theGameTime = self.get_game_time()
         day = self.current_day
         position = (self.player_x, self.player_y)
@@ -809,7 +807,27 @@ class Game:
         direction = self.player_direction
         raining = self.raining
         cloudy = self.cloudy_weather
-        return (theGameTime, day, position, house, weather, character, direction, raining, cloudy)
+
+        # Prepare the data to be saved
+        game_state = {
+            "time": theGameTime,
+            "day": day,
+            "position": position,
+            "house": house,
+            "weather": weather,
+            "character": character,
+            "direction": direction,
+            "raining": raining,
+            "cloudy": cloudy
+        }
+
+        # Save to JSON file
+        try:
+            with open('save_game.json', 'w') as save_file:
+                json.dump(game_state, save_file, indent=4)
+            print("Game saved successfully!")
+        except Exception as e:
+            print(f"Error saving game: {e}")
     
     def run(self):
         # Main Game Loop
