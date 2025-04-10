@@ -11,11 +11,13 @@ import shop
 import inventory
 import random
 import start_menu
+import settingsdata
 import json
 from pygame_gui import UI_BUTTON_PRESSED
+from music_selector import MusicSelector
 
 class Game:
-    def __init__(self, chosen_building, fromPriorMenu = False, gameData = None):
+    def __init__(self, chosen_building, petChoice, fromPriorMenu = False, gameData = None):
         # Initialize Pygame
         pygame.init()
         pygame.font.init()
@@ -33,6 +35,7 @@ class Game:
         self.cloudy = Cloudy()
         self.cloudy_weather = False
         self.house = chosen_building
+        self.pet = petChoice
         # Create Dark Rain Overlay
         self.rain_overlay = pygame.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.SRCALPHA)
         self.rain_overlay.fill((0, 0, 0, 100))  # Semi-transparent black layer (100/255 opacity)
@@ -151,6 +154,7 @@ class Game:
         # Load and play background music
         self.background_music = os.path.join(self.SOUND_PATH, "1_new_life_master.mp3")
         pygame.mixer.music.load(self.background_music)
+        pygame.mixer.music.set_volume(settingsdata.volumes[0] * settingsdata.volumes[1])
         pygame.mixer.music.play(-1)  # Play on repeat
 
         self.toolbox = Toolbox()
@@ -272,7 +276,8 @@ class Game:
 
         # Draw objects (e.g., trees, buildings)
         for obj in self.tmx_data.objects:
-           target_id = 315  # ID of the object using house2.png
+           target_id = 315
+           target_id2 = 139  # ID of the object using house2.png
            obj_x = obj.x - cam_x
            obj_y = obj.y - cam_y
 
@@ -282,6 +287,15 @@ class Game:
               custom_image = pygame.image.load(custom_path).convert_alpha()
               custom_image = pygame.transform.scale(custom_image, (int(obj.width), int(obj.height)))
               surface.blit(custom_image, (obj_x, obj_y))
+              continue
+
+           
+           if obj.id == target_id2:
+               custom_path2 = self.pet
+               custom_image2 = pygame.image.load(custom_path2).convert_alpha()
+               custom_image2 = pygame.transform.scale(custom_image2, (int(obj.width+15), int(obj.height+15))) 
+               surface.blit(custom_image2, (obj_x, obj_y))
+               continue
            else:
         # Default behavior
                image = self.tmx_data.get_tile_image_by_gid(obj.gid)
@@ -807,6 +821,24 @@ class Game:
         direction = self.player_direction
         raining = self.raining
         cloudy = self.cloudy_weather
+        return (theGameTime, day, position, house, weather, character, direction, raining, cloudy)
+    
+    def handle_music_selection(self):
+        """Handle music selection and update background music if confirmed."""
+        music_selector = MusicSelector(self.screen, self.SCREEN_WIDTH, self.SCREEN_HEIGHT)
+        next_screen, selected_track = music_selector.run()
+
+        if next_screen == "options" and selected_track:
+            # Stop current music and load the new track
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load(selected_track)
+            pygame.mixer.music.play(-1)
+
+            # Save the confirmed track
+            self.background_music = selected_track
+
+        return next_screen
+
 
         # Prepare the data to be saved
         game_state = {

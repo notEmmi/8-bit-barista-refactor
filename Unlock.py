@@ -1,4 +1,4 @@
-import pygame
+import pygame, settingsdata
 from pygame import mixer
 def runUnlock():
 # Initialize pygame
@@ -43,6 +43,7 @@ def runUnlock():
     exclaimationPoint = pygame.transform.scale(exclaimationPoint,(8,8))
     mixer.init()
     mixer.music.load("tracks/06 - Victory!.mp3")
+    mixer.music.set_volume(settingsdata.volumes[0] * settingsdata.volumes[1])
     mixer.music.play()
     # Main loop
     running = True

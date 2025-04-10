@@ -1,4 +1,5 @@
-import pygame
+import pygame, settingsdata
+from music_selector import MusicSelector
 
 class OptionsMenu:
     def __init__(self, gameInstance = None):
@@ -24,24 +25,30 @@ class OptionsMenu:
 
         # Sliders (Volume Controls)
         self.sliders = {
-            "Master Volume": 0.5,
-            "Music": 0.5,
-            "SFX": 0.5
+            "Master Volume": settingsdata.volumes[0],
+            "Music": settingsdata.volumes[1],
+            "SFX": settingsdata.volumes[2]
         }
         self.slider_rects = {}
         self.active_slider = None
 
         # Texture Settings
+        j = 0
+        for j in range(len(settingsdata.textureQualitySettings)):
+            if settingsdata.textureQualitySettings[j]: break
         self.textures = ["Low", "Med", "High"]
         self.texture_rects = []  # Stores hitboxes for texture buttons
-        self.selected_texture = "High"
+        self.selected_texture = self.textures[j]
 
         # Buttons
         self.buttons = {
-            "CONTROLS": pygame.Rect(250, 420, 100, 35),
-            "ADVANCED": pygame.Rect(460, 420, 100, 35),
+            "CONTROLS": pygame.Rect(200, 420, 100, 35),
+            "MUSIC TRACK": pygame.Rect(330, 420, 140, 35),
+            "ADVANCED": pygame.Rect(500, 420, 100, 35),
             "BACK": pygame.Rect(self.WIDTH // 2 - 40, 485, 80, 30)
         }
+
+        self.masterVolumeMuteButton = pygame.Rect((self.WIDTH // 2) - 8, (self.HEIGHT // 2) - 168, 18, 18)
 
         self.currentGameInstance = gameInstance
 
@@ -65,6 +72,15 @@ class OptionsMenu:
         self.screen.blit(minus_text, minus_text.get_rect(center=(min_x - 22, y_pos + 3)))
         self.screen.blit(plus_text, plus_text.get_rect(center=(max_x + 26, y_pos + 3)))
 
+        if (name != "Master Volume"): return
+
+        pygame.draw.rect(self.screen, (201, 125, 96), self.masterVolumeMuteButton, border_radius=3)
+        if (settingsdata.volumes[0] == 0.0): 
+            muteToggleText = self.button_font.render("V", True, (255, 255, 255))
+        else:
+            muteToggleText = self.button_font.render("X", True, (255, 255, 255))
+        self.screen.blit(muteToggleText, plus_text.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2 - 160)))
+
     def draw_textures(self):
         """Draw texture options."""
         self.texture_rects.clear()
@@ -76,6 +92,11 @@ class OptionsMenu:
             pygame.draw.circle(self.screen, color, (x_positions[i], 385), 8)
             text = pygame.font.Font(pygame.font.match_font('courier'), 16).render(texture, True, self.WHITE)
             self.screen.blit(text, (x_positions[i] - text.get_width() // 2, 354))
+    
+    def findVolumeToUpdate(self, slider: str, volume):
+        if slider == "Master Volume": settingsdata.updateMasterVolume(volume)
+        elif slider == "Music": settingsdata.updateMusicVolume(volume)
+        elif slider == "SFX": settingsdata.updateSFXVolume(volume)
 
     def show_options(self, events):
         """Show options menu."""
@@ -114,23 +135,41 @@ class OptionsMenu:
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Check Buttons
+                if self.masterVolumeMuteButton.collidepoint(mouse_pos):
+                    settingsdata.toggleMuteMasterVolume()
+                    self.sliders["Master Volume"] = settingsdata.volumes[0]
                 for name, rect in self.buttons.items():
                     if rect.collidepoint(mouse_pos):
                         if name == "CONTROLS":
                             return "controls"
+                        elif name == "MUSIC TRACK":
+                            music_selector = MusicSelector(
+                                self.screen, self.WIDTH, self.HEIGHT,
+                                current_track_index=0,  # Default to the first track
+                                current_track_path=self.currentGameInstance.background_music  # Pass the current track
+                            )
+                            next_screen, selected_track = music_selector.run()
+                            if selected_track:
+                                self.currentGameInstance.background_music = selected_track  # Save the confirmed track
+                            return next_screen
                         elif name == "ADVANCED":
                             return "advanced"
                         elif name == "BACK":
-                            if (self.currentGameInstance is None): return "menu"
+                            if self.currentGameInstance is None:
+                                return "menu"
                             self.currentGameInstance.is_paused = False
                             self.currentGameInstance.run()
 
                 # Check Sliders (`+` and `-` buttons)
                 for name, (min_x, max_x, y_pos) in self.slider_rects.items():
                     if min_x - 30 < mouse_pos[0] < min_x - 10 and y_pos - 8 < mouse_pos[1] < y_pos + 12:
-                        self.sliders[name] = max(0, self.sliders[name] - 0.1)
+                        volume = max(0, self.sliders[name] - 0.1)
+                        self.sliders[name] = volume
+                        self.findVolumeToUpdate(name, volume)
                     elif max_x + 10 < mouse_pos[0] < max_x + 30 and y_pos - 8 < mouse_pos[1] < y_pos + 12:
-                        self.sliders[name] = min(1, self.sliders[name] + 0.1)
+                        volume = min(1, self.sliders[name] + 0.1)
+                        self.sliders[name] = volume
+                        self.findVolumeToUpdate(name, volume)
                     else:
                         handle_x = min_x + int(self.sliders[name] * (max_x - min_x))
                         if handle_x - 10 < mouse_pos[0] < handle_x + 10 and y_pos - 10 < mouse_pos[1] < y_pos + 10:
@@ -140,13 +179,16 @@ class OptionsMenu:
                 for i, texture_rect in enumerate(self.texture_rects):
                     if texture_rect.collidepoint(mouse_pos):
                         self.selected_texture = self.textures[i]
+                        settingsdata.updateTextureQuality(self.selected_texture)
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 self.active_slider = None
 
             elif event.type == pygame.MOUSEMOTION and self.active_slider:
                 min_x, max_x, y_pos = self.slider_rects[self.active_slider]
-                self.sliders[self.active_slider] = max(0, min(1, (mouse_pos[0] - min_x) / (max_x - min_x)))
+                volume = max(0, min(1, (mouse_pos[0] - min_x) / (max_x - min_x)))
+                self.sliders[self.active_slider] = volume
+                self.findVolumeToUpdate(self.active_slider, volume)
 
         return "options"
 

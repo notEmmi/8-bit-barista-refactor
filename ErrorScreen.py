@@ -1,4 +1,4 @@
-import pygame
+import pygame, settingsdata
 from pygame import mixer
 
 
@@ -37,6 +37,7 @@ def runError():
 
     mixer.init()
     mixer.music.load("assets/sounds/error.mp3")
+    mixer.music.set_volume(settingsdata.volumes[0] * settingsdata.volumes[1])
     mixer.music.play()
 
 

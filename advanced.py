@@ -1,5 +1,5 @@
 # code reused from within the project from a branch by darren, permission granted in private --arthur
-import pygame # type: ignore [this is so vscode doesn't yell at me]
+import pygame, settingsdata # type: ignore [this is so vscode doesn't yell at me]
 
 class AdvancedMenu:
     # Initialize Pygame
@@ -30,9 +30,9 @@ class AdvancedMenu:
 
         # Toggles
         self.toggles = {
-            "RAIN ANIMATIONS": True,
-            "SHADERS": True,
-            "SCREEN SHAKE": False,
+            "RAIN ANIMATIONS": settingsdata.booleanSettings[0],
+            "SHADERS": settingsdata.booleanSettings[1],
+            "SCREEN SHAKE": settingsdata.booleanSettings[2],
         }
         self.toggleSquares = {}
 
@@ -74,6 +74,11 @@ class AdvancedMenu:
         pygame.draw.rect(self.screen, self.BRIGHT_BROWN, buttonRect, border_radius=7)
         inputValueLabel = self.inputValueText.render(str(value), True, self.WHITE)
         self.screen.blit(inputValueLabel, (min_x + 10, yPos + 10))
+
+    def updateBooleans(self, name: str, value: bool):
+        if name == "RAIN ANIMATIONS": settingsdata.updateRainAnimations(value)
+        elif name == "SHADERS": settingsdata.updateShaders(value)
+        elif name == "SCREEN SHAKE": settingsdata.updateScreenShake(value)
 
     # Main Loop
     def run(self):
@@ -129,7 +134,7 @@ class AdvancedMenu:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     print("QUITTING")
-                    self.running = False
+                    return "options"
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     print("MOUSEDOWN")
                     for name, rect in self.menuButtons.items():
@@ -139,12 +144,12 @@ class AdvancedMenu:
                         if not rectAndValue[0].collidepoint(mousePosition): continue
                         print(f"{toggleName} value before change: {self.toggles[toggleName]}")
                         self.toggles[toggleName] = not self.toggles[toggleName]
+                        self.updateBooleans(toggleName, self.toggles[toggleName])
                         print(f"{toggleName} value after change: {self.toggles[toggleName]}")
                         break
                     for inputName, rectangleValueTuple in inputRects.items():
                         if not rectangleValueTuple[0].collidepoint(mousePosition): continue
                         print(f"{inputName} clicked. its value is {self.inputs[inputName]}")
                         break
-                    x_positions = [320, 400, 480]
             
             pygame.display.flip()

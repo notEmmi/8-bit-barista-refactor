@@ -1,4 +1,4 @@
-import pygame
+import pygame, settingsdata
 from pygame import mixer
 from first_page import Game
 
@@ -53,6 +53,7 @@ def runBuildingCongratz(imagepath):
     # Music
     mixer.init()
     mixer.music.load("tracks/06 - Victory!.mp3")
+    mixer.music.set_volume(settingsdata.volumes[0] * settingsdata.volumes[1])
     mixer.music.play()
 
     running = True
@@ -79,15 +80,16 @@ def runBuildingCongratz(imagepath):
 
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if button_rect.collidepoint(event.pos):
-                    game = Game(img_path)
-                    game.run()
+                    from pet_selector import PetSelector
+                    choose_pet = PetSelector(img_path)
+                    choose_pet.run()
                     running = False
 
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    game = Game(img_path)
-                    game.run()
-                    running = False
+            # elif event.type == pygame.KEYDOWN:
+            #     if event.key == pygame.K_RETURN:
+            #         game = Game(img_path)
+            #         game.run()
+            #         running = False
 
         pygame.display.flip()
 
