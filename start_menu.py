@@ -27,17 +27,29 @@ class StartMenu:
         self.title_font = pygame.font.Font(pygame.font.match_font('courier'), 45)
         self.button_font = pygame.font.Font(pygame.font.match_font('courier'), 22)
 
+        # Check if save file exists
+        self.save_file = "save_game.json"
+        self.buttons = []
+
         # Game States
         self.MENU = "menu"
+        self.GAME = "game"
         self.OPTIONS = "options"
         self.CHARACTER_SELECTION = "character_selection"
         self.CONTROLS = "controls"
         self.ADVANCED = "advanced"
         self.current_screen = self.MENU  # Start at the menu
 
+        # Default values for user inputs (name, character, house)
+        self.player_name = "Player"
+        self.selected_character = "boy1"  # Default character
+
         self.isFromGame = False
 
-        self.currentGameInstance = gameInstance
+        # Initialize the game instance here, if not already initialized
+        if gameInstance is None:
+            from first_page import Game
+            self.currentGameInstance = Game(chosen_building=None)  # Pass the required arguments for Game initialization
 
         # Define Buttons
         button_width, button_height = 200, 60
@@ -45,21 +57,15 @@ class StartMenu:
         button_spacing = 90
         button_start_y = 220
 
-        # Check if save file exists
-        self.save_file = "save_game.json"
-        self.buttons = []
-
         if self.check_save_exists():
-            # If a save file exists, show both "Continue" and "New Game"
-            self.buttons.append(self.Button("CONTINUE", button_x, button_start_y - button_spacing, button_width, button_height, self.load_game))
-            self.buttons.append(self.Button("NEW GAME", button_x, button_start_y, button_width, button_height, self.confirm_new_game))
+            self.buttons.append(self.Button("CONTINUE", 300, 220, 200, 60, self.load_game))
+            self.buttons.append(self.Button("NEW GAME", 300, 300, 200, 60, self.start_new_game))
         else:
-            # If no save file, only show "New Game"
-            self.buttons.append(self.Button("NEW GAME", button_x, button_start_y, button_width, button_height, self.start_new_game))
+            self.buttons.append(self.Button("NEW GAME", 300, 250, 200, 60, self.start_new_game))
 
         # Add "Options" and "Exit" buttons
-        self.buttons.append(self.Button("OPTIONS", button_x, button_start_y + button_spacing, button_width, button_height, self.show_options))
-        self.buttons.append(self.Button("EXIT", (self.WIDTH - 150) // 2, button_start_y + 2 * button_spacing, 150, 55, self.exit_game))
+        self.buttons.append(self.Button("OPTIONS", button_x, button_start_y + button_spacing, button_width, button_height, self.OPTIONS))
+        self.buttons.append(self.Button("EXIT", (self.WIDTH - 150) // 2, button_start_y + 2 * button_spacing, 150, 55, None))
 
         # Load Coffee Cup Image
         try:
@@ -69,39 +75,40 @@ class StartMenu:
         except:
             self.coffee_img = None
 
-    def check_save_exists(self, filename="save_game.json"):
-        """Check if a save file exists."""
-        return os.path.exists(filename)
-
-    def confirm_new_game(self):
-        """Show a confirmation dialog to overwrite the current save file."""
-        confirmation_dialog = self.ConfirmationDialog(self.screen)
-        if confirmation_dialog.run():
-            self.start_new_game()
-
     def start_new_game(self):
-        """Starts a new game and overwrites the current save file."""
-        # Implement logic to start a new game and overwrite the save file
-        self.currentGameInstance.start_new_game()  # Assuming a method for this
-        self.save_game()  # Overwrite the save file
-        self.current_screen = "game"  # Transition to the game screen
+        """Transition to character selection screen for new game."""
+        print("Starting new game...")
+
+        # Initialize or reset the game state as needed
+        self.currentGameInstance.player_data["name"] = self.player_name
+        self.currentGameInstance.player_data["character"] = self.selected_character
+        self.currentGameInstance.environment_data["day"] = 1
+        self.currentGameInstance.environment_data["weather"] = "sunny"
+        self.currentGameInstance.environment_data["time"] = "6:00 AM"
+        
+        # Transition to character selection screen
+        self.current_screen = self.CHARACTER_SELECTION
 
     def load_game(self):
-        """Load the game from the save file and transition to the game screen."""
-        self.currentGameInstance.load_game()  # Assuming a method to load the saved game
-        self.current_screen = "game"  # Transition to the game screen
+        """Load the saved game and transition to the game screen."""
+        print("Loading saved game...")
+        self.currentGameInstance.load_game()
+        self.current_screen = self.GAME  # Transition to game screen
 
     def save_game(self):
-        """Save the game data to a file (overwrite the existing save)."""
+        """Save the current game data to a file."""
         game_data = {
-            "player": self.currentGameInstance.player_data,  # Assume you have player data
-            "environment": self.currentGameInstance.environment_data,  # Same for environment
-            "time": self.currentGameInstance.time_data,  # Time-related info
-            # Add other game state variables
+            "player": self.currentGameInstance.player_data,
+            "environment": self.currentGameInstance.environment_data,
+            "time": self.currentGameInstance.time_data,
         }
         with open(self.save_file, 'w') as save_file:
             json.dump(game_data, save_file)
         print("Game saved successfully!")
+
+    def check_save_exists(self):
+        """Check if a save file exists."""
+        return os.path.exists(self.save_file)
     
     def draw_blurred_shadow(self, surface, rect, blur_radius=10, offset_x=8, offset_y=8, border_radius=12):
         """Draws a smooth, blurred shadow for UI elements."""
@@ -180,14 +187,16 @@ class StartMenu:
                             if button.is_clicked(pygame.mouse.get_pos()):
                                 if button.action:
                                     if button.text == "CONTINUE":
-                                        button.acion()
+                                        self.load_game()
+                                    if button.text == "NEW GAME":
+                                        self.start_new_game()
                                     else:
                                         self.current_screen = button.action
                                 if button.text == "EXIT":
                                     running = False
                                 print(f"{button.text} button clicked!")
             
-            elif self.current_screen == "game":
+            elif self.current_screen == self.GAME:
                 self.currentGameInstance.run()
                 running = False
 
