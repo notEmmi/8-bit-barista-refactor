@@ -1,4 +1,4 @@
-import pygame, settingsdata
+import pygame
 from pygame import mixer
 from first_page import Game
 
@@ -53,7 +53,6 @@ def runBuildingCongratz(imagepath):
     # Music
     mixer.init()
     mixer.music.load("tracks/06 - Victory!.mp3")
-    mixer.music.set_volume(settingsdata.volumes[0] * settingsdata.volumes[1])
     mixer.music.play()
 
     running = True
