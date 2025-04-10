@@ -11,7 +11,9 @@ import shop
 import inventory
 import random
 import start_menu
+import subprocess
 from pygame_gui import UI_BUTTON_PRESSED
+#from fish import run_fishing_minigame
 
 class Game:
     def __init__(self, chosen_building, fromPriorMenu = False, gameData = None):
@@ -146,6 +148,18 @@ class Game:
         self.time_multiplier = 1  # Normal speed, increased when pressing ''
       
         self.backpack = pygame.Rect(0,0,0,0)
+
+        #Initialize Water GID and Layer
+        self.water_gids = [
+            self.get_gid("Water", 0),
+            self.get_gid("Water", 1),
+            self.get_gid("Water", 2),
+            self.get_gid("Water", 3)
+        ]
+        self.water_layer = self.tmx_data.get_layer_by_name("Water")
+
+        #Gold
+        self.gold = 0
 
         # Load and play background music
         self.background_music = os.path.join(self.SOUND_PATH, "1_new_life_master.mp3")
@@ -527,6 +541,41 @@ class Game:
                 tile_x, tile_y = int(adjusted_x // self.TILE_WIDTH), int(adjusted_y // self.TILE_HEIGHT)
                 print(f"Mouse: ({mouse_x}, {mouse_y}), Adjusted: ({adjusted_x}, {adjusted_y}), Tile: ({tile_x}, {tile_y})")
 
+                clicked_gid = self.water_layer.data[tile_y][tile_x]
+                if clicked_gid in self.water_gids:
+                    print("water tile clicked! Launching fishing game...")
+                    result = subprocess.Popen(["python", "fish.py"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+                    # Capture the output from the subprocess
+                    stdout, stderr = result.communicate()
+
+                    # Ensure no errors occurred and the output is not empty
+                    if result.returncode == 0 and stdout.strip():
+                        try:
+                            # Split the output by lines and get the last line, which should be the gold value
+                            output_lines = stdout.strip().splitlines()
+
+                            # If the output contains the Pygame version info or anything unexpected, filter it out
+                            gold_value_str = None
+                            for line in output_lines:
+                                # Try to find a numeric line (this should be the gold value)
+                                if line.isdigit():
+                                    gold_value_str = line
+                                    break
+
+                            if gold_value_str:
+                                # Try converting the last line to an integer
+                                self.gold += int(gold_value_str)
+                            else:
+                                print(f"Error: No valid gold output found in '{stdout}'.")
+
+                        except ValueError:
+                            print(f"Error: The output '{stdout}' cannot be converted to an integer.")
+                    else:
+                        if result.returncode != 0:
+                            print("Error:", stderr)  # Handle any errors that occurred during execution of fish.py
+                        else:
+                            print("No valid gold output received from fish.py.")
                 # Check if the mouse click is within any building rectangle first
                 for building_name, rect in self.buildings_object.items():
                     if rect.collidepoint(adjusted_x, adjusted_y):
@@ -721,6 +770,19 @@ class Game:
         cloudy = self.cloudy_weather
         return (theGameTime, day, position, house, weather, character, direction, raining, cloudy)
     
+    def draw_gold(self):
+        # Font for displaying the gold
+        font = pygame.font.SysFont('Arial', 30)
+
+        # Render the text displaying the gold
+        gold_text = font.render(f"Gold: {self.gold}", True, (255, 255, 255))
+
+        # Calculate the position to center the text horizontally at the top
+        text_rect = gold_text.get_rect(center=(self.SCREEN_WIDTH // 2, 30))
+
+        # Blit the text onto the screen
+        self.screen.blit(gold_text, text_rect)
+
     def run(self):
         # Main Game Loop
         running = True
@@ -928,6 +990,9 @@ class Game:
             
             # Draw HUD
             self.draw_hud()
+
+            # Draw Gold
+            self.draw_gold()
 
             #draw pause button
             self.pauseButton = self.drawPause()

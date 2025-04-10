@@ -1,6 +1,9 @@
+import os
 import pygame
 import sys
 import random
+
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
 pygame.init()
 
@@ -39,7 +42,7 @@ fish_data = [
 
 # Minigame state
 fishing_minigame = False
-gold = 0
+earned_gold = 0
 current_fish = None
 
 # Minigame UI setup
@@ -56,7 +59,9 @@ shake_timer = 0
 
 font = pygame.font.SysFont(None, 36)
 
-while True:
+# Main game loop
+running = True
+while running:
     dt = clock.tick(60)
     keys = pygame.key.get_pressed()
 
@@ -64,6 +69,9 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            running = False
 
     # Player Movement
     if not fishing_minigame:
@@ -90,7 +98,7 @@ while True:
 
         if keys[pygame.K_SPACE]:
             if white_slider.colliderect(green_target):
-                gold += current_fish["gold"]
+                earned_gold += current_fish["gold"]
                 fishing_minigame = False
                 current_tile_fish_index = random.randint(0, 2)  # New fish on the tile!
             else:
@@ -128,7 +136,14 @@ while True:
                     (WIDTH - 70, ui_rect.y + 10))
 
     # Gold counter
-    gold_text = font.render(f'Gold: {gold}', True, (0, 0, 0))
+    gold_text = font.render(f'Gold: {earned_gold}', True, (0, 0, 0))
     screen.blit(gold_text, (10, 10))
 
     pygame.display.flip()
+
+    # End the minigame after a successful catch or escape
+    #if not fishing_minigame:
+        #running = False  # Exit loop after fishing minigame ends
+
+print(earned_gold)
+sys.stdout.flush()
