@@ -16,7 +16,7 @@ from pygame_gui import UI_BUTTON_PRESSED
 from music_selector import MusicSelector
 
 class Game:
-    def __init__(self, chosen_building, fromPriorMenu = False, gameData = None):
+    def __init__(self, chosen_building, petChoice, fromPriorMenu = False, gameData = None):
         # Initialize Pygame
         pygame.init()
         pygame.font.init()
@@ -34,6 +34,7 @@ class Game:
         self.cloudy = Cloudy()
         self.cloudy_weather = False
         self.house = chosen_building
+        self.pet = petChoice
         # Create Dark Rain Overlay
         self.rain_overlay = pygame.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.SRCALPHA)
         self.rain_overlay.fill((0, 0, 0, 100))  # Semi-transparent black layer (100/255 opacity)
@@ -206,7 +207,8 @@ class Game:
 
         # Draw objects (e.g., trees, buildings)
         for obj in self.tmx_data.objects:
-           target_id = 315  # ID of the object using house2.png
+           target_id = 315
+           target_id2 = 139  # ID of the object using house2.png
            obj_x = obj.x - cam_x
            obj_y = obj.y - cam_y
 
@@ -216,6 +218,15 @@ class Game:
               custom_image = pygame.image.load(custom_path).convert_alpha()
               custom_image = pygame.transform.scale(custom_image, (int(obj.width), int(obj.height)))
               surface.blit(custom_image, (obj_x, obj_y))
+              continue
+
+           
+           if obj.id == target_id2:
+               custom_path2 = self.pet
+               custom_image2 = pygame.image.load(custom_path2).convert_alpha()
+               custom_image2 = pygame.transform.scale(custom_image2, (int(obj.width+15), int(obj.height+15))) 
+               surface.blit(custom_image2, (obj_x, obj_y))
+               continue
            else:
         # Default behavior
                image = self.tmx_data.get_tile_image_by_gid(obj.gid)

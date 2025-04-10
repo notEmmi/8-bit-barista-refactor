@@ -80,15 +80,16 @@ def runBuildingCongratz(imagepath):
 
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if button_rect.collidepoint(event.pos):
-                    game = Game(img_path)
-                    game.run()
+                    from pet_selector import PetSelector
+                    choose_pet = PetSelector(img_path)
+                    choose_pet.run()
                     running = False
 
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    game = Game(img_path)
-                    game.run()
-                    running = False
+            # elif event.type == pygame.KEYDOWN:
+            #     if event.key == pygame.K_RETURN:
+            #         game = Game(img_path)
+            #         game.run()
+            #         running = False
 
         pygame.display.flip()
 
