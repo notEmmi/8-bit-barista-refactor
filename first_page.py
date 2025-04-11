@@ -12,7 +12,6 @@ import inventory
 import random
 import start_menu
 import settingsdata
-import json
 from pygame_gui import UI_BUTTON_PRESSED
 from music_selector import MusicSelector
 
@@ -161,76 +160,8 @@ class Game:
 
         self.pauseButton = pygame.Rect(0, 0, 0, 0)
 
-        self.save_file = "save_game.json"
-
-        self.player_data = {
-            "name": "Player",  # Default name
-            "character": "boy1",  # Default character
-            "position": {"x": 0, "y": 0}
-        }
-
-        # Initialize environment data
-        self.environment_data = {
-            "day": 1,  # Default day
-            "weather": "sunny",  # Default weather
-            "time": "6:00 AM",  # Default time
-        }
-
-        # Load the game if we're continuing from a prior save
-        if fromPriorMenu:
-            self.load_game(gameData)  # Load game state if applicable
-
-    def start_new_game(self):
-        """Initialize the game state for a new game."""
-        # Set the player data to default values for a new game
-        self.player_data["day"] = 1  # Start on day 1
-        self.player_data["weather"] = "sunny"  # Set weather to sunny
-        self.player_data["time"] = "6:00 AM"  # Set default game time
-        self.player_data["position"] = {"x": 0, "y": 0}  # Starting position
-
-        print("New game started. Player data initialized.")
-
-    def save_game(self):
-        """Save the game data to a file."""
-        if not hasattr(self, 'save_file'):
-            print("Error: save_file attribute is missing!")
-            return
-
-        game_data = {
-            "player": self.player_data["name"],
-            "character": self.player_data["character"],
-            "position": self.player_data["position"],
-            "environment": self.environment_data  # Save environment data (time, day, weather)
-        }
-
-        # Ensure the save file path is defined before attempting to open it
-        try:
-            with open(self.save_file, 'w') as save_file:
-                json.dump(game_data, save_file)
-            print("Game saved successfully!")
-        except Exception as e:
-            print(f"Error saving game: {e}")
-
-    def load_game(self, filename="save_game.json"):
-        """Load the saved game data from the file."""
-        try:
-            with open(filename, 'r') as save_file:
-                game_data = json.load(save_file)
-                self.player_data["name"] = game_data["player"]
-                self.player_data["character"] = game_data["character"]
-                self.player_data["position"] = game_data["position"]
-                self.environment_data = game_data["environment"]  # Load environment data (time, day, weather)
-            print("Game loaded successfully!")
-        except FileNotFoundError:
-            print("No save file found, starting a new game.")
-
-    def check_save_exists(self, filename="save_game.json"):
-        return os.path.exists(filename)
-    
-    def after_character_selection(self, selected_character):
-        """Update the character and save the game."""
-        self.selected_character = selected_character
-        self.saveGameState()  # Save the updated game state
+        self.gameData = gameData
+        if fromPriorMenu: self.loadGameState()
 
     def load_map(self, map_file):
         """Load TMX map and extract collidable and building objects."""
@@ -573,10 +504,6 @@ class Game:
 
         # open inventory
         if keys[pygame.K_e]: inventory.run(self)
-
-        if keys[pygame.K_EQUALS]:  # If "=" is pressed, save the game
-            self.save_game()
-            print("Game Saved!")
         
         # Handle events (e.g., quitting, toggling weather, tool selection)
         for event in pygame.event.get():
@@ -775,43 +702,28 @@ class Game:
         pauseMenu.run()
 
     def loadGameState(self):
-        """Load the game state from a JSON file."""
-        print("Loading game state...")
-        try:
-            with open('save_game.json', 'r') as save_file:
-                game_data = json.load(save_file)
-
-            # Load the data into the game's attributes
-            time = game_data["time"]
-            day = game_data["day"]
-            position = game_data["position"]
-            house = game_data["house"]
-            weather = game_data["weather"]
-            character = game_data["character"]
-            direction = game_data["direction"]
-            raining = game_data["raining"]
-            cloudy = game_data["cloudy"]
-
-            # Update the game state
-            self.house = house
-            self.player_x = position[0]
-            self.player_y = position[1]
-            self.set_game_time(time[0], time[1])
-            self.current_weather = weather
-            self.selected_character = character
-            self.current_day = day
-            self.player_direction = direction
-            self.raining = raining
-            self.cloudy_weather = cloudy
-
-            print("Game loaded successfully!")
-        except FileNotFoundError:
-            print("No save file found. Starting a new game.")
-        except Exception as e:
-            print(f"Error loading game: {e}")
+        print("loading game state")
+        time = self.gameData[0]
+        day = self.gameData[1]
+        position = self.gameData[2]
+        house = self.gameData[3]
+        weather = self.gameData[4]
+        character = self.gameData[5]
+        direction = self.gameData[6]
+        raining = self.gameData[7]
+        cloudy = self.gameData[8]
+        self.house = house
+        self.player_x = position[0]
+        self.player_y = position[1]
+        self.set_game_time(time[0], time[1])
+        self.current_weather = weather
+        self.selected_character = character
+        self.current_day = day
+        self.player_direction = direction
+        self.raining = raining
+        self.cloudy_weather = cloudy
     
     def saveGameState(self):
-        """Save the current game state to a JSON file."""
         theGameTime = self.get_game_time()
         day = self.current_day
         position = (self.player_x, self.player_y)
@@ -839,28 +751,6 @@ class Game:
 
         return next_screen
 
-
-        # Prepare the data to be saved
-        game_state = {
-            "time": theGameTime,
-            "day": day,
-            "position": position,
-            "house": house,
-            "weather": weather,
-            "character": character,
-            "direction": direction,
-            "raining": raining,
-            "cloudy": cloudy
-        }
-
-        # Save to JSON file
-        try:
-            with open('save_game.json', 'w') as save_file:
-                json.dump(game_state, save_file, indent=4)
-            print("Game saved successfully!")
-        except Exception as e:
-            print(f"Error saving game: {e}")
-    
     def run(self):
         # Main Game Loop
         running = True
