@@ -1,4 +1,4 @@
-import pygame, random, sys, recipedata, os  # type: ignore
+import pygame, random, sys, recipedata, os, Recipes  # type: ignore
 
 class InteractionsUI:
     def __init__(self, game_instance):
@@ -49,6 +49,7 @@ class InteractionsUI:
             "Close": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/exit.png"),
             "Reject Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/reject.png"),
             "Protagonist": ("interior", "", os.path.join(game_instance.SPRITE_PATH, game_instance.selected_character, "down_idle.png")),
+            "Recipes": ("interior", "", "PROBABLY_ILLEGAL_ASSETS/recipe.png"),
         }
         self.renderedButtons = {}
 
@@ -70,6 +71,8 @@ class InteractionsUI:
         self.dialougeAnchorY = 275
         self.dialougeMaxWidth = 440
         self.dialougeMaxHeight = 110
+        
+        self.randomAmount = random.randint(100, 700)
 
     def drawMainButton(self, name, xPos, yPos, buttonInformation):
         length = 300
@@ -79,13 +82,15 @@ class InteractionsUI:
         elif name == "View Customer Order":
             buttonRect = buttonRect.move((self.WIDTH - buttonRect.width) // 2 - (buttonRect.x), (self.HEIGHT // 2) - 80)  # Center horizontally
         elif name == "Complete Order":
-            buttonRect = buttonRect.scale_by(.5).move(380, -120)
+            buttonRect = buttonRect.scale_by(.5).move(400, -100)
         elif name == "Reject Order":
-            buttonRect = buttonRect.scale_by(.5).move(110, -120)
+            buttonRect = buttonRect.scale_by(.5).move(130, -100)
         elif name == "Close":
-            buttonRect = buttonRect.scale_by(0.4).move(-250, -120)
+            buttonRect = buttonRect.scale_by(0.4).move(-250, -100)
         elif name == "Protagonist":
-            buttonRect = pygame.Rect(xPos // 2 + 80, yPos, 14 * 3, 29 * 3) # Center horizontally
+            buttonRect = pygame.Rect(330, 150, 14 * 3, 29 * 3)
+        elif name == "Recipes":
+            buttonRect = pygame.Rect(self.WIDTH - 90, self.HEIGHT - 90, 64, 64)
 
         self.renderedButtons[name] = (buttonRect, buttonInformation[0], buttonInformation[1])
 
@@ -176,13 +181,28 @@ class InteractionsUI:
                     moneyImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/money.png")
                     moneyImage = pygame.transform.scale(moneyImage, (45, 45))
                     self.screen.blit(moneyImage, (344, 242))
+
                     happyImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/happy.png")
                     happyImage = pygame.transform.scale(happyImage, (40, 40))
                     self.screen.blit(happyImage, (725, 90))
+
+                    gainImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/gain.png")
+                    gainImage = pygame.transform.scale(gainImage, (50, 50))
+                    self.screen.blit(gainImage, (15, self.HEIGHT - 60))
+
+                    bodyLabel = self.bodyText.render("+" + str(self.randomAmount), True, self.BROWN)
+                    self.screen.blit(bodyLabel, (15, self.HEIGHT - 90))
                 elif (not self.closed):
                     sadImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/sad.png")
                     sadImage = pygame.transform.scale(sadImage, (40, 40))
                     self.screen.blit(sadImage, (725, 90))
+
+                    lossImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/loss.png")
+                    lossImage = pygame.transform.scale(lossImage, (50, 50))
+                    self.screen.blit(lossImage, (15, self.HEIGHT - 60))
+
+                    bodyLabel = self.bodyText.render("-" + str(self.randomAmount), True, self.BROWN)
+                    self.screen.blit(bodyLabel, (15, self.HEIGHT - 90))
 
             for name, rect in self.menuButtons.items():
                 pygame.draw.rect(self.screen, self.BRIGHT_BROWN, rect.inflate(9, 9), border_radius=14)
@@ -206,6 +226,8 @@ class InteractionsUI:
                                 self.game.run()
                             break
                     for name, info in self.renderedButtons.items():
+                        if name == "Recipes":
+                            Recipes.Recipes().run()
                         if info[2] != "" and info[0].collidepoint(mouse_pos) and self.currentScene == info[1]:
                             print(f"{name} clicked! switching scene to {info[2]}")
                             self.closed = True
@@ -216,6 +238,7 @@ class InteractionsUI:
                                 self.nameIndex += 1
                                 if self.nameIndex > len(self.randomCustomerNames) - 1: self.nameIndex = 0
                                 random.shuffle(self.randomCustomerNames)
+                                self.randomAmount = random.randint(100, 700)
                                 self.generatedFakeAmounts = False
                             self.previousScene = self.currentScene
                             self.currentScene = info[2]
