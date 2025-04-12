@@ -46,9 +46,9 @@ class InteractionsUI:
             # "Exit Shop": ("interior", "exterior", "PROBABLY_ILLEGAL_ASSETS/exit.png"),  # Commented out
             "View Customer Order": ("interior", "customerOrder", "PROBABLY_ILLEGAL_ASSETS/customer.png"),
             "Complete Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/complete.png"),
-            "Close": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/close.png"),
+            "Close": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/exit.png"),
             "Reject Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/reject.png"),
-            "Protagonist": ("interior", "", os.path.join(game_instance.SPRITE_PATH, game_instance.selected_character, "down_idle.png"))
+            "Protagonist": ("interior", "", os.path.join(game_instance.SPRITE_PATH, game_instance.selected_character, "down_idle.png")),
         }
         self.renderedButtons = {}
 
@@ -67,13 +67,11 @@ class InteractionsUI:
         self.dialougeAnchorX = -60
         self.dialougeAnchorY = 275
         self.dialougeMaxWidth = 440
-        self.dialougeMaxHeight = 90
+        self.dialougeMaxHeight = 110
 
     def drawMainButton(self, name, xPos, yPos, buttonInformation):
         length = 300
         buttonRect = pygame.Rect(xPos // 2 + 60, yPos, length // 2, length // 2)
-        # if name == "Exit Shop":  # Commented out
-        #     buttonRect = buttonRect.scale_by(0.3).move(-85, -110)
         if name == "Enter Shop":
             buttonRect = buttonRect.scale_by(2).move(185, 50)
         elif name == "View Customer Order":
@@ -152,6 +150,17 @@ class InteractionsUI:
                 text = text + "\""
                 dialogueLabel = self.dialougeText.render(text, True, self.BROWN)
                 self.screen.blit(dialogueLabel, (self.WIDTH // 2 + self.dialougeAnchorX + 20, self.HEIGHT // 2 - (self.dialougeAnchorY - 10)))
+                if (self.orderAccepted):
+                    moneyImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/money.png")
+                    moneyImage = pygame.transform.scale(moneyImage, (45, 45))
+                    self.screen.blit(moneyImage, (344, 242))
+                    happyImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/happy.png")
+                    happyImage = pygame.transform.scale(happyImage, (40, 40))
+                    self.screen.blit(happyImage, (725, 90))
+                elif (not self.closed):
+                    sadImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/sad.png")
+                    sadImage = pygame.transform.scale(sadImage, (40, 40))
+                    self.screen.blit(sadImage, (725, 90))
 
             for name, rect in self.menuButtons.items():
                 pygame.draw.rect(self.screen, self.BRIGHT_BROWN, rect.inflate(9, 9), border_radius=14)
