@@ -48,7 +48,8 @@ class StartMenu:
         button_spacing = 90
         button_start_y = 220
         self.buttons = [
-            self.Button("START", button_x, button_start_y, button_width, button_height, self.CHARACTER_SELECTION),
+            self.Button("NEWGAME", button_x -120, button_start_y, button_width, button_height, self.CHARACTER_SELECTION),
+            self.Button("CONTINUE", button_x + 120, button_start_y, button_width, button_height, self.CHARACTER_SELECTION),
             self.Button("OPTIONS", button_x, button_start_y + button_spacing, button_width, button_height, self.OPTIONS),
             self.Button("CREDITS", button_x, button_start_y + 2 * button_spacing, button_width, button_height, self.CREDITS),
             self.Button("EXIT", (self.WIDTH - 150) // 2, button_start_y + 3 * button_spacing, 150, 55, None)
@@ -143,14 +144,16 @@ class StartMenu:
                                 if button.text == "EXIT":
                                     running = False
                                 print(f"{button.text} button clicked!")
-                    keys = pygame.key.get_pressed()
-                    if keys[pygame.K_TAB]:
-                        conn = sqlite3.connect('mydatabase.db')
-                        loaded_game_state = GameState.load_from_db(conn)
-                        print(loaded_game_state.house, loaded_game_state.pet, loaded_game_state.GameData)
-                        from first_page import Game
-                        loadSave = Game(loaded_game_state.house, loaded_game_state.pet,loaded_game_state.fromPriorMenu, loaded_game_state.GameData )
-                        loadSave.run()
+                    
+                                if button.text == "CONTINUE":
+                                 print(f"{button.text} button clicked!")
+                                 conn = sqlite3.connect('mydatabase.db')
+                                 loaded_game_state = GameState.load_from_db(conn)
+                                 print(loaded_game_state.house, loaded_game_state.pet, loaded_game_state.GameData)
+                                 from first_page import Game
+                                 loadSave = Game(loaded_game_state.house, loaded_game_state.pet,loaded_game_state.fromPriorMenu, loaded_game_state.GameData )
+                                 loadSave.run()
+                                 running = False
 
             elif self.current_screen == self.OPTIONS:
                 new_screen = options_menu.show_options(events)
@@ -183,6 +186,6 @@ class StartMenu:
         pygame.quit()
         sys.exit()
 
-# Example usage
-# start_menu = StartMenu()
-# start_menu.run()
+if __name__ == "__main__":
+ start_menu = StartMenu()
+ start_menu.run()
