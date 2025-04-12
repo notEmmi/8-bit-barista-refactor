@@ -5,6 +5,8 @@ from options import OptionsMenu
 from credits import CreditsScreen
 from advanced import AdvancedMenu
 from keybinds import ControlsMenu
+from GameState import GameState
+import sqlite3
 
 class StartMenu:
     def __init__(self, gameInstance = None):
@@ -141,6 +143,12 @@ class StartMenu:
                                 if button.text == "EXIT":
                                     running = False
                                 print(f"{button.text} button clicked!")
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_TAB]:
+                        conn = sqlite3.connect('mydatabase.db')
+                        loaded_game_state = GameState.load_from_db(conn)
+                        print(loaded_game_state.house, loaded_game_state.pet, loaded_game_state.GameData)
+
 
             elif self.current_screen == self.OPTIONS:
                 new_screen = options_menu.show_options(events)

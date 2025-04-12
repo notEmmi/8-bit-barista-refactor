@@ -35,6 +35,22 @@ class GameState:
             ))
         conn.commit()
 
+    @classmethod
+    def load_from_db(cls, conn):
+        cursor = conn.cursor()
+        cursor.execute('SELECT house, pet, fromPriorMenu, game_data FROM gamestate LIMIT 1')
+        row = cursor.fetchone()
+        if row:
+            house, pet, fromPriorMenu, game_data = row
+            return cls(
+                house=house,
+                pet=pet,
+                fromPriorMenu=bool(fromPriorMenu),
+                GameData=game_data  # cast back if you need to parse JSON etc.
+            )
+        else:
+            return cls()  # return default if no saved state
+
 
 
     
