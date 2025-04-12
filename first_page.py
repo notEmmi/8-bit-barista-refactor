@@ -39,6 +39,7 @@ class Game:
         
         self.house = chosen_building
         self.pet = petChoice
+        self.name = "Jake"
        
        
        
@@ -385,12 +386,7 @@ class Game:
     def draw_hud(self):
         """Displays 'Day X' on top, with the Weather Icon and Clock properly aligned at the top-right."""
 
-        # Define Panel Dimensions & Styling
-        panel_x_margin = 12  # Space between panel and screen edges
-        panel_y_margin = 8
-        panel_width = 115  # Unified width
-        panel_height = 65  # Height to fit stacked elements
-        border_radius = 8  # Rounded corners
+       
 
         # Load a Smaller & Thinner Font
         clock_font = pygame.font.Font(None, 30)  # Smaller size & thinner weight
@@ -402,13 +398,14 @@ class Game:
         # Define Panel Dimensions & Styling
         panel_x_margin = 12  # Space between panel and screen edges
         panel_y_margin = 8
-        panel_width = 115  # Unified width
-        panel_height = 65  # Height to fit stacked elements
+        panel_width = 150 # Unified width
+        panel_height = 100  # Height to fit stacked elements
         border_radius = 8  # Rounded corners
 
         # Load a Smaller & Thinner Font
         clock_font = pygame.font.Font(None, 30)  # Smaller size & thinner weight
-        day_font = pygame.font.Font(None, 25)  # Smaller size & thinner weight
+        day_font = pygame.font.Font(None, 25)
+        name_font = pygame.font.Font(None, 25)  # Smaller size & thinner weight
 
         # Create HUD Panel Background
         hud_surface = pygame.Surface((panel_width, panel_height), pygame.SRCALPHA)
@@ -419,7 +416,13 @@ class Game:
         # "Day X" - Positioned at the top with internal padding
         day_text = day_font.render(f"Day {self.current_day}", True, (255, 255, 255))
         day_rect = day_text.get_rect(midtop=(panel_width // 2, panel_y_margin))  # Centered horizontally
+        
+        name_text = name_font.render(self.name, True,(255, 255, 255))
+        name_rect = name_text.get_rect(midtop=(panel_width // 2 + 600 , panel_y_margin +80))
+
+        
         hud_surface.blit(day_text, day_rect.topleft)
+        
 
         # Weather Icon - Adjust Position Based on Type
         if self.current_weather in self.weather_icons:
@@ -489,6 +492,7 @@ class Game:
         screen_x = self.SCREEN_WIDTH - panel_width - panel_x_margin  # Fixed position
         screen_y = panel_y_margin  # Fixed vertical margin
         self.screen.blit(hud_surface, (screen_x, screen_y))
+        self.screen.blit(name_text, name_rect.topleft )
 
     def handle_input(self):
         """Handles keyboard and mouse input, including time acceleration and tool usage."""
