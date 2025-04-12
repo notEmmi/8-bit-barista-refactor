@@ -18,7 +18,7 @@ import sqlite3
 from GameState import GameState
 
 class Game:
-    def __init__(self, chosen_building, petChoice, fromPriorMenu = False, gameData = None):
+    def __init__(self, chosen_building, petChoice, name, fromPriorMenu = False, gameData = None):
         # Initialize Pygame
         pygame.init()
         pygame.font.init()
@@ -39,7 +39,8 @@ class Game:
         
         self.house = chosen_building
         self.pet = petChoice
-        self.name = "Jake"
+        self.playername = name
+        
        
        
        
@@ -417,7 +418,7 @@ class Game:
         day_text = day_font.render(f"Day {self.current_day}", True, (255, 255, 255))
         day_rect = day_text.get_rect(midtop=(panel_width // 2, panel_y_margin))  # Centered horizontally
         
-        name_text = name_font.render(self.name, True,(255, 255, 255))
+        name_text = name_font.render(self.playername, True,(255, 255, 255))
         name_rect = name_text.get_rect(midtop=(panel_width // 2 + 600 , panel_y_margin +80))
 
         
@@ -511,7 +512,7 @@ class Game:
         if keys[pygame.K_TAB]: 
             print("pressed TAB")
             conn = sqlite3.connect("mydatabase.db")
-            game_state = GameState(self.house, self.pet, False, None)
+            game_state = GameState(self.house, self.pet, self.playername, False, None)
             game_state.save_to_db(conn)
             conn.close()
         # if keys[pygame.K_CAPSLOCK]: 
@@ -745,6 +746,7 @@ class Game:
         self.player_direction = direction
         self.raining = raining
         self.cloudy_weather = cloudy
+        self.pla
     
     def saveGameState(self):
         theGameTime = self.get_game_time()
@@ -993,5 +995,6 @@ class Game:
 if __name__ == "__main__":
     image_path = "assets/map/house2.png"
     pet = "assets/images/pets/browncat.png"
-    game = Game(image_path, pet)
+    name = "jake"
+    game = Game(image_path, pet, name)
     game.run()
