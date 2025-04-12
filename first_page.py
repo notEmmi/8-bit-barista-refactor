@@ -507,7 +507,7 @@ class Game:
         if keys[pygame.K_TAB]: 
             print("pressed TAB")
             conn = sqlite3.connect("mydatabase.db")
-            game_state = GameState("house1.png", "dog.png", True, {"coins": 50})
+            game_state = GameState(self.house, self.pet, False, None)
             game_state.save_to_db(conn)
             conn.close()
         # if keys[pygame.K_CAPSLOCK]: 

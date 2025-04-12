@@ -148,7 +148,9 @@ class StartMenu:
                         conn = sqlite3.connect('mydatabase.db')
                         loaded_game_state = GameState.load_from_db(conn)
                         print(loaded_game_state.house, loaded_game_state.pet, loaded_game_state.GameData)
-
+                        from first_page import Game
+                        loadSave = Game(loaded_game_state.house, loaded_game_state.pet,loaded_game_state.fromPriorMenu, loaded_game_state.GameData )
+                        loadSave.run()
 
             elif self.current_screen == self.OPTIONS:
                 new_screen = options_menu.show_options(events)
