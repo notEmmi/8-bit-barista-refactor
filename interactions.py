@@ -64,6 +64,8 @@ class InteractionsUI:
         print(f"currentOrder: {self.currentOrder}")
         print(f"currentCustomerName: {self.currentCustomerName}")
 
+        self.generatedFakeAmounts = False
+
         self.dialougeAnchorX = -60
         self.dialougeAnchorY = 275
         self.dialougeMaxWidth = 440
@@ -145,8 +147,18 @@ class InteractionsUI:
                 ingredientTwoImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + str.lower(firstTwo[1][0]).replace(" ", "") + ".png")
                 self.screen.blit(ingredientTwoImage, (550, self.HEIGHT // 2 - 50))
 
-                bodyLabel = self.bodyText.render(recipedata.parseIngredients(ingredients), True, self.WHITE)
+                bodyLabel = self.bodyText.render("Required:\n" + recipedata.parseIngredients(ingredients), True, self.WHITE)
                 self.screen.blit(bodyLabel, ((self.WIDTH - bodyLabel.get_width()) // 2 + 150, self.HEIGHT // 2 - 110))
+
+                if not self.generatedFakeAmounts:
+                    bootlegIngredients = []
+                    for i in range(len(ingredients)):
+                        tupleForced = (ingredients[i][0], random.randint(ingredients[i][1] - 1, ingredients[i][1] * 4))
+                        bootlegIngredients.append(tupleForced)
+                    self.generatedFakeAmounts = True
+
+                bodyLabel = self.bodyText.render("You have:\n" + recipedata.parseIngredients(bootlegIngredients), True, self.WHITE)
+                self.screen.blit(bodyLabel, ((self.WIDTH - bodyLabel.get_width()) // 2 + 150, self.HEIGHT // 2 + 110))
             elif showDialogue:
                 dialougeBrownRectPseudoOutline = pygame.Rect(self.WIDTH // 2 + self.dialougeAnchorX, self.HEIGHT // 2 - self.dialougeAnchorY, self.dialougeMaxWidth, self.dialougeMaxHeight)
                 pygame.draw.rect(self.screen, self.BROWN, dialougeBrownRectPseudoOutline, border_radius=5)
@@ -204,6 +216,7 @@ class InteractionsUI:
                                 self.nameIndex += 1
                                 if self.nameIndex > len(self.randomCustomerNames) - 1: self.nameIndex = 0
                                 random.shuffle(self.randomCustomerNames)
+                                self.generatedFakeAmounts = False
                             self.previousScene = self.currentScene
                             self.currentScene = info[2]
                             break

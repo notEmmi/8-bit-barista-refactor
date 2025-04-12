@@ -12,7 +12,7 @@ def parseIngredients(ingredients: list) -> str:
     ingredientString = ""
     for ingredientAndAmount in ingredients:
         ingredientString = ingredientString + " " + str(ingredientAndAmount[1]) + "x " + ingredientAndAmount[0]
-    return ingredientString
+    return ingredientString[1:]
 
 def getFirstTwoIngredients(ingredients: list) -> list:
     if (len(ingredients) < 2): return ingredients[0]
