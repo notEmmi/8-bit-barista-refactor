@@ -14,6 +14,8 @@ import start_menu
 import settingsdata
 from pygame_gui import UI_BUTTON_PRESSED
 from music_selector import MusicSelector
+import sqlite3
+from GameState import GameState
 
 class Game:
     def __init__(self, chosen_building, petChoice, fromPriorMenu = False, gameData = None):
@@ -33,9 +35,16 @@ class Game:
         # Initalize cloudy weather
         self.cloudy = Cloudy()
         self.cloudy_weather = False
+        
+        
         self.house = chosen_building
         self.pet = petChoice
+       
+       
+       
         # Create Dark Rain Overlay
+       
+       
         self.rain_overlay = pygame.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.SRCALPHA)
         self.rain_overlay.fill((0, 0, 0, 100))  # Semi-transparent black layer (100/255 opacity)
 
@@ -163,6 +172,13 @@ class Game:
         self.gameData = gameData
         if fromPriorMenu: self.loadGameState()
 
+        
+
+######## start of save data fucntions //////////////////////////////////
+    
+
+
+################ end save data functions ###########################3
     def load_map(self, map_file):
         """Load TMX map and extract collidable and building objects."""
         self.tmx_data = pytmx.load_pygame(map_file, load_all_tiles=True)
@@ -488,9 +504,12 @@ class Game:
 
         # Trigger interactions, customers, or shop with respective keys
         # The following keybinds have been replaced by left click
-        # if keys[pygame.K_TAB]: 
-            # interactions_ui= interactions.InteractionsUI(self)
-            # interactions_ui.run()
+        if keys[pygame.K_TAB]: 
+            print("pressed TAB")
+            conn = sqlite3.connect("mydatabase.db")
+            game_state = GameState("house1.png", "dog.png", True, {"coins": 50})
+            game_state.save_to_db(conn)
+            conn.close()
         # if keys[pygame.K_CAPSLOCK]: 
         #     customers_ui= customers.CustomerUI(self)
         #     customers_ui.run()
@@ -969,5 +988,6 @@ class Game:
 
 if __name__ == "__main__":
     image_path = "assets/map/house2.png"
-    game = Game(image_path)
+    pet = "assets/images/pets/browncat.png"
+    game = Game(image_path, pet)
     game.run()
