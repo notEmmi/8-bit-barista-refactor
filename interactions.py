@@ -1,4 +1,4 @@
-import pygame, random, sys, recipedata  # type: ignore
+import pygame, random, sys, recipedata, os  # type: ignore
 
 class InteractionsUI:
     def __init__(self, game_instance):
@@ -20,6 +20,7 @@ class InteractionsUI:
         # Fonts
         self.titleText = pygame.font.Font(pygame.font.match_font('courier'), 45)
         self.buttonText = pygame.font.Font(pygame.font.match_font('courier'), 22)
+        self.dialougeText = pygame.font.Font(pygame.font.match_font('courier'), 24)
         self.headerText = pygame.font.Font(pygame.font.match_font('courier'), 32)
         self.bodyText = pygame.font.Font(pygame.font.match_font('courier'), 18)
 
@@ -27,11 +28,18 @@ class InteractionsUI:
         self.currentScene = "interior"  # Skip the first page by starting at "interior"
         self.previousScene = "NONE"
         self.waitingResponse = "I'm still waiting..."
-        self.acceptedResponse = "Thanks!"
-        self.rejectedResponse = "That sucks."
+        self.acceptedResponse = "Thanks! You've got talent."
+        self.rejectedResponse = "That sucks. I'll head out."
         self.orderAccepted = False
         self.running = True
         self.closed = False
+
+        self.randomCustomerNames = [
+            "Taylor", "Riley", "Alex", "Rowan", "Ashton", "Parker",
+            "Riley", "Charlie", "Aubrey", "Blake", "Phoenix", "Reagan"
+        ] # gotta go gender neutral to simplify things i think
+        random.shuffle(self.randomCustomerNames)
+        self.nameIndex = 0
 
         self.mainButtons = {
             "Enter Shop": ("exterior", "interior", "PROBABLY_ILLEGAL_ASSETS/shop.png"),
@@ -40,18 +48,26 @@ class InteractionsUI:
             "Complete Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/complete.png"),
             "Close": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/close.png"),
             "Reject Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/reject.png"),
+            "Protagonist": ("interior", "", os.path.join(game_instance.SPRITE_PATH, game_instance.selected_character, "down_idle.png"))
         }
         self.renderedButtons = {}
 
         # Buttons
         self.menuButtons = {
-            "QUIT": pygame.Rect(self.WIDTH // 2 - 120, 540, 80, 30),
-            "Return To Game": pygame.Rect(self.WIDTH // 2 + 40, 540, 160, 30)
+            "QUIT": pygame.Rect(self.WIDTH // 2 - 150, 540, 80, 30),
+            "Back to Garden": pygame.Rect(self.WIDTH // 2 - 20, 540, 200, 30)
         }
 
         self.listOfRecipes = list(recipedata.theRecipes.keys())
         self.currentOrder = random.choice(self.listOfRecipes)
+        self.currentCustomerName = self.randomCustomerNames[self.nameIndex]
         print(f"currentOrder: {self.currentOrder}")
+        print(f"currentCustomerName: {self.currentCustomerName}")
+
+        self.dialougeAnchorX = -60
+        self.dialougeAnchorY = 275
+        self.dialougeMaxWidth = 440
+        self.dialougeMaxHeight = 90
 
     def drawMainButton(self, name, xPos, yPos, buttonInformation):
         length = 300
@@ -61,18 +77,19 @@ class InteractionsUI:
         if name == "Enter Shop":
             buttonRect = buttonRect.scale_by(2).move(185, 50)
         elif name == "View Customer Order":
-            buttonRect = buttonRect.move(self.WIDTH // 2 - buttonRect.width // 2 - buttonRect.x, 0)  # Center horizontally
+            buttonRect = buttonRect.move((self.WIDTH - buttonRect.width) // 2 - (buttonRect.x), (self.HEIGHT // 2) - 80)  # Center horizontally
         elif name == "Complete Order":
             buttonRect = buttonRect.move(75, 25)
         elif name == "Reject Order":
             buttonRect = buttonRect.move(-45, 25)
         elif name == "Close":
             buttonRect = buttonRect.scale_by(0.4).move(-250, -115)
+        elif name == "Protagonist":
+            buttonRect = pygame.Rect(xPos // 2 + 80, yPos, 14 * 3, 29 * 3) # Center horizontally
 
         self.renderedButtons[name] = (buttonRect, buttonInformation[0], buttonInformation[1])
 
-        if self.currentScene != buttonInformation[0]:
-            return
+        if self.currentScene != buttonInformation[0]: return
 
         buttonImage = pygame.image.load(buttonInformation[2])
         buttonImage = pygame.transform.scale(buttonImage, (buttonRect.width, buttonRect.height))
@@ -114,6 +131,7 @@ class InteractionsUI:
 
             showDialogue = self.currentScene == "interior" and self.previousScene == "customerOrder"
             if self.currentScene == "customerOrder":
+                self.currentCustomerName = self.randomCustomerNames[self.nameIndex]
                 headerLabel = self.headerText.render(self.currentOrder, True, self.WHITE)
                 self.screen.blit(headerLabel, (self.WIDTH // 2 - headerLabel.get_width() // 2, self.HEIGHT // 2 + 100))
                 bodyLabel = self.bodyText.render(recipedata.parseIngredients(recipedata.theRecipes.get(self.currentOrder)), True, self.WHITE)
@@ -122,12 +140,18 @@ class InteractionsUI:
                 recipeImage = pygame.transform.scale(recipeImage, (recipeImage.get_width() // 2, recipeImage.get_height() // 2))
                 self.screen.blit(recipeImage, (self.WIDTH // 2 - recipeImage.get_width() // 2, 285))
             elif showDialogue:
+                dialougeBrownRectPseudoOutline = pygame.Rect(self.WIDTH // 2 + self.dialougeAnchorX, self.HEIGHT // 2 - self.dialougeAnchorY, self.dialougeMaxWidth, self.dialougeMaxHeight)
+                pygame.draw.rect(self.screen, self.BROWN, dialougeBrownRectPseudoOutline, border_radius=5)
+                dialougeWhiteRect = pygame.Rect(self.WIDTH // 2 + self.dialougeAnchorX + 10, self.HEIGHT // 2 - (self.dialougeAnchorY - 5), self.dialougeMaxWidth - 20, self.dialougeMaxHeight - 10)
+                pygame.draw.rect(self.screen, self.WHITE, dialougeWhiteRect, border_radius=5)
+                text = self.currentCustomerName + ":\n\""
                 if self.closed:
-                    text = self.waitingResponse
+                    text = text + self.waitingResponse
                 else:
-                    text = self.acceptedResponse if self.orderAccepted else self.rejectedResponse
-                dialogueLabel = self.headerText.render(text, True, self.WHITE)
-                self.screen.blit(dialogueLabel, (self.WIDTH // 2 - dialogueLabel.get_width() // 2, self.HEIGHT // 2 + 150))
+                    text = text + (self.acceptedResponse if self.orderAccepted else self.rejectedResponse)
+                text = text + "\""
+                dialogueLabel = self.dialougeText.render(text, True, self.BROWN)
+                self.screen.blit(dialogueLabel, (self.WIDTH // 2 + self.dialougeAnchorX + 20, self.HEIGHT // 2 - (self.dialougeAnchorY - 10)))
 
             for name, rect in self.menuButtons.items():
                 pygame.draw.rect(self.screen, self.BRIGHT_BROWN, rect.inflate(9, 9), border_radius=14)
@@ -145,23 +169,22 @@ class InteractionsUI:
                         if rect.collidepoint(mouse_pos):
                             if name == "QUIT":
                                 self.running = False
-                            elif name == "Return To Game":
+                            elif name == "Back to Garden":
                                 print("Returning to game...")
                                 self.running = False  # You can swap this to a callback to your Game instance
                                 self.game.run()
                             break
                     for name, info in self.renderedButtons.items():
-                        if info[0].collidepoint(mouse_pos) and self.currentScene == info[1]:
+                        if info[2] != "" and info[0].collidepoint(mouse_pos) and self.currentScene == info[1]:
                             print(f"{name} clicked! switching scene to {info[2]}")
                             self.closed = True
-                            if name == "Reject Order":
-                                self.orderAccepted = False
+                            if name == "Reject Order" or name == "Complete Order":
+                                self.orderAccepted = name == "Complete Order"
                                 self.closed = False
                                 self.currentOrder = random.choice(self.listOfRecipes)
-                            elif name == "Complete Order":
-                                self.orderAccepted = True
-                                self.closed = False
-                                self.currentOrder = random.choice(self.listOfRecipes)
+                                self.nameIndex += 1
+                                if self.nameIndex > len(self.randomCustomerNames) - 1: self.nameIndex = 0
+                                random.shuffle(self.randomCustomerNames)
                             self.previousScene = self.currentScene
                             self.currentScene = info[2]
                             break
