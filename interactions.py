@@ -66,6 +66,7 @@ class InteractionsUI:
         print(f"currentCustomerName: {self.currentCustomerName}")
 
         self.generatedFakeAmounts = False
+        self.notEnoughIngredients = False
 
         self.dialougeAnchorX = -60
         self.dialougeAnchorY = 275
@@ -81,7 +82,7 @@ class InteractionsUI:
             buttonRect = buttonRect.scale_by(2).move(185, 50)
         elif name == "View Customer Order":
             buttonRect = buttonRect.move((self.WIDTH - buttonRect.width) // 2 - (buttonRect.x), (self.HEIGHT // 2) - 80)  # Center horizontally
-        elif name == "Complete Order":
+        elif name == "Complete Order" and not self.notEnoughIngredients:
             buttonRect = buttonRect.scale_by(.5).move(400, -100)
         elif name == "Reject Order":
             buttonRect = buttonRect.scale_by(.5).move(130, -100)
@@ -95,6 +96,7 @@ class InteractionsUI:
         self.renderedButtons[name] = (buttonRect, buttonInformation[0], buttonInformation[1])
 
         if self.currentScene != buttonInformation[0]: return
+        if name == "Complete Order" and self.notEnoughIngredients: return
 
         buttonImage = pygame.image.load(buttonInformation[2])
         buttonImage = pygame.transform.scale(buttonImage, (buttonRect.width, buttonRect.height))
@@ -158,7 +160,11 @@ class InteractionsUI:
                 if not self.generatedFakeAmounts:
                     bootlegIngredients = []
                     for i in range(len(ingredients)):
-                        tupleForced = (ingredients[i][0], random.randint(ingredients[i][1] - 1, ingredients[i][1] * 4))
+                        originalName = ingredients[i][0]
+                        originalAmount = ingredients[i][1]
+                        randAmountToSimulateInventory = random.randint(originalAmount - 1, originalAmount * 4)
+                        tupleForced = (originalName, randAmountToSimulateInventory)
+                        if randAmountToSimulateInventory < originalAmount: self.notEnoughIngredients = True
                         bootlegIngredients.append(tupleForced)
                     self.generatedFakeAmounts = True
 
@@ -226,12 +232,15 @@ class InteractionsUI:
                                 self.game.run()
                             break
                     for name, info in self.renderedButtons.items():
-                        if name == "Recipes":
-                            Recipes.Recipes().run()
-                        if info[2] != "" and info[0].collidepoint(mouse_pos) and self.currentScene == info[1]:
+                        if not (info[0].collidepoint(mouse_pos) and self.currentScene == info[1]): continue
+                        if name == "Recipes": Recipes.Recipes().run()
+                        elif info[2] != "":
                             print(f"{name} clicked! switching scene to {info[2]}")
                             self.closed = True
                             if name == "Reject Order" or name == "Complete Order":
+                                if name == "Complete Order" and self.notEnoughIngredients:
+                                    print(f"NOT ENOUGH INGREDIENTS. ABORT MISSION.")
+                                    break
                                 self.orderAccepted = name == "Complete Order"
                                 self.closed = False
                                 self.currentOrder = random.choice(self.listOfRecipes)
@@ -240,6 +249,7 @@ class InteractionsUI:
                                 random.shuffle(self.randomCustomerNames)
                                 self.randomAmount = random.randint(100, 700)
                                 self.generatedFakeAmounts = False
+                                self.notEnoughIngredients = False
                             self.previousScene = self.currentScene
                             self.currentScene = info[2]
                             break
