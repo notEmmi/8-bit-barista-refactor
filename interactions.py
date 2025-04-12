@@ -21,8 +21,8 @@ class InteractionsUI:
         self.titleText = pygame.font.Font(pygame.font.match_font('courier'), 45)
         self.buttonText = pygame.font.Font(pygame.font.match_font('courier'), 22)
         self.dialougeText = pygame.font.Font(pygame.font.match_font('courier'), 24)
-        self.headerText = pygame.font.Font(pygame.font.match_font('courier'), 32)
-        self.bodyText = pygame.font.Font(pygame.font.match_font('courier'), 18)
+        self.headerText = pygame.font.Font(pygame.font.match_font('courier'), 48)
+        self.bodyText = pygame.font.Font(pygame.font.match_font('courier'), 20)
 
         # State variables
         self.currentScene = "interior"  # Skip the first page by starting at "interior"
@@ -77,11 +77,11 @@ class InteractionsUI:
         elif name == "View Customer Order":
             buttonRect = buttonRect.move((self.WIDTH - buttonRect.width) // 2 - (buttonRect.x), (self.HEIGHT // 2) - 80)  # Center horizontally
         elif name == "Complete Order":
-            buttonRect = buttonRect.move(75, 25)
+            buttonRect = buttonRect.scale_by(.5).move(380, -120)
         elif name == "Reject Order":
-            buttonRect = buttonRect.move(-45, 25)
+            buttonRect = buttonRect.scale_by(.5).move(110, -120)
         elif name == "Close":
-            buttonRect = buttonRect.scale_by(0.4).move(-250, -115)
+            buttonRect = buttonRect.scale_by(0.4).move(-250, -120)
         elif name == "Protagonist":
             buttonRect = pygame.Rect(xPos // 2 + 80, yPos, 14 * 3, 29 * 3) # Center horizontally
 
@@ -130,13 +130,23 @@ class InteractionsUI:
             showDialogue = self.currentScene == "interior" and self.previousScene == "customerOrder"
             if self.currentScene == "customerOrder":
                 self.currentCustomerName = self.randomCustomerNames[self.nameIndex]
+
                 headerLabel = self.headerText.render(self.currentOrder, True, self.WHITE)
-                self.screen.blit(headerLabel, (self.WIDTH // 2 - headerLabel.get_width() // 2, self.HEIGHT // 2 + 100))
-                bodyLabel = self.bodyText.render(recipedata.parseIngredients(recipedata.theRecipes.get(self.currentOrder)), True, self.WHITE)
-                self.screen.blit(bodyLabel, (self.WIDTH // 2 - bodyLabel.get_width() // 2, self.HEIGHT // 2 + 140))
+                self.screen.blit(headerLabel, (self.WIDTH // 2 - 280, self.HEIGHT // 2 - 150))
+
+                ingredients = recipedata.theRecipes.get(self.currentOrder)
+
                 recipeImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + str.lower(self.currentOrder) + ".png")
-                recipeImage = pygame.transform.scale(recipeImage, (recipeImage.get_width() // 2, recipeImage.get_height() // 2))
-                self.screen.blit(recipeImage, (self.WIDTH // 2 - recipeImage.get_width() // 2, 285))
+                self.screen.blit(recipeImage, (130, 180))
+
+                firstTwo = recipedata.getFirstTwoIngredients(ingredients)
+                ingredientOneImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + str.lower(firstTwo[0][0]).replace(" ", "") + ".png")
+                self.screen.blit(ingredientOneImage, (400, self.HEIGHT // 2 - 50))
+                ingredientTwoImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + str.lower(firstTwo[1][0]).replace(" ", "") + ".png")
+                self.screen.blit(ingredientTwoImage, (550, self.HEIGHT // 2 - 50))
+
+                bodyLabel = self.bodyText.render(recipedata.parseIngredients(ingredients), True, self.WHITE)
+                self.screen.blit(bodyLabel, ((self.WIDTH - bodyLabel.get_width()) // 2 + 150, self.HEIGHT // 2 - 110))
             elif showDialogue:
                 dialougeBrownRectPseudoOutline = pygame.Rect(self.WIDTH // 2 + self.dialougeAnchorX, self.HEIGHT // 2 - self.dialougeAnchorY, self.dialougeMaxWidth, self.dialougeMaxHeight)
                 pygame.draw.rect(self.screen, self.BROWN, dialougeBrownRectPseudoOutline, border_radius=5)
