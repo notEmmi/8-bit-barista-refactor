@@ -177,7 +177,7 @@ class InteractionsUI:
                 text = text + "\""
                 dialogueLabel = self.dialougeText.render(text, True, self.BROWN)
                 self.screen.blit(dialogueLabel, (self.WIDTH // 2 + self.dialougeAnchorX + 20, self.HEIGHT // 2 - (self.dialougeAnchorY - 10)))
-                if (self.orderAccepted):
+                if (self.orderAccepted and not self.closed):
                     moneyImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/money.png")
                     moneyImage = pygame.transform.scale(moneyImage, (45, 45))
                     self.screen.blit(moneyImage, (344, 242))
