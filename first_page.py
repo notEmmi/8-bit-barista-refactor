@@ -4,7 +4,6 @@ import os
 import time
 from weather import Rain, Raindrop, FloorDrop, Cloudy
 from toolbar import Toolbox
-from character_utils import load_selected_character
 import interactions
 import customers
 import shop
@@ -18,7 +17,7 @@ import sqlite3
 from GameState import GameState
 
 class Game:
-    def __init__(self, chosen_building, petChoice, name, fromPriorMenu = False, gameData = None):
+    def __init__(self, chosen_building, petChoice, name, selected_character=None, fromPriorMenu = False, gameData = None):
         # Initialize Pygame
         pygame.init()
         pygame.font.init()
@@ -40,10 +39,10 @@ class Game:
         self.house = chosen_building
         self.pet = petChoice
         self.playername = name
-        
-       
-       
-       
+        self.selected_character = selected_character
+        print(f"Character selected: {self.selected_character}")  # Debug line to ensure it is set correctly
+
+    
         # Create Dark Rain Overlay
        
        
@@ -114,8 +113,9 @@ class Game:
 
         # Characters list
         characters = ["boy1", "boy2", "boy3", "girl1", "girl2", "girl3"]
-        self.selected_character = load_selected_character()  # Load saved character
 
+        # Load char from DB
+        self.selected_character = self.load_selected_character_from_db()
         print(f"Loaded character: {self.selected_character}")
         
         self.SPRITE_PATH = os.path.join(self.BASE_DIR, "assets", "images", "character-selection")
@@ -176,11 +176,22 @@ class Game:
 
         
 
-######## start of save data fucntions //////////////////////////////////
+######## start of save data functions //////////////////////////////////
     
+    def load_selected_character_from_db(self):
+        """Load the selected character from the database."""
+        conn = sqlite3.connect('mydatabase.db')  # Connect to the SQLite database
+        game_state = GameState.load_from_db(conn)  # Load the game state from the DB
+        conn.close()
 
+        # Return the selected character, or default to "boy1" if no character is found
+        if game_state.selected_character:
+            return game_state.selected_character 
+        else:
+            return "boy1"
 
-################ end save data functions ###########################3
+################ end save data functions ###########################
+
     def load_map(self, map_file):
         """Load TMX map and extract collidable and building objects."""
         self.tmx_data = pytmx.load_pygame(map_file, load_all_tiles=True)
@@ -512,7 +523,7 @@ class Game:
         if keys[pygame.K_TAB]: 
             print("pressed TAB")
             conn = sqlite3.connect("mydatabase.db")
-            game_state = GameState(self.house, self.pet, self.playername, False, None)
+            game_state = GameState(self.house, self.pet, self.playername, self.selected_character, False, None)
             game_state.save_to_db(conn)
             conn.close()
         # if keys[pygame.K_CAPSLOCK]: 

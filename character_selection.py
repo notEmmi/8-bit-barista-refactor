@@ -3,7 +3,8 @@ import sys  # Import the sys module
 import os  # Import the os module
 from first_page import Game
 from Building_Selection_Screen import BuildingSelectionScreen  # Import the building selection screen function
-from character_utils import save_selected_character, load_selected_character
+import sqlite3
+from GameState import GameState
 
 # Initialize Pygame
 pygame.init()
@@ -34,7 +35,7 @@ class CharacterSelector:
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))  # Create the game window
         pygame.display.set_caption("Character Selection")  # Set the window title
 
-        self.selected_character = load_selected_character()
+        self.selected_character = self.load_selected_character_from_db()
         # List of characters
         self.characters = ["boy1", "boy2", "boy3", "girl1", "girl2", "girl3"]
         self.player_name = None
@@ -117,7 +118,26 @@ class CharacterSelector:
                         if x < mouse_x < x + AVATAR_SIZE and y < mouse_y < y + AVATAR_SIZE:
                             # Update the selected character correctly
                             self.selected_character = character
-                            save_selected_character(character)  # Save the correct character
+                            print(f"Selected Characer: {self.selected_character}")
+                            self.save_selected_character_to_db(character)  # Save the correct character
+
+    def save_selected_character_to_db(self, character):
+        """Save the selected character to the database."""
+        # Create or update GameState with selected character and save to DB
+        conn = sqlite3.connect('mydatabase.db')  # Connect to your SQLite database
+        game_state = GameState(name=self.player_name, selected_character=character)
+        game_state.save_to_db(conn)  # Save the state with the selected character
+        conn.close()
+
+    def load_selected_character_from_db(self):
+        """Load the selected character from the database."""
+        conn = sqlite3.connect('mydatabase.db')  # Connect to the SQLite database
+        game_state = GameState.load_from_db(conn)  # Load the game state from the DB
+        conn.close()
+        
+        print(f"Loaded character from DB: {game_state.selected_character}")  # Debug line
+        # Return the selected character, or default to "boy1" if no character is found
+        return game_state.selected_character if game_state.selected_character else "boy1"
 
     def draw_preview(self):
         # Draw large character preview
