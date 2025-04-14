@@ -17,7 +17,7 @@ import sqlite3
 from GameState import GameState
 
 class Game:
-    def __init__(self, chosen_building, petChoice, name, selected_character=None, fromPriorMenu = False, gameData = None):
+    def __init__(self, chosen_building, petChoice, name, selected_character=None, time_hour=None, time_minute=None, fromPriorMenu = False, gameData = None):
         # Initialize Pygame
         pygame.init()
         pygame.font.init()
@@ -40,7 +40,16 @@ class Game:
         self.pet = petChoice
         self.playername = name
         self.selected_character = selected_character
-        print(f"Character selected: {self.selected_character}")  # Debug line to ensure it is set correctly
+        self.time_hour = time_hour
+        self.time_minute = time_minute
+
+        if self.time_hour is not None and self.time_minute is not None:
+            self.resume_start_minutes = self.time_hour * 60 + self.time_minute
+        else:
+            self.resume_start_minutes = 6 * 60  # fallback to default
+
+            self.game_start_time = time.time()  # Reset base time reference
+            self.last_game_time = self.game_start_time  # For pause/resume support
 
     
         # Create Dark Rain Overlay
@@ -270,16 +279,23 @@ class Game:
     def get_game_time(self):
         """Converts real-time seconds to in-game hours and minutes."""
         if self.is_paused:
-            # Return the last calculated time (freeze the clock)
+            # Freeze time
             elapsed_time = (self.last_game_time - self.game_start_time) * self.time_multiplier
         else:
-            # Calculate elapsed time normally
             elapsed_time = (time.time() - self.game_start_time) * self.time_multiplier
-            self.last_game_time = time.time()  # Store the last calculated time
+            self.last_game_time = time.time()
 
-        game_minutes = int(elapsed_time / self.SECONDS_PER_GAME_MINUTE)
-        game_hour = (self.GAME_START_HOUR + game_minutes // 60) % 24
-        game_minute = game_minutes % 60
+        # How many game minutes have passed since start
+        elapsed_game_minutes = int(elapsed_time / self.SECONDS_PER_GAME_MINUTE)
+
+        # Use resume_start_minutes if it exists, otherwise fall back to GAME_START_HOUR
+        if hasattr(self, "resume_start_minutes"):
+            total_game_minutes = self.resume_start_minutes + elapsed_game_minutes
+        else:
+            total_game_minutes = self.GAME_START_HOUR * 60 + elapsed_game_minutes
+
+        game_hour = (total_game_minutes // 60) % 24
+        game_minute = total_game_minutes % 60
 
         return game_hour, game_minute
     
@@ -523,7 +539,8 @@ class Game:
         if keys[pygame.K_TAB]: 
             print("pressed TAB")
             conn = sqlite3.connect("mydatabase.db")
-            game_state = GameState(self.house, self.pet, self.playername, self.selected_character, False, None)
+            curr_hour, curr_minute = self.get_game_time()
+            game_state = GameState(self.house, self.pet, self.playername, self.selected_character, curr_hour, curr_minute, False, None)
             game_state.save_to_db(conn)
             conn.close()
         # if keys[pygame.K_CAPSLOCK]: 
