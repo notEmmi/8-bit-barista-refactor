@@ -17,7 +17,7 @@ import sqlite3
 from GameState import GameState
 
 class Game:
-    def __init__(self, chosen_building, petChoice, name, selected_character=None, time_hour=None, time_minute=None, fromPriorMenu = False, gameData = None):
+    def __init__(self, chosen_building, petChoice, name, selected_character=None, current_day = 1, time_hour=None, time_minute=None, fromPriorMenu = False, gameData = None):
         # Initialize Pygame
         pygame.init()
         pygame.font.init()
@@ -59,7 +59,7 @@ class Game:
         self.rain_overlay.fill((0, 0, 0, 100))  # Semi-transparent black layer (100/255 opacity)
 
         # Day transition
-        self.current_day = 1
+        self.current_day = current_day
         self.current_weather = "sunny"
         self.last_processed_day = 0
         self.weather_icons = {
@@ -540,7 +540,7 @@ class Game:
             print("pressed TAB")
             conn = sqlite3.connect("mydatabase.db")
             curr_hour, curr_minute = self.get_game_time()
-            game_state = GameState(self.house, self.pet, self.playername, self.selected_character, curr_hour, curr_minute, False, None)
+            game_state = GameState(self.house, self.pet, self.playername, self.selected_character, self.current_day, curr_hour, curr_minute, False, None)
             game_state.save_to_db(conn)
             conn.close()
         # if keys[pygame.K_CAPSLOCK]: 
