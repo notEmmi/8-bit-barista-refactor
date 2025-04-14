@@ -307,17 +307,10 @@ class Game:
         # Calculate the total minutes since midnight
         total_minutes_since_midnight = hour * 60 + minute
 
-        # Calculate the total minutes since GAME_START_HOUR (6:00 AM)
-        # GAME_START_HOUR is 6, so 6 * 60 = 360 minutes
-        total_minutes_since_game_start = total_minutes_since_midnight - (self.GAME_START_HOUR * 60)
-
-        # If the result is negative, it means the time is before 6:00 AM
-        # Add 24 hours (1440 minutes) to handle the wrap-around
-        if total_minutes_since_game_start < 0:
-            total_minutes_since_game_start += 24 * 60
-
-        # Update game_start_time to reflect the new time
-        self.game_start_time = time.time() - (total_minutes_since_game_start * self.SECONDS_PER_GAME_MINUTE)
+        # Fully reset time
+        self.resume_start_minutes = total_minutes_since_midnight
+        self.game_start_time = time.time()
+        self.last_game_time = self.game_start_time
 
     def is_night_time(self):
         """Returns True if the current game time is night (after 5:30 PM or before 6 AM)."""
@@ -762,9 +755,9 @@ class Game:
                 break
 
     def drawPause(self) -> pygame.Rect:
-        pauseButtonImage = pygame.image.load("assets/buttons/pause.png")
-        pauseButtonImage = pygame.transform.scale(pauseButtonImage, (64, 64))
-        rect = pygame.Rect(16, 16, 64, 64)
+        pauseButtonImage = pygame.image.load("assets/buttons/pause.png").convert_alpha()
+        #pauseButtonImage = pygame.transform.scale(pauseButtonImage, (64, 64))
+        rect = pygame.Rect(16, 16, 90, 90)
         self.screen.blit(pauseButtonImage, rect)
         return rect
         
@@ -1023,10 +1016,6 @@ class Game:
             self.toolbox.draw(self.screen)
             self.backpack = inventory.drawBundle(self.screen)
 
-            # Draw the new day prompt if active
-            if self.show_new_day_prompt:
-                self.draw_new_day_prompt()
-
             # Ensure weather icon is updated dynamically
             if self.current_weather in self.weather_icons:
                 self.current_weather_icon = self.weather_icons[self.current_weather]
@@ -1038,6 +1027,10 @@ class Game:
 
             #draw pause button
             self.pauseButton = self.drawPause()
+
+            # Draw the new day prompt if active
+            if self.show_new_day_prompt:
+                self.draw_new_day_prompt()
 
             pygame.display.flip()  # Update display
             clock.tick(FPS)

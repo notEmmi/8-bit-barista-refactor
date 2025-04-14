@@ -1,5 +1,7 @@
 import pygame, settingsdata
 from music_selector import MusicSelector
+import sqlite3
+from GameState import GameState
 
 class OptionsMenu:
     def __init__(self, gameInstance = None):
@@ -49,6 +51,9 @@ class OptionsMenu:
         }
 
         self.masterVolumeMuteButton = pygame.Rect((self.WIDTH // 2) - 8, (self.HEIGHT // 2) - 168, 18, 18)
+
+        self.save_button_img = pygame.image.load("assets/buttons/save.png").convert_alpha()
+        self.save_button_rect = self.save_button_img.get_rect(topleft=(58, 50))
 
         self.currentGameInstance = gameInstance
 
@@ -131,10 +136,30 @@ class OptionsMenu:
             text = self.button_font.render(name, True, self.WHITE)
             self.screen.blit(text, text.get_rect(center=rect.center))
 
+        self.screen.blit(self.save_button_img, self.save_button_rect)
+
         # Handle Events
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Check Buttons
+                if self.save_button_rect.collidepoint(mouse_pos):
+                    print("[DEBUG] Save button clicked!")
+                    conn = sqlite3.connect("mydatabase.db")
+                    curr_hour, curr_minute = self.currentGameInstance.get_game_time()
+                    game_state = GameState(
+                        self.currentGameInstance.house,
+                        self.currentGameInstance.pet,
+                        self.currentGameInstance.playername,
+                        self.currentGameInstance.selected_character,
+                        self.currentGameInstance.current_day,
+                        self.currentGameInstance.current_weather,
+                        curr_hour,
+                        curr_minute,
+                        False,
+                        None
+                    )
+                    game_state.save_to_db(conn)
+                    conn.close()
                 if self.masterVolumeMuteButton.collidepoint(mouse_pos):
                     settingsdata.toggleMuteMasterVolume()
                     self.sliders["Master Volume"] = settingsdata.volumes[0]
