@@ -149,9 +149,9 @@ class StartMenu:
                                  print(f"{button.text} button clicked!")
                                  conn = sqlite3.connect('mydatabase.db')
                                  loaded_game_state = GameState.load_from_db(conn)
-                                 print(loaded_game_state.house, loaded_game_state.pet, loaded_game_state.name, loaded_game_state.selected_character, loaded_game_state.current_day, loaded_game_state.time_hour, loaded_game_state.time_minute, loaded_game_state.GameData)
+                                 print(loaded_game_state.house, loaded_game_state.pet, loaded_game_state.name, loaded_game_state.selected_character, loaded_game_state.current_day, loaded_game_state.current_weather, loaded_game_state.time_hour, loaded_game_state.time_minute, loaded_game_state.GameData)
                                  from first_page import Game
-                                 loadSave = Game(loaded_game_state.house, loaded_game_state.pet,loaded_game_state.name, loaded_game_state.selected_character, loaded_game_state.current_day, loaded_game_state.time_hour, loaded_game_state.time_minute, loaded_game_state.fromPriorMenu, loaded_game_state.GameData)
+                                 loadSave = Game(loaded_game_state.house, loaded_game_state.pet,loaded_game_state.name, loaded_game_state.selected_character, loaded_game_state.current_day, loaded_game_state.current_weather, loaded_game_state.time_hour, loaded_game_state.time_minute, loaded_game_state.fromPriorMenu, loaded_game_state.GameData)
                                  loadSave.run()
                                  running = False
 

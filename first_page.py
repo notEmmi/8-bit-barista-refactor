@@ -17,7 +17,7 @@ import sqlite3
 from GameState import GameState
 
 class Game:
-    def __init__(self, chosen_building, petChoice, name, selected_character=None, current_day = 1, time_hour=None, time_minute=None, fromPriorMenu = False, gameData = None):
+    def __init__(self, chosen_building, petChoice, name, selected_character=None, current_day = 1, current_weather="sunny", time_hour=None, time_minute=None, fromPriorMenu = False, gameData = None):
         # Initialize Pygame
         pygame.init()
         pygame.font.init()
@@ -40,6 +40,8 @@ class Game:
         self.pet = petChoice
         self.playername = name
         self.selected_character = selected_character
+        self.current_weather = current_weather
+        self.apply_weather_effects()
         self.time_hour = time_hour
         self.time_minute = time_minute
 
@@ -60,7 +62,6 @@ class Game:
 
         # Day transition
         self.current_day = current_day
-        self.current_weather = "sunny"
         self.last_processed_day = 0
         self.weather_icons = {
             "sunny": pygame.image.load(os.path.join("assets", "icons", "sunny.png")).convert_alpha(),
@@ -358,6 +359,27 @@ class Game:
 
         return alpha_value
 
+    def apply_weather_effects(self):
+        from weather import Rain, Cloudy  # Import here to avoid circular issues
+
+        print(f"[DEBUG] Applying weather effects for: {self.current_weather}")
+
+        if self.current_weather == "rainy":
+            self.raining = True
+            self.cloudy_weather = False
+            self.rain = Rain()
+            self.cloudy = None
+        elif self.current_weather == "cloudy":
+            self.raining = False
+            self.cloudy_weather = True
+            self.cloudy = Cloudy()
+            self.rain = None
+        else:
+            self.raining = False
+            self.cloudy_weather = False
+            self.rain = None
+            self.cloudy = None
+
     def check_new_day(self):
         game_hour, game_minute = self.get_game_time()
         total_game_minutes = game_hour * 60 + game_minute
@@ -540,7 +562,7 @@ class Game:
             print("pressed TAB")
             conn = sqlite3.connect("mydatabase.db")
             curr_hour, curr_minute = self.get_game_time()
-            game_state = GameState(self.house, self.pet, self.playername, self.selected_character, self.current_day, curr_hour, curr_minute, False, None)
+            game_state = GameState(self.house, self.pet, self.playername, self.selected_character, self.current_day, self.current_weather, curr_hour, curr_minute, False, None)
             game_state.save_to_db(conn)
             conn.close()
         # if keys[pygame.K_CAPSLOCK]: 
@@ -833,6 +855,8 @@ class Game:
                 self.raining = self.current_weather == "rainy"
                 self.cloudy_weather = self.current_weather == "cloudy"
                 self.confirm_new_day = False  # Reset confirmation flag
+
+                self.apply_weather_effects()
                 print(f"New day started at 5:30 AM. Day {self.current_day} - Weather: {self.current_weather}")
 
             # Only update game logic if not paused
