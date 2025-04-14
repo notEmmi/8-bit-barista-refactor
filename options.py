@@ -52,7 +52,10 @@ class OptionsMenu:
 
         self.masterVolumeMuteButton = pygame.Rect((self.WIDTH // 2) - 8, (self.HEIGHT // 2) - 168, 18, 18)
 
-        self.save_button_img = pygame.image.load("assets/buttons/save.png").convert_alpha()
+        # Transparent Save Button
+        raw_image = pygame.image.load("assets/buttons/save.png")
+        self.save_button_img = pygame.Surface(raw_image.get_size(), pygame.SRCALPHA)
+        self.save_button_img.blit(raw_image, (0, 0))
         self.save_button_rect = self.save_button_img.get_rect(topleft=(58, 50))
 
         self.currentGameInstance = gameInstance

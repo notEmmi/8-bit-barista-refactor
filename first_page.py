@@ -755,8 +755,16 @@ class Game:
                 break
 
     def drawPause(self) -> pygame.Rect:
-        pauseButtonImage = pygame.image.load("assets/buttons/pause.png").convert_alpha()
+        # Load raw image
+        raw_image = pygame.image.load("assets/buttons/pause.png")
+
+        # Transparency
+        pauseButtonImage = pygame.Surface(raw_image.get_size(), pygame.SRCALPHA)
+        pauseButtonImage.blit(raw_image, (0, 0))
+
+        #pauseButtonImage = pygame.image.load("assets/buttons/pause.png").convert_alpha()
         #pauseButtonImage = pygame.transform.scale(pauseButtonImage, (64, 64))
+        
         rect = pygame.Rect(16, 16, 90, 90)
         self.screen.blit(pauseButtonImage, rect)
         return rect
