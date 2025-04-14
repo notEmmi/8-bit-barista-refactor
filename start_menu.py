@@ -48,7 +48,7 @@ class StartMenu:
         button_spacing = 90
         button_start_y = 220
         self.buttons = [
-            self.Button("NEWGAME", button_x -120, button_start_y, button_width, button_height, self.CHARACTER_SELECTION),
+            self.Button("NEW GAME", button_x -120, button_start_y, button_width, button_height, self.CHARACTER_SELECTION),
             self.Button("CONTINUE", button_x + 120, button_start_y, button_width, button_height, self.CHARACTER_SELECTION),
             self.Button("OPTIONS", button_x, button_start_y + button_spacing, button_width, button_height, self.OPTIONS),
             self.Button("CREDITS", button_x, button_start_y + 2 * button_spacing, button_width, button_height, self.CREDITS),

@@ -551,13 +551,13 @@ class Game:
 
         # Trigger interactions, customers, or shop with respective keys
         # The following keybinds have been replaced by left click
-        if keys[pygame.K_TAB]: 
-            print("pressed TAB")
-            conn = sqlite3.connect("mydatabase.db")
-            curr_hour, curr_minute = self.get_game_time()
-            game_state = GameState(self.house, self.pet, self.playername, self.selected_character, self.current_day, self.current_weather, curr_hour, curr_minute, False, None)
-            game_state.save_to_db(conn)
-            conn.close()
+        # if keys[pygame.K_TAB]: 
+        #     print("pressed TAB")
+        #     conn = sqlite3.connect("mydatabase.db")
+        #     curr_hour, curr_minute = self.get_game_time()
+        #     game_state = GameState(self.house, self.pet, self.playername, self.selected_character, self.current_day, self.current_weather, curr_hour, curr_minute, False, None)
+        #     game_state.save_to_db(conn)
+        #     conn.close()
         # if keys[pygame.K_CAPSLOCK]: 
         #     customers_ui= customers.CustomerUI(self)
         #     customers_ui.run()
