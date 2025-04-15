@@ -7,7 +7,7 @@ from toolbar import Toolbox
 from character_utils import load_selected_character
 import interactions
 import customers
-import shop
+import Shop
 import inventory
 import random
 import start_menu
@@ -41,7 +41,7 @@ class Game:
         self.pet = petChoice
         self.playername = name
 
-        self.shop = shop.ShopUI(self)
+        self.shop = Shop.ShopUI(self)
         
        
        

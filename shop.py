@@ -1,6 +1,5 @@
 import pygame
 import first_page
-import os  # Add import for handling file paths
 
 class ShopUI:
     def __init__(self, game_instance=None):
@@ -49,20 +48,20 @@ class ShopUI:
         self.gold = 1000
         self.inventory = {}
 
-        # Shop Items - Adjusted grid size and spacing
+        # Shop Items - Arranged in a grid pattern with more spacing
         self.shop_items_crops = [
-            {"name": "Wheat", "price": 5, "rect": pygame.Rect(120, 120, 120, 140)},
-            {"name": "Corn", "price": 10, "rect": pygame.Rect(250, 120, 120, 140)},
-            {"name": "Tomato", "price": 8, "rect": pygame.Rect(380, 120, 120, 140)},
+            {"name": "Wheat", "price": 5, "rect": pygame.Rect(120, 120, 100, 100)},
+            {"name": "Corn", "price": 10, "rect": pygame.Rect(230, 120, 100, 100)},
+            {"name": "Tomato", "price": 8, "rect": pygame.Rect(340, 120, 100, 100)},
         ]
         
-        self.shop_items_items = [
-            {"name": "Sugar", "price": 3, "rect": pygame.Rect(120, 120, 120, 140)},
-            {"name": "Coffee", "price": 15, "rect": pygame.Rect(250, 120, 120, 140)},
-            {"name": "Tea", "price": 10, "rect": pygame.Rect(380, 120, 120, 140)},
-            {"name": "Milk", "price": 5, "rect": pygame.Rect(120, 270, 120, 140)},
-            {"name": "Honey", "price": 20, "rect": pygame.Rect(250, 270, 120, 140)},
-            {"name": "Cocoa", "price": 12, "rect": pygame.Rect(380, 270, 120, 140)},
+        self.shop_items_items = [  # New tab items
+            {"name": "Sugar", "price": 3, "rect": pygame.Rect(120, 120, 100, 100)},
+            {"name": "Coffee", "price": 15, "rect": pygame.Rect(230, 120, 100, 100)},
+            {"name": "Tea", "price": 10, "rect": pygame.Rect(340, 120, 100, 100)},
+            {"name": "Milk", "price": 5, "rect": pygame.Rect(120, 230, 100, 100)},
+            {"name": "Honey", "price": 20, "rect": pygame.Rect(230, 230, 100, 100)},
+            {"name": "Cocoa", "price": 12, "rect": pygame.Rect(340, 230, 100, 100)},
         ]
         
         self.current_shop_items = self.shop_items_crops
@@ -78,16 +77,6 @@ class ShopUI:
         self.coin_icon = pygame.Surface((20, 20), pygame.SRCALPHA)
         pygame.draw.circle(self.coin_icon, self.GOLD, (10, 10), 10)
         pygame.draw.circle(self.coin_icon, self.DARK_BROWN, (10, 10), 10, 1)  # Border
-
-        # Load item images
-        self.item_images = {}
-        for item in self.shop_items_crops + self.shop_items_items:
-            name = item["name"].lower()
-            image_path = os.path.join("assets", "images", "items", f"{name}.png")
-            if os.path.exists(image_path):
-                image = pygame.image.load(image_path).convert_alpha()
-                image = pygame.transform.smoothscale(image, (40, 40))  # Resize to circular size
-                self.item_images[name] = image
 
     def update_gold_display(self):
         # Draw gold in the top right corner with coin icon - Enhanced with shadow effect
@@ -153,47 +142,24 @@ class ShopUI:
         pygame.draw.rect(self.screen, color, item["rect"], border_radius=15)
         pygame.draw.rect(self.screen, self.DARK_BROWN, item["rect"], 2, border_radius=15)  # Border
         
-        # Adjust image size and position
-        card_height = item["rect"].height
-        card_width = item["rect"].width
-        image_size = int(min(card_width, card_height) * 0.4)
-        image_y_pos = item["rect"].y + int(card_height * 0.25)
-        
-        name = item["name"].lower()
-        if name in self.item_images:
-            pygame.draw.circle(self.screen, self.DARK_BROWN, (item["rect"].centerx, image_y_pos), image_size // 2 + 2)
-            pygame.draw.circle(self.screen, self.WHITE, (item["rect"].centerx, image_y_pos), image_size // 2)
-            
-            mask_surface = pygame.Surface((image_size, image_size), pygame.SRCALPHA)
-            pygame.draw.circle(mask_surface, (255, 255, 255, 255), (image_size // 2, image_size // 2), image_size // 2)
-            
-            circular_image = pygame.Surface((image_size, image_size), pygame.SRCALPHA)
-            original_image = pygame.transform.smoothscale(self.item_images[name], (image_size, image_size))
-            circular_image.blit(original_image, (0, 0))
-            circular_image.blit(mask_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-            
-            image_rect = circular_image.get_rect(center=(item["rect"].centerx, image_y_pos))
-            self.screen.blit(circular_image, image_rect)
-        
-        # Adjust name and price positions
-        name_y_pos = item["rect"].y + int(card_height * 0.6)
+        # Draw item name with shadow for depth
         name_shadow = self.font.render(f"{item['name']}", True, self.BLACK)
-        name_shadow_rect = name_shadow.get_rect(center=(item["rect"].centerx + 1, name_y_pos + 1))
+        name_shadow_rect = name_shadow.get_rect(center=(item["rect"].centerx + 1, item["rect"].centery - 15 + 1))
         self.screen.blit(name_shadow, name_shadow_rect)
         
         name_label = self.font.render(f"{item['name']}", True, self.CREAM)
-        name_rect = name_label.get_rect(center=(item["rect"].centerx, name_y_pos))
+        name_rect = name_label.get_rect(center=(item["rect"].centerx, item["rect"].centery - 15))
         self.screen.blit(name_label, name_rect)
         
-        price_y_pos = item["rect"].y + int(card_height * 0.8)
-        price_width = int(card_width * 0.6)
-        price_bg = pygame.Rect(item["rect"].centerx - price_width // 2, price_y_pos, price_width, 25)
+        # Draw price with gold coin icon
+        price_bg = pygame.Rect(item["rect"].centerx - 30, item["rect"].centery + 10, 60, 25)
         pygame.draw.rect(self.screen, self.DARK_BROWN, price_bg, border_radius=8)
         
         price_label = self.font.render(f"{item['price']}", True, self.GOLD)
         price_rect = price_label.get_rect(center=(price_bg.centerx - 10, price_bg.centery))
         self.screen.blit(price_label, price_rect)
         
+        # Small coin icon
         small_coin = pygame.Surface((15, 15), pygame.SRCALPHA)
         pygame.draw.circle(small_coin, self.GOLD, (7, 7), 7)
         pygame.draw.circle(small_coin, self.DARK_BROWN, (7, 7), 7, 1)
@@ -271,6 +237,9 @@ class ShopUI:
                         elif hasattr(self, 'subtract_button') and self.subtract_button.collidepoint(mouse_pos) and self.cart and self.cart_quantity > 1:
                             if self.cart not in self.shop_items_items:
                                 self.cart_quantity -= 1
+                        elif hasattr(self, 'remove_button') and self.remove_button.collidepoint(mouse_pos):
+                            self.cart = None
+                            self.cart_quantity = 1
                         elif self.buy_button.collidepoint(mouse_pos) and self.cart:
                             total_cost = self.cart["price"] * self.cart_quantity
                             if self.gold >= total_cost:
@@ -405,7 +374,7 @@ class ShopUI:
                         
                         # Draw quantity between the buttons
                         qty_text = self.font.render(f"{self.cart_quantity}", True, self.CREAM)
-                        qty_rect = qty_text.get_rect(center=((self.subtract_button.right + self.add_button.left) // 2, self.subtract_button.centery))
+                        qty_rect = qty_text.get_rect(center=(cart_panel.x + 105, cart_panel.y + y_offset + 12))
                         self.screen.blit(qty_text, qty_rect)
                         
                         y_offset += 35
@@ -451,7 +420,15 @@ class ShopUI:
                         self.screen.blit(total_text, total_rect)
                         
                         y_offset += 35
-
+                    
+                    # Add a remove button inside the cart panel
+                    self.remove_button = pygame.Rect(cart_panel.centerx - 20, cart_panel.y + y_offset, 40, 25)
+                    pygame.draw.rect(self.screen, self.LIGHT_BROWN, self.remove_button, border_radius=5)
+                    pygame.draw.rect(self.screen, self.DARK_BROWN, self.remove_button, 2, border_radius=5)
+                    remove_text = self.font.render("X", True, self.CREAM)
+                    remove_rect = remove_text.get_rect(center=self.remove_button.center)
+                    self.screen.blit(remove_text, remove_rect)
+                
                 # Draw gold counter
                 self.update_gold_display()
 
