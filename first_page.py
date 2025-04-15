@@ -40,6 +40,8 @@ class Game:
         self.house = chosen_building
         self.pet = petChoice
         self.playername = name
+
+        self.shop = shop.ShopUI(self)
         
        
        
@@ -577,8 +579,7 @@ class Game:
                             # customers_ui.run()
                         elif building_name == "store":
                             # Open the store UI
-                            shop_ui = shop.ShopUI(self)
-                            shop_ui.run()
+                            self.shop.run()
                         return  # Exit early if a building was clicked
 
                 # If no building was clicked, use the tool
