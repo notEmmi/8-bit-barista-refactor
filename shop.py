@@ -49,20 +49,20 @@ class ShopUI:
         self.gold = 1000
         self.inventory = {}
 
-        # Shop Items - Arranged in a grid pattern with more spacing
+        # Shop Items - Adjusted grid size and spacing
         self.shop_items_crops = [
-            {"name": "Wheat", "price": 5, "rect": pygame.Rect(120, 120, 100, 100)},
-            {"name": "Corn", "price": 10, "rect": pygame.Rect(230, 120, 100, 100)},
-            {"name": "Tomato", "price": 8, "rect": pygame.Rect(340, 120, 100, 100)},
+            {"name": "Wheat", "price": 5, "rect": pygame.Rect(120, 120, 120, 140)},
+            {"name": "Corn", "price": 10, "rect": pygame.Rect(250, 120, 120, 140)},
+            {"name": "Tomato", "price": 8, "rect": pygame.Rect(380, 120, 120, 140)},
         ]
         
-        self.shop_items_items = [  # New tab items
-            {"name": "Sugar", "price": 3, "rect": pygame.Rect(120, 120, 100, 100)},
-            {"name": "Coffee", "price": 15, "rect": pygame.Rect(230, 120, 100, 100)},
-            {"name": "Tea", "price": 10, "rect": pygame.Rect(340, 120, 100, 100)},
-            {"name": "Milk", "price": 5, "rect": pygame.Rect(120, 230, 100, 100)},
-            {"name": "Honey", "price": 20, "rect": pygame.Rect(230, 230, 100, 100)},
-            {"name": "Cocoa", "price": 12, "rect": pygame.Rect(340, 230, 100, 100)},
+        self.shop_items_items = [
+            {"name": "Sugar", "price": 3, "rect": pygame.Rect(120, 120, 120, 140)},
+            {"name": "Coffee", "price": 15, "rect": pygame.Rect(250, 120, 120, 140)},
+            {"name": "Tea", "price": 10, "rect": pygame.Rect(380, 120, 120, 140)},
+            {"name": "Milk", "price": 5, "rect": pygame.Rect(120, 270, 120, 140)},
+            {"name": "Honey", "price": 20, "rect": pygame.Rect(250, 270, 120, 140)},
+            {"name": "Cocoa", "price": 12, "rect": pygame.Rect(380, 270, 120, 140)},
         ]
         
         self.current_shop_items = self.shop_items_crops
@@ -153,23 +153,30 @@ class ShopUI:
         pygame.draw.rect(self.screen, color, item["rect"], border_radius=15)
         pygame.draw.rect(self.screen, self.DARK_BROWN, item["rect"], 2, border_radius=15)  # Border
         
-        # Create a circular area for the image at the top of the item card
+        # Adjust image size and position
+        card_height = item["rect"].height
+        card_width = item["rect"].width
+        image_size = int(min(card_width, card_height) * 0.4)
+        image_y_pos = item["rect"].y + int(card_height * 0.25)
+        
         name = item["name"].lower()
         if name in self.item_images:
-            image_size = 50  # Size of the circular image
-            image_y_pos = item["rect"].y + 25  # Position at the top with some padding
+            pygame.draw.circle(self.screen, self.DARK_BROWN, (item["rect"].centerx, image_y_pos), image_size // 2 + 2)
+            pygame.draw.circle(self.screen, self.WHITE, (item["rect"].centerx, image_y_pos), image_size // 2)
             
-            # Draw circular background and border for the image
-            pygame.draw.circle(self.screen, self.DARK_BROWN, (item["rect"].centerx, image_y_pos), image_size // 2 + 2)  # Border
-            pygame.draw.circle(self.screen, self.WHITE, (item["rect"].centerx, image_y_pos), image_size // 2)  # Background
+            mask_surface = pygame.Surface((image_size, image_size), pygame.SRCALPHA)
+            pygame.draw.circle(mask_surface, (255, 255, 255, 255), (image_size // 2, image_size // 2), image_size // 2)
             
-            # Resize and draw the image
-            image = pygame.transform.smoothscale(self.item_images[name], (image_size, image_size))
-            image_rect = image.get_rect(center=(item["rect"].centerx, image_y_pos))
-            self.screen.blit(image, image_rect)
+            circular_image = pygame.Surface((image_size, image_size), pygame.SRCALPHA)
+            original_image = pygame.transform.smoothscale(self.item_images[name], (image_size, image_size))
+            circular_image.blit(original_image, (0, 0))
+            circular_image.blit(mask_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+            
+            image_rect = circular_image.get_rect(center=(item["rect"].centerx, image_y_pos))
+            self.screen.blit(circular_image, image_rect)
         
-        # Draw item name below the image
-        name_y_pos = item["rect"].y + 60  # Position below the image
+        # Adjust name and price positions
+        name_y_pos = item["rect"].y + int(card_height * 0.6)
         name_shadow = self.font.render(f"{item['name']}", True, self.BLACK)
         name_shadow_rect = name_shadow.get_rect(center=(item["rect"].centerx + 1, name_y_pos + 1))
         self.screen.blit(name_shadow, name_shadow_rect)
@@ -178,16 +185,15 @@ class ShopUI:
         name_rect = name_label.get_rect(center=(item["rect"].centerx, name_y_pos))
         self.screen.blit(name_label, name_rect)
         
-        # Draw price at the bottom of the card
-        price_y_pos = item["rect"].bottom - 25  # Position at the bottom with some padding
-        price_bg = pygame.Rect(item["rect"].centerx - 30, price_y_pos, 60, 25)
+        price_y_pos = item["rect"].y + int(card_height * 0.8)
+        price_width = int(card_width * 0.6)
+        price_bg = pygame.Rect(item["rect"].centerx - price_width // 2, price_y_pos, price_width, 25)
         pygame.draw.rect(self.screen, self.DARK_BROWN, price_bg, border_radius=8)
         
         price_label = self.font.render(f"{item['price']}", True, self.GOLD)
         price_rect = price_label.get_rect(center=(price_bg.centerx - 10, price_bg.centery))
         self.screen.blit(price_label, price_rect)
         
-        # Small coin icon
         small_coin = pygame.Surface((15, 15), pygame.SRCALPHA)
         pygame.draw.circle(small_coin, self.GOLD, (7, 7), 7)
         pygame.draw.circle(small_coin, self.DARK_BROWN, (7, 7), 7, 1)
