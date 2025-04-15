@@ -237,9 +237,6 @@ class ShopUI:
                         elif hasattr(self, 'subtract_button') and self.subtract_button.collidepoint(mouse_pos) and self.cart and self.cart_quantity > 1:
                             if self.cart not in self.shop_items_items:
                                 self.cart_quantity -= 1
-                        elif hasattr(self, 'remove_button') and self.remove_button.collidepoint(mouse_pos):
-                            self.cart = None
-                            self.cart_quantity = 1
                         elif self.buy_button.collidepoint(mouse_pos) and self.cart:
                             total_cost = self.cart["price"] * self.cart_quantity
                             if self.gold >= total_cost:
@@ -420,15 +417,7 @@ class ShopUI:
                         self.screen.blit(total_text, total_rect)
                         
                         y_offset += 35
-                    
-                    # Add a remove button inside the cart panel
-                    self.remove_button = pygame.Rect(cart_panel.centerx - 20, cart_panel.y + y_offset, 40, 25)
-                    pygame.draw.rect(self.screen, self.LIGHT_BROWN, self.remove_button, border_radius=5)
-                    pygame.draw.rect(self.screen, self.DARK_BROWN, self.remove_button, 2, border_radius=5)
-                    remove_text = self.font.render("X", True, self.CREAM)
-                    remove_rect = remove_text.get_rect(center=self.remove_button.center)
-                    self.screen.blit(remove_text, remove_rect)
-                
+
                 # Draw gold counter
                 self.update_gold_display()
 
