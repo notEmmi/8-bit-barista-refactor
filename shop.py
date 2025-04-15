@@ -371,7 +371,7 @@ class ShopUI:
                         
                         # Draw quantity between the buttons
                         qty_text = self.font.render(f"{self.cart_quantity}", True, self.CREAM)
-                        qty_rect = qty_text.get_rect(center=(cart_panel.x + 105, cart_panel.y + y_offset + 12))
+                        qty_rect = qty_text.get_rect(center=((self.subtract_button.right + self.add_button.left) // 2, self.subtract_button.centery))
                         self.screen.blit(qty_text, qty_rect)
                         
                         y_offset += 35
