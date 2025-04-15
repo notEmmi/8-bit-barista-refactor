@@ -1,5 +1,6 @@
 import pygame
 import first_page
+import os  # Add import for handling file paths
 
 class ShopUI:
     def __init__(self, game_instance=None):
@@ -78,6 +79,16 @@ class ShopUI:
         pygame.draw.circle(self.coin_icon, self.GOLD, (10, 10), 10)
         pygame.draw.circle(self.coin_icon, self.DARK_BROWN, (10, 10), 10, 1)  # Border
 
+        # Load item images
+        self.item_images = {}
+        for item in self.shop_items_crops + self.shop_items_items:
+            name = item["name"].lower()
+            image_path = os.path.join("assets", "images", "items", f"{name}.png")
+            if os.path.exists(image_path):
+                image = pygame.image.load(image_path).convert_alpha()
+                image = pygame.transform.smoothscale(image, (40, 40))  # Resize to circular size
+                self.item_images[name] = image
+
     def update_gold_display(self):
         # Draw gold in the top right corner with coin icon - Enhanced with shadow effect
         gold_bg = pygame.Rect(self.shop_panel.right - 120, self.shop_panel.top + 10, 100, 40)
@@ -142,17 +153,34 @@ class ShopUI:
         pygame.draw.rect(self.screen, color, item["rect"], border_radius=15)
         pygame.draw.rect(self.screen, self.DARK_BROWN, item["rect"], 2, border_radius=15)  # Border
         
-        # Draw item name with shadow for depth
+        # Create a circular area for the image at the top of the item card
+        name = item["name"].lower()
+        if name in self.item_images:
+            image_size = 50  # Size of the circular image
+            image_y_pos = item["rect"].y + 25  # Position at the top with some padding
+            
+            # Draw circular background and border for the image
+            pygame.draw.circle(self.screen, self.DARK_BROWN, (item["rect"].centerx, image_y_pos), image_size // 2 + 2)  # Border
+            pygame.draw.circle(self.screen, self.WHITE, (item["rect"].centerx, image_y_pos), image_size // 2)  # Background
+            
+            # Resize and draw the image
+            image = pygame.transform.smoothscale(self.item_images[name], (image_size, image_size))
+            image_rect = image.get_rect(center=(item["rect"].centerx, image_y_pos))
+            self.screen.blit(image, image_rect)
+        
+        # Draw item name below the image
+        name_y_pos = item["rect"].y + 60  # Position below the image
         name_shadow = self.font.render(f"{item['name']}", True, self.BLACK)
-        name_shadow_rect = name_shadow.get_rect(center=(item["rect"].centerx + 1, item["rect"].centery - 15 + 1))
+        name_shadow_rect = name_shadow.get_rect(center=(item["rect"].centerx + 1, name_y_pos + 1))
         self.screen.blit(name_shadow, name_shadow_rect)
         
         name_label = self.font.render(f"{item['name']}", True, self.CREAM)
-        name_rect = name_label.get_rect(center=(item["rect"].centerx, item["rect"].centery - 15))
+        name_rect = name_label.get_rect(center=(item["rect"].centerx, name_y_pos))
         self.screen.blit(name_label, name_rect)
         
-        # Draw price with gold coin icon
-        price_bg = pygame.Rect(item["rect"].centerx - 30, item["rect"].centery + 10, 60, 25)
+        # Draw price at the bottom of the card
+        price_y_pos = item["rect"].bottom - 25  # Position at the bottom with some padding
+        price_bg = pygame.Rect(item["rect"].centerx - 30, price_y_pos, 60, 25)
         pygame.draw.rect(self.screen, self.DARK_BROWN, price_bg, border_radius=8)
         
         price_label = self.font.render(f"{item['price']}", True, self.GOLD)
