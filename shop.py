@@ -37,7 +37,7 @@ class ShopUI:
         # Buttons as Rects - Repositioned to match Figma
         self.return_button = pygame.Rect(120, 60, 80, 30)
         self.crops_tab = pygame.Rect(120, 60, 80, 30)
-        self.upgrades_tab = pygame.Rect(210, 60, 80, 30)
+        self.items_tab = pygame.Rect(210, 60, 80, 30)  # New tab for items
         self.buy_button = pygame.Rect(600, 470, 100, 40)  # Larger, more visible buttons
         self.sell_button = pygame.Rect(490, 470, 100, 40)
         
@@ -50,6 +50,12 @@ class ShopUI:
 
         # Shop Items - Arranged in a grid pattern with more spacing
         self.shop_items_crops = [
+            {"name": "Wheat", "price": 5, "rect": pygame.Rect(120, 120, 100, 100)},
+            {"name": "Corn", "price": 10, "rect": pygame.Rect(230, 120, 100, 100)},
+            {"name": "Tomato", "price": 8, "rect": pygame.Rect(340, 120, 100, 100)},
+        ]
+        
+        self.shop_items_items = [  # New tab items
             {"name": "Sugar", "price": 3, "rect": pygame.Rect(120, 120, 100, 100)},
             {"name": "Coffee", "price": 15, "rect": pygame.Rect(230, 120, 100, 100)},
             {"name": "Tea", "price": 10, "rect": pygame.Rect(340, 120, 100, 100)},
@@ -57,8 +63,6 @@ class ShopUI:
             {"name": "Honey", "price": 20, "rect": pygame.Rect(230, 230, 100, 100)},
             {"name": "Cocoa", "price": 12, "rect": pygame.Rect(340, 230, 100, 100)},
         ]
-        
-        self.shop_items_upgrades = []  # No upgrades for now
         
         self.current_shop_items = self.shop_items_crops
 
@@ -223,15 +227,15 @@ class ShopUI:
                             # Switch to crops tab
                             self.current_shop_items = self.shop_items_crops
                             self.toggle_buttons_visibility(True)
-                        elif self.upgrades_tab.collidepoint(mouse_pos):
-                            # Switch to upgrades tab
-                            self.current_shop_items = self.shop_items_upgrades
-                            self.toggle_buttons_visibility(False)
+                        elif self.items_tab.collidepoint(mouse_pos):  # Handle new items tab
+                            # Switch to items tab
+                            self.current_shop_items = self.shop_items_items
+                            self.toggle_buttons_visibility(True)
                         elif hasattr(self, 'add_button') and self.add_button.collidepoint(mouse_pos) and self.cart:
-                            if self.cart not in self.shop_items_upgrades:
+                            if self.cart not in self.shop_items_items:
                                 self.cart_quantity += 1
                         elif hasattr(self, 'subtract_button') and self.subtract_button.collidepoint(mouse_pos) and self.cart and self.cart_quantity > 1:
-                            if self.cart not in self.shop_items_upgrades:
+                            if self.cart not in self.shop_items_items:
                                 self.cart_quantity -= 1
                         elif hasattr(self, 'remove_button') and self.remove_button.collidepoint(mouse_pos):
                             self.cart = None
@@ -242,9 +246,9 @@ class ShopUI:
                                 self.gold -= total_cost
                                 name = self.cart["name"]
                                 self.inventory[name] = self.inventory.get(name, 0) + self.cart_quantity
-                                if self.cart in self.shop_items_upgrades:
+                                if self.cart in self.shop_items_items:
                                     self.cart["price"] = 0
-                                    self.shop_items_upgrades.remove(self.cart)
+                                    self.shop_items_items.remove(self.cart)
                                 self.cart = None
                                 self.cart_quantity = 1
                         elif self.sell_button.collidepoint(mouse_pos) and self.cart:
@@ -304,8 +308,8 @@ class ShopUI:
                 tab_bg = pygame.Rect(120, 60, 170, 30)
                 pygame.draw.rect(self.screen, self.DARK_BROWN, tab_bg, border_radius=10)
                 
-                self.draw_button(self.crops_tab, "Crops", selected=self.current_shop_items==self.shop_items_crops)
-                self.draw_button(self.upgrades_tab, "Upgrades", selected=self.current_shop_items==self.shop_items_upgrades)
+                self.draw_button(self.crops_tab, "Crops", selected=self.current_shop_items == self.shop_items_crops)
+                self.draw_button(self.items_tab, "Items", selected=self.current_shop_items == self.shop_items_items)
                 
                 # Draw action buttons with icons
                 plus_icon = pygame.Surface((16, 16), pygame.SRCALPHA)
