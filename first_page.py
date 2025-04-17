@@ -177,7 +177,7 @@ class Game:
         self.water_layer = self.tmx_data.get_layer_by_name("Water")
 
         #Gold
-        self.gold = 0
+        self.gold = 100
 
         # Load and play background music
         self.background_music = os.path.join(self.SOUND_PATH, "1_new_life_master.mp3")

@@ -46,7 +46,6 @@ class ShopUI:
         self.back_arrow = pygame.Rect(60, 40, 50, 50)
 
         # Gold and Inventory
-        self.gold = 1000
         self.inventory = {}
 
         # Shop Items - Arranged in a grid pattern with proper spacing
@@ -103,7 +102,7 @@ class ShopUI:
         pygame.draw.rect(self.screen, self.LIGHT_BROWN, gold_bg, border_radius=10)
         pygame.draw.rect(self.screen, self.DARK_BROWN, gold_bg, 2, border_radius=10)  # Border
         
-        gold_surface = self.font.render(f"{self.gold}", True, self.GOLD)
+        gold_surface = self.font.render(f"{self.game.gold}", True, self.GOLD)
         self.screen.blit(gold_surface, (gold_bg.x + 15, gold_bg.y + 10))
         self.screen.blit(self.coin_icon, (gold_bg.right - 30, gold_bg.y + 10))
 
@@ -294,8 +293,8 @@ class ShopUI:
                             self.cart_quantity -= 1
                         elif self.buy_button.collidepoint(mouse_pos) and self.cart:
                             total_cost = self.cart["price"] * self.cart_quantity
-                            if self.gold >= total_cost:
-                                self.gold -= total_cost
+                            if self.game.gold >= total_cost:
+                                self.game.gold -= total_cost
                                 name = self.cart["name"]
                                 self.inventory[name] = self.inventory.get(name, 0) + self.cart_quantity
                                 self.cart = None
@@ -303,7 +302,7 @@ class ShopUI:
                         elif self.sell_button.collidepoint(mouse_pos) and self.cart:
                             name = self.cart["name"]
                             if self.inventory.get(name, 0) >= self.cart_quantity:
-                                self.gold += self.cart["price"] * self.cart_quantity
+                                self.game.gold += self.cart["price"] * self.cart_quantity
                                 self.inventory[name] -= self.cart_quantity
                                 if self.inventory[name] == 0:
                                     del self.inventory[name]
