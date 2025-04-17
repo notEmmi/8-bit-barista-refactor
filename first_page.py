@@ -7,16 +7,22 @@ from toolbar import Toolbox
 from character_utils import load_selected_character
 import interactions
 import customers
-import shop
+import store
 import inventory
 import random
 import start_menu
+import subprocess
 import settingsdata
+import subprocess
 from pygame_gui import UI_BUTTON_PRESSED
+from fish import run_fishing_minigame
 from music_selector import MusicSelector
+import sqlite3
+from GameState import GameState
+from fish import run_fishing_minigame
 
 class Game:
-    def __init__(self, chosen_building, petChoice, fromPriorMenu = False, gameData = None):
+    def __init__(self, chosen_building, petChoice, name, fromPriorMenu = False, gameData = None):
         # Initialize Pygame
         pygame.init()
         pygame.font.init()
@@ -33,9 +39,20 @@ class Game:
         # Initalize cloudy weather
         self.cloudy = Cloudy()
         self.cloudy_weather = False
+        
+        
         self.house = chosen_building
         self.pet = petChoice
+        self.playername = name
+
+        self.shop = store.ShopUI(self)
+        
+       
+       
+       
         # Create Dark Rain Overlay
+       
+       
         self.rain_overlay = pygame.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.SRCALPHA)
         self.rain_overlay.fill((0, 0, 0, 100))  # Semi-transparent black layer (100/255 opacity)
 
@@ -150,6 +167,18 @@ class Game:
       
         self.backpack = pygame.Rect(0,0,0,0)
 
+        #Initialize Water GID and Layer
+        self.water_gids = [
+            self.get_gid("Water", 0),
+            self.get_gid("Water", 1),
+            self.get_gid("Water", 2),
+            self.get_gid("Water", 3)
+        ]
+        self.water_layer = self.tmx_data.get_layer_by_name("Water")
+
+        #Gold
+        self.gold = 100
+
         # Load and play background music
         self.background_music = os.path.join(self.SOUND_PATH, "1_new_life_master.mp3")
         pygame.mixer.music.load(self.background_music)
@@ -163,6 +192,13 @@ class Game:
         self.gameData = gameData
         if fromPriorMenu: self.loadGameState()
 
+        
+
+######## start of save data fucntions //////////////////////////////////
+    
+
+
+################ end save data functions ###########################3
     def load_map(self, map_file):
         """Load TMX map and extract collidable and building objects."""
         self.tmx_data = pytmx.load_pygame(map_file, load_all_tiles=True)
@@ -369,12 +405,7 @@ class Game:
     def draw_hud(self):
         """Displays 'Day X' on top, with the Weather Icon and Clock properly aligned at the top-right."""
 
-        # Define Panel Dimensions & Styling
-        panel_x_margin = 12  # Space between panel and screen edges
-        panel_y_margin = 8
-        panel_width = 115  # Unified width
-        panel_height = 65  # Height to fit stacked elements
-        border_radius = 8  # Rounded corners
+       
 
         # Load a Smaller & Thinner Font
         clock_font = pygame.font.Font(None, 30)  # Smaller size & thinner weight
@@ -386,13 +417,14 @@ class Game:
         # Define Panel Dimensions & Styling
         panel_x_margin = 12  # Space between panel and screen edges
         panel_y_margin = 8
-        panel_width = 115  # Unified width
-        panel_height = 65  # Height to fit stacked elements
+        panel_width = 150 # Unified width
+        panel_height = 100  # Height to fit stacked elements
         border_radius = 8  # Rounded corners
 
         # Load a Smaller & Thinner Font
         clock_font = pygame.font.Font(None, 30)  # Smaller size & thinner weight
-        day_font = pygame.font.Font(None, 25)  # Smaller size & thinner weight
+        day_font = pygame.font.Font(None, 25)
+        name_font = pygame.font.Font(None, 25)  # Smaller size & thinner weight
 
         # Create HUD Panel Background
         hud_surface = pygame.Surface((panel_width, panel_height), pygame.SRCALPHA)
@@ -403,7 +435,13 @@ class Game:
         # "Day X" - Positioned at the top with internal padding
         day_text = day_font.render(f"Day {self.current_day}", True, (255, 255, 255))
         day_rect = day_text.get_rect(midtop=(panel_width // 2, panel_y_margin))  # Centered horizontally
+        
+        name_text = name_font.render(self.playername, True,(255, 255, 255))
+        name_rect = name_text.get_rect(midtop=(panel_width // 2 + 600 , panel_y_margin +80))
+
+        
         hud_surface.blit(day_text, day_rect.topleft)
+        
 
         # Weather Icon - Adjust Position Based on Type
         if self.current_weather in self.weather_icons:
@@ -473,6 +511,7 @@ class Game:
         screen_x = self.SCREEN_WIDTH - panel_width - panel_x_margin  # Fixed position
         screen_y = panel_y_margin  # Fixed vertical margin
         self.screen.blit(hud_surface, (screen_x, screen_y))
+        self.screen.blit(name_text, name_rect.topleft )
 
     def handle_input(self):
         """Handles keyboard and mouse input, including time acceleration and tool usage."""
@@ -488,9 +527,12 @@ class Game:
 
         # Trigger interactions, customers, or shop with respective keys
         # The following keybinds have been replaced by left click
-        # if keys[pygame.K_TAB]: 
-            # interactions_ui= interactions.InteractionsUI(self)
-            # interactions_ui.run()
+        if keys[pygame.K_TAB]: 
+            print("pressed TAB")
+            conn = sqlite3.connect("mydatabase.db")
+            game_state = GameState(self.house, self.pet, self.playername, False, None)
+            game_state.save_to_db(conn)
+            conn.close()
         # if keys[pygame.K_CAPSLOCK]: 
         #     customers_ui= customers.CustomerUI(self)
         #     customers_ui.run()
@@ -541,6 +583,42 @@ class Game:
                 tile_x, tile_y = int(adjusted_x // self.TILE_WIDTH), int(adjusted_y // self.TILE_HEIGHT)
                 print(f"Mouse: ({mouse_x}, {mouse_y}), Adjusted: ({adjusted_x}, {adjusted_y}), Tile: ({tile_x}, {tile_y})")
 
+                clicked_gid = self.water_layer.data[tile_y][tile_x]
+                if clicked_gid in self.water_gids:
+                    print("Water tile clicked! Launching fishing game...")
+                    self.gold += run_fishing_minigame()
+                    # result = subprocess.Popen(["python", "fish.py"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+                    # # Capture the output from the subprocess
+                    # stdout, stderr = result.communicate()
+
+                    # # Ensure no errors occurred and the output is not empty
+                    # if result.returncode == 0 and stdout.strip():
+                    #     try:
+                    #         # Split the output by lines and get the last line, which should be the gold value
+                    #         output_lines = stdout.strip().splitlines()
+
+                    #         # If the output contains the Pygame version info or anything unexpected, filter it out
+                    #         gold_value_str = None
+                    #         for line in output_lines:
+                    #             # Try to find a numeric line (this should be the gold value)
+                    #             if line.isdigit():
+                    #                 gold_value_str = line
+                    #                 break
+
+                    #         if gold_value_str:
+                    #             # Try converting the last line to an integer
+                    #             self.gold += int(gold_value_str)
+                    #         else:
+                    #             print(f"Error: No valid gold output found in '{stdout}'.")
+
+                    #     except ValueError:
+                    #         print(f"Error: The output '{stdout}' cannot be converted to an integer.")
+                    # else:
+                    #     if result.returncode != 0:
+                    #         print("Error:", stderr)  # Handle any errors that occurred during execution of fish.py
+                    #     else:
+                    #         print("No valid gold output received from fish.py.")
                 # Check if the mouse click is within any building rectangle first
                 for building_name, rect in self.buildings_object.items():
                     if rect.collidepoint(adjusted_x, adjusted_y):
@@ -553,8 +631,7 @@ class Game:
                             # customers_ui.run()
                         elif building_name == "store":
                             # Open the store UI
-                            shop_ui = shop.ShopUI(self)
-                            shop_ui.run()
+                            self.shop.run()
                         return  # Exit early if a building was clicked
 
                 # If no building was clicked, use the tool
@@ -722,6 +799,7 @@ class Game:
         self.player_direction = direction
         self.raining = raining
         self.cloudy_weather = cloudy
+        self.pla
     
     def saveGameState(self):
         theGameTime = self.get_game_time()
@@ -735,21 +813,30 @@ class Game:
         cloudy = self.cloudy_weather
         return (theGameTime, day, position, house, weather, character, direction, raining, cloudy)
     
-    def handle_music_selection(self):
-        """Handle music selection and update background music if confirmed."""
-        music_selector = MusicSelector(self.screen, self.SCREEN_WIDTH, self.SCREEN_HEIGHT)
-        next_screen, selected_track = music_selector.run()
-
-        if next_screen == "options" and selected_track:
-            # Stop current music and load the new track
-            pygame.mixer.music.stop()
-            pygame.mixer.music.load(selected_track)
-            pygame.mixer.music.play(-1)
-
-            # Save the confirmed track
-            self.background_music = selected_track
-
-        return next_screen
+    def draw_gold(self):
+        # Draw gold in the top right corner with coin icon - Enhanced with shadow effect
+        gold_bg = pygame.Rect(self.SCREEN_WIDTH - 280, 10, 100, 40)  # Moved further to the left
+        
+        # Draw shadow
+        shadow_rect = gold_bg.copy()
+        shadow_rect.x += 2
+        shadow_rect.y += 2
+        pygame.draw.rect(self.screen, (89, 40, 20), shadow_rect, border_radius=10)
+        
+        # Draw gold background
+        pygame.draw.rect(self.screen, (201, 121, 77), gold_bg, border_radius=10)
+        pygame.draw.rect(self.screen, (89, 40, 20), gold_bg, 2, border_radius=10)  # Border
+        
+        # Render gold text
+        font = pygame.font.Font(None, 24)
+        gold_surface = font.render(f"{self.gold}", True, (255, 215, 0))
+        self.screen.blit(gold_surface, (gold_bg.x + 10, gold_bg.y + 10))  # Adjusted position to fit inside the box
+        
+        # Draw coin icon inside the box
+        coin_icon = pygame.Surface((20, 20), pygame.SRCALPHA)
+        pygame.draw.circle(coin_icon, (255, 215, 0), (10, 10), 10)
+        pygame.draw.circle(coin_icon, (89, 40, 20), (10, 10), 10, 1)  # Border
+        self.screen.blit(coin_icon, (gold_bg.right - 30, gold_bg.y + 10))  # Positioned inside the box
 
     def run(self):
         # Main Game Loop
@@ -959,6 +1046,9 @@ class Game:
             # Draw HUD
             self.draw_hud()
 
+            # Draw Gold
+            self.draw_gold()
+
             #draw pause button
             self.pauseButton = self.drawPause()
 
@@ -969,5 +1059,7 @@ class Game:
 
 if __name__ == "__main__":
     image_path = "assets/map/house2.png"
-    game = Game(image_path)
+    pet = "assets/images/pets/browncat.png"
+    name = "jake"
+    game = Game(image_path, pet, name)
     game.run()

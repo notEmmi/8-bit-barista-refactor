@@ -1,7 +1,7 @@
 import pygame
 import sys
 class PetSelector:
-    def __init__(self, img_path): ## pass a pet type that will be used to decide between lists of pngs to choose from
+    def __init__(self, img_path, playername): ## pass a pet type that will be used to decide between lists of pngs to choose from
         # Initialize Pygame
         pygame.init()
 
@@ -9,7 +9,7 @@ class PetSelector:
         self.WIDTH, self.HEIGHT = 800, 600
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Pet Selector")
-        
+        self.playername = playername
         self.building = img_path
         # Set up clock for frame rate
         self.clock = pygame.time.Clock()
@@ -147,7 +147,7 @@ class PetSelector:
                          if self.madeachoice >0:
                             
                             from first_page import Game
-                            game = Game(self.building, self.petChoice)
+                            game = Game(self.building, self.petChoice, self.playername)
                             game.run()
                             running = False
                    
@@ -191,5 +191,5 @@ class PetSelector:
         sys.exit()
 
 if __name__ == "__main__":
-    pet_selector = PetSelector("assets/images/buildings/building1.png")
+    pet_selector = PetSelector("assets/images/buildings/building1.png", "jake")
     pet_selector.run()
