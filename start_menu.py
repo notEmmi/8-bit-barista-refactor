@@ -5,10 +5,11 @@ from options import OptionsMenu
 from credits import CreditsScreen
 from advanced import AdvancedMenu
 from keybinds import ControlsMenu
-from character_selection import CharacterSelector  # Import CharacterSelector
+from GameState import GameState
+import sqlite3
 
 class StartMenu:
-    def __init__(self):
+    def __init__(self, gameInstance = None):
         # Initialize Pygame
         pygame.init()
 
@@ -38,7 +39,8 @@ class StartMenu:
         self.current_screen = self.MENU  # Start at the menu
 
         self.isFromGame = False
-        self.chosenBuilding = ""
+
+        self.currentGameInstance = gameInstance
 
         # Define Buttons
         button_width, button_height = 200, 60
@@ -46,7 +48,8 @@ class StartMenu:
         button_spacing = 90
         button_start_y = 220
         self.buttons = [
-            self.Button("START", button_x, button_start_y, button_width, button_height, self.CHARACTER_SELECTION),
+            self.Button("NEWGAME", button_x -120, button_start_y, button_width, button_height, self.CHARACTER_SELECTION),
+            self.Button("CONTINUE", button_x + 120, button_start_y, button_width, button_height, self.CHARACTER_SELECTION),
             self.Button("OPTIONS", button_x, button_start_y + button_spacing, button_width, button_height, self.OPTIONS),
             self.Button("CREDITS", button_x, button_start_y + 2 * button_spacing, button_width, button_height, self.CREDITS),
             self.Button("EXIT", (self.WIDTH - 150) // 2, button_start_y + 3 * button_spacing, 150, 55, None)
@@ -115,10 +118,11 @@ class StartMenu:
 
     def run(self):
         running = True
-        options_menu = OptionsMenu()  # Create an instance of OptionsMenu
+        options_menu = OptionsMenu(self.currentGameInstance)  # Create an instance of OptionsMenu
         advanced_menu = AdvancedMenu()
         controls_menu = ControlsMenu()
         credits = CreditsScreen()  # Create an instance of CreditsScreen
+        from character_selection import CharacterSelector  # Import CharacterSelector
         character_selector = CharacterSelector()  # Create an instance of CharacterSelector
         while running:
             events = pygame.event.get()
@@ -140,9 +144,19 @@ class StartMenu:
                                 if button.text == "EXIT":
                                     running = False
                                 print(f"{button.text} button clicked!")
+                    
+                                if button.text == "CONTINUE":
+                                 print(f"{button.text} button clicked!")
+                                 conn = sqlite3.connect('mydatabase.db')
+                                 loaded_game_state = GameState.load_from_db(conn)
+                                 print(loaded_game_state.house, loaded_game_state.pet, loaded_game_state.name, loaded_game_state.GameData)
+                                 from first_page import Game
+                                 loadSave = Game(loaded_game_state.house, loaded_game_state.pet,loaded_game_state.name,loaded_game_state.fromPriorMenu, loaded_game_state.GameData )
+                                 loadSave.run()
+                                 running = False
 
             elif self.current_screen == self.OPTIONS:
-                new_screen = options_menu.show_options(events, self.isFromGame, self.chosenBuilding)
+                new_screen = options_menu.show_options(events)
                 if new_screen == "menu":
                     self.current_screen = self.MENU
                 elif new_screen == "controls":
@@ -172,6 +186,6 @@ class StartMenu:
         pygame.quit()
         sys.exit()
 
-# Example usage
-# start_menu = StartMenu()
-# start_menu.run()
+if __name__ == "__main__":
+ start_menu = StartMenu()
+ start_menu.run()
