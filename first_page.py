@@ -13,11 +13,13 @@ import random
 import start_menu
 import subprocess
 import settingsdata
+import subprocess
 from pygame_gui import UI_BUTTON_PRESSED
 from fish import run_fishing_minigame
 from music_selector import MusicSelector
 import sqlite3
 from GameState import GameState
+from fish import run_fishing_minigame
 
 class Game:
     def __init__(self, chosen_building, petChoice, name, fromPriorMenu = False, gameData = None):
@@ -42,6 +44,8 @@ class Game:
         self.house = chosen_building
         self.pet = petChoice
         self.playername = name
+
+        self.shop = shop.ShopUI(self)
         
        
        
@@ -627,8 +631,7 @@ class Game:
                             # customers_ui.run()
                         elif building_name == "store":
                             # Open the store UI
-                            shop_ui = shop.ShopUI(self)
-                            shop_ui.run()
+                            self.shop.run()
                         return  # Exit early if a building was clicked
 
                 # If no building was clicked, use the tool
