@@ -23,7 +23,7 @@ class LoadingScreen:
 
         pygame.time.set_timer(self.TIMER_EVENT_STAR, 150)
         pygame.time.set_timer(self.TIMER_EVENT_CLOUD, 100)
-        pygame.time.set_timer(self.TIMER_EVENT_FADEOUT, 5000)
+        pygame.time.set_timer(self.TIMER_EVENT_FADEOUT, 2000)
 
         # Load images
         self.tree = pygame.image.load("assets/images/others/tree.png")
