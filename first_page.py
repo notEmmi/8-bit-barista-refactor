@@ -813,6 +813,19 @@ class Game:
         cloudy = self.cloudy_weather
         return (theGameTime, day, position, house, weather, character, direction, raining, cloudy)
     
+    def draw_gold(self):
+        # Font for displaying the gold
+        font = pygame.font.SysFont('Arial', 30)
+
+        # Render the text displaying the gold
+        gold_text = font.render(f"Gold: {self.gold}", True, (255, 255, 255))
+
+        # Calculate the position to center the text horizontally at the top
+        text_rect = gold_text.get_rect(center=(self.SCREEN_WIDTH // 2, 30))
+
+        # Blit the text onto the screen
+        self.screen.blit(gold_text, text_rect)
+
     def run(self):
         # Main Game Loop
         running = True
