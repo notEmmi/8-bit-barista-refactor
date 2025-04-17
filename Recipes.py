@@ -4,10 +4,12 @@ import settingsdata
 from pygame import mixer
 
 class Recipes:
-    def __init__(self):
+    def __init__(self,path_back_to_cafe):
         # Initialize pygame
         pygame.init()
         mixer.init()
+
+        self.pathbacktocafe = path_back_to_cafe 
 
         # Screen dimensions
         self.WIDTH, self.HEIGHT = 800, 600
@@ -94,7 +96,12 @@ class Recipes:
                     if self.topLeftRect.collidepoint(event.pos):
                         Popular.runPopular()
                         running = False
-            
+                
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_TAB:
+                        from interactions import InteractionsUI
+                        running = False  # close the Recipes screen
+                        self.pathbacktocafe.run()  
             # Draw background and UI elements
             self.screen.blit(self.kitchen, (0, 0))
             self.screen.blit(self.recipes, (225, 25))

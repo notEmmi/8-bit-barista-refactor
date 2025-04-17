@@ -233,7 +233,7 @@ class InteractionsUI:
                             break
                     for name, info in self.renderedButtons.items():
                         if not (info[0].collidepoint(mouse_pos) and self.currentScene == info[1]): continue
-                        if name == "Recipes": Recipes.Recipes().run()
+                        if name == "Recipes": Recipes.Recipes(self).run()
                         elif info[2] != "":
                             print(f"{name} clicked! switching scene to {info[2]}")
                             self.closed = True
