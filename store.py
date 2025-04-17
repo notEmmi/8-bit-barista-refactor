@@ -316,8 +316,6 @@ class ShopUI:
                                 self.game.gold -= total_cost
                                 name = self.cart["name"]
                                 self.inventory[name] = self.inventory.get(name, 0) + self.cart_quantity
-                                self.cart = None
-                                self.cart_quantity = 1
                             else:
                                 self.display_warning("Not enough gold!")
                         elif self.sell_button.collidepoint(mouse_pos) and self.cart:
@@ -327,8 +325,6 @@ class ShopUI:
                                 self.inventory[name] -= self.cart_quantity
                                 if self.inventory[name] == 0:
                                     del self.inventory[name]
-                                self.cart = None
-                                self.cart_quantity = 1
                             else:
                                 self.display_warning("Not enough items to sell!")
                         for item in self.current_shop_items:
@@ -465,7 +461,7 @@ class ShopUI:
                     
                     # Show inventory count for the selected item
                     inventory_count = self.inventory.get(self.cart["name"], 0)
-                    inventory_label = self.font.render("In Stock:", True, self.CREAM)
+                    inventory_label = self.font.render("Owned:", True, self.CREAM)
                     self.screen.blit(inventory_label, (cart_panel.x + 10, cart_panel.y + y_offset))
                     
                     inv_bg = pygame.Rect(cart_panel.x + 90, cart_panel.y + y_offset, 60, 25)
