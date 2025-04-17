@@ -7,7 +7,7 @@ from toolbar import Toolbox
 from character_utils import load_selected_character
 import interactions
 import customers
-import shop
+import store
 import inventory
 import random
 import start_menu
@@ -45,7 +45,7 @@ class Game:
         self.pet = petChoice
         self.playername = name
 
-        self.shop = shop.ShopUI(self)
+        self.shop = store.ShopUI(self)
         
        
        
@@ -177,7 +177,7 @@ class Game:
         self.water_layer = self.tmx_data.get_layer_by_name("Water")
 
         #Gold
-        self.gold = 0
+        self.gold = 100
 
         # Load and play background music
         self.background_music = os.path.join(self.SOUND_PATH, "1_new_life_master.mp3")
@@ -813,6 +813,31 @@ class Game:
         cloudy = self.cloudy_weather
         return (theGameTime, day, position, house, weather, character, direction, raining, cloudy)
     
+    def draw_gold(self):
+        # Draw gold in the top right corner with coin icon - Enhanced with shadow effect
+        gold_bg = pygame.Rect(self.SCREEN_WIDTH - 280, 10, 100, 40)  # Moved further to the left
+        
+        # Draw shadow
+        shadow_rect = gold_bg.copy()
+        shadow_rect.x += 2
+        shadow_rect.y += 2
+        pygame.draw.rect(self.screen, (89, 40, 20), shadow_rect, border_radius=10)
+        
+        # Draw gold background
+        pygame.draw.rect(self.screen, (201, 121, 77), gold_bg, border_radius=10)
+        pygame.draw.rect(self.screen, (89, 40, 20), gold_bg, 2, border_radius=10)  # Border
+        
+        # Render gold text
+        font = pygame.font.Font(None, 24)
+        gold_surface = font.render(f"{self.gold}", True, (255, 215, 0))
+        self.screen.blit(gold_surface, (gold_bg.x + 10, gold_bg.y + 10))  # Adjusted position to fit inside the box
+        
+        # Draw coin icon inside the box
+        coin_icon = pygame.Surface((20, 20), pygame.SRCALPHA)
+        pygame.draw.circle(coin_icon, (255, 215, 0), (10, 10), 10)
+        pygame.draw.circle(coin_icon, (89, 40, 20), (10, 10), 10, 1)  # Border
+        self.screen.blit(coin_icon, (gold_bg.right - 30, gold_bg.y + 10))  # Positioned inside the box
+
     def run(self):
         # Main Game Loop
         running = True
