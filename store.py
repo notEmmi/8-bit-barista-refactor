@@ -262,7 +262,7 @@ class ShopUI:
             elapsed_time = pygame.time.get_ticks() - self.warning_timer
             if elapsed_time < 2000:  # Show for 2 seconds
                 warning_surface = self.font.render(self.warning_message, True, (255, 0, 0))  # Red text
-                warning_rect = warning_surface.get_rect(center=(self.shop_panel.centerx, self.shop_panel.top + 50))  # Adjusted y-axis
+                warning_rect = warning_surface.get_rect(center=(self.sell_button.left - 115, self.sell_button.centery))  # Aligned to the left of the buttons
                 self.screen.blit(warning_surface, warning_rect)
             else:
                 self.warning_message = None  # Clear the message after 2 seconds
