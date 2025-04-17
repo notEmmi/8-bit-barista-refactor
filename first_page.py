@@ -11,9 +11,11 @@ import store
 import inventory
 import random
 import start_menu
+import subprocess
 import settingsdata
 import subprocess
 from pygame_gui import UI_BUTTON_PRESSED
+from fish import run_fishing_minigame
 from music_selector import MusicSelector
 import sqlite3
 from GameState import GameState
