@@ -298,9 +298,6 @@ class ShopUI:
                                 self.gold -= total_cost
                                 name = self.cart["name"]
                                 self.inventory[name] = self.inventory.get(name, 0) + self.cart_quantity
-                                if self.cart in self.shop_items_items:
-                                    self.cart["price"] = 0
-                                    self.shop_items_items.remove(self.cart)
                                 self.cart = None
                                 self.cart_quantity = 1
                         elif self.sell_button.collidepoint(mouse_pos) and self.cart:
