@@ -88,6 +88,9 @@ class ShopUI:
                 image = pygame.transform.smoothscale(image, (40, 40))  # Resize to circular size
                 self.item_images[name] = image
 
+        self.warning_message = None
+        self.warning_timer = 0
+
     def update_gold_display(self):
         # Draw gold in the top right corner with coin icon - Enhanced with shadow effect
         gold_bg = pygame.Rect(self.shop_panel.right - 120, self.shop_panel.top + 10, 100, 40)
@@ -248,6 +251,22 @@ class ShopUI:
         back_text = self.font.render("Back", True, self.CREAM)
         self.screen.blit(back_text, (self.back_arrow.x + 5, self.back_arrow.y - 20))
 
+    def display_warning(self, message):
+        """Display a warning message for a couple of seconds."""
+        self.warning_message = message
+        self.warning_timer = pygame.time.get_ticks()  # Start the timer
+
+    def draw_warning(self):
+        """Draw the warning message if active."""
+        if self.warning_message:
+            elapsed_time = pygame.time.get_ticks() - self.warning_timer
+            if elapsed_time < 2000:  # Show for 2 seconds
+                warning_surface = self.font.render(self.warning_message, True, (255, 0, 0))  # Red text
+                warning_rect = warning_surface.get_rect(center=(self.shop_panel.centerx, self.shop_panel.top + 50))  # Adjusted y-axis
+                self.screen.blit(warning_surface, warning_rect)
+            else:
+                self.warning_message = None  # Clear the message after 2 seconds
+
     def run(self):
         running = True
         self.shop_open = True  # Ensure the shop opens immediately
@@ -299,6 +318,8 @@ class ShopUI:
                                 self.inventory[name] = self.inventory.get(name, 0) + self.cart_quantity
                                 self.cart = None
                                 self.cart_quantity = 1
+                            else:
+                                self.display_warning("Not enough gold!")
                         elif self.sell_button.collidepoint(mouse_pos) and self.cart:
                             name = self.cart["name"]
                             if self.inventory.get(name, 0) >= self.cart_quantity:
@@ -308,6 +329,8 @@ class ShopUI:
                                     del self.inventory[name]
                                 self.cart = None
                                 self.cart_quantity = 1
+                            else:
+                                self.display_warning("Not enough items to sell!")
                         for item in self.current_shop_items:
                             if item["rect"].collidepoint(mouse_pos):
                                 self.cart = item
@@ -471,6 +494,7 @@ class ShopUI:
 
                 # Draw gold counter
                 self.update_gold_display()
+                self.draw_warning()  # Draw warning message if active
 
             pygame.display.flip()
 
