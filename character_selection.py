@@ -2,7 +2,7 @@ import pygame  # Import the pygame module
 import sys  # Import the sys module
 import os  # Import the os module
 from first_page import Game
-from Building_Selection_Screen import runBuildingSelectionScreen  # Import the building selection screen function
+from Building_Selection_Screen import BuildingSelectionScreen  # Import the building selection screen function
 from character_utils import save_selected_character, load_selected_character
 
 # Initialize Pygame
@@ -37,6 +37,7 @@ class CharacterSelector:
         self.selected_character = load_selected_character()
         # List of characters
         self.characters = ["boy1", "boy2", "boy3", "girl1", "girl2", "girl3"]
+        self.player_name = None
         
         # Load and scale character avatars
         self.character_images = {}
@@ -183,8 +184,10 @@ class CharacterSelector:
                     self.error_message = "Name required."
                 else:
                     self.error_message = ""  # Clear the error message
-                    runBuildingSelectionScreen()  # Navigate to the building selection screen
-
+                    self.player_name = self.name_input.strip()
+                    print(self.player_name)
+                    building_select = BuildingSelectionScreen(self.player_name)  # Navigate to the building selection screen
+                    building_select.run()
     def handle_key_press(self, event):
         # Handle key press events
         if event.key == pygame.K_RETURN:  # If enter is pressed, submit the name
