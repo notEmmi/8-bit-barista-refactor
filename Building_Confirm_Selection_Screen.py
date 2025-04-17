@@ -1,87 +1,93 @@
 import pygame
 import Building_Selection_Screen
-import Building_Congratz_Screen
+from Building_Congratz_Screen import BuildingCongratzScreen
 
-def runConfirmationScreen(imagepath):
-    # Initialize pygame
-    img_path = imagepath
-    pygame.init()
+class BuildingConfirmationScreen:
+    def __init__(self, image_path, playername):
+        pygame.init()
 
-    # Screen settings
-    SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
-    SCREEN_COLOR = (58, 154, 12)
-    SQUARE_SIZE = 200  # Large square for image
-    RECT_WIDTH, RECT_HEIGHT = 400, 50  # Rectangle for confirmation text
-    TITLE_SIZE = (400, 100)
-    CIRCLE_RADIUS = 50
+        # Save image path
+        self.image_path = image_path
+        self.playername = playername
 
-    # Create the screen
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("Image Confirmation")
+        # Screen settings
+        self.SCREEN_WIDTH, self.SCREEN_HEIGHT = 800, 600
+        self.SQUARE_SIZE = 200
+        self.RECT_WIDTH, self.RECT_HEIGHT = 400, 50
+        self.TITLE_SIZE = (400, 100)
+        self.CIRCLE_RADIUS = 50
 
-    background = pygame.image.load("assets/images/others/sky.png")
-    background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        # Set up display
+        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+        pygame.display.set_caption("Building Confirmation")
 
-    title = pygame.image.load("images/buildingconfrim.png")
-    title = pygame.transform.scale(title, TITLE_SIZE)
+        # Load assets
+        self.background = pygame.image.load("assets/images/others/sky.png")
+        self.background = pygame.transform.scale(self.background, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
 
-    # Calculate positions
-    square_x = (SCREEN_WIDTH - SQUARE_SIZE) // 2
-    square_y = (SCREEN_HEIGHT - SQUARE_SIZE) // 2
-    rect_x = (SCREEN_WIDTH - RECT_WIDTH) // 2
-    rect_y = square_y - RECT_HEIGHT - 20  # Place above the square with padding
+        self.title = pygame.image.load("images/buildingconfrim.png")
+        self.title = pygame.transform.scale(self.title, self.TITLE_SIZE)
 
-    # Positions for circles
-    circle_left_x = square_x - CIRCLE_RADIUS - 50
-    circle_right_x = square_x + SQUARE_SIZE + 50 + CIRCLE_RADIUS
-    circle_y = square_y + SQUARE_SIZE // 2
+        self.image = pygame.image.load(self.image_path)
+        self.image = pygame.transform.scale(self.image, (self.SQUARE_SIZE, self.SQUARE_SIZE))
 
-    # Load and resize image
-    image = pygame.image.load(img_path)
-    image = pygame.transform.scale(image, (SQUARE_SIZE, SQUARE_SIZE))
+        # Font and text
+        self.font = pygame.font.Font(None, 36)
+        self.yes_text = self.font.render("YES", True, (255, 255, 255))
+        self.no_text = self.font.render("NO", True, (255, 255, 255))
 
-    # Font settings
-    font = pygame.font.Font(None, 36)
-    yes_text = font.render("YES", True, (255, 255, 255))
-    no_text = font.render("NO", True, (255, 255, 255))
+        # Precompute layout
+        self.square_x = (self.SCREEN_WIDTH - self.SQUARE_SIZE) // 2
+        self.square_y = (self.SCREEN_HEIGHT - self.SQUARE_SIZE) // 2
+        self.circle_left_x = self.square_x - self.CIRCLE_RADIUS - 50
+        self.circle_right_x = self.square_x + self.SQUARE_SIZE + 50 + self.CIRCLE_RADIUS
+        self.circle_y = self.square_y + self.SQUARE_SIZE // 2
 
-    # Function to check if a point is inside a circle
-    def is_inside_circle(point, circle_x, circle_y, radius):
+    def is_inside_circle(self, point, circle_x, circle_y, radius):
         return (point[0] - circle_x) ** 2 + (point[1] - circle_y) ** 2 <= radius ** 2
 
-    # Main loop
-    running = True
-    while running:
-        # Event handling
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                if is_inside_circle(mouse_pos, circle_left_x, circle_y, CIRCLE_RADIUS):
-                    print("YES clicked! Proceeding with selection.")
-                    Building_Congratz_Screen.runBuildingCongratz(img_path)
-                elif is_inside_circle(mouse_pos, circle_right_x, circle_y, CIRCLE_RADIUS):
-                    print("NO clicked! Cancelling selection.")  # Replace with actual logic
-                    Building_Selection_Screen.runBuildingSelectionScreen()
-                    running = False  # Close the confirmation screen
+    def run(self):
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
 
-        screen.blit(background, (0, 0))
-        
-        # Draw image square
-        screen.blit(image, (square_x, square_y))
-        screen.blit(title, (square_x / 2 + 50, square_y - 150))
-        
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if self.is_inside_circle(mouse_pos, self.circle_left_x, self.circle_y, self.CIRCLE_RADIUS):
+                        print("YES clicked! Proceeding with selection.")
+                        congratz_screen = BuildingCongratzScreen(self.image_path, self.playername)
+                        congratz_screen.run()
+                        running = False
+
+                    elif self.is_inside_circle(mouse_pos, self.circle_right_x, self.circle_y, self.CIRCLE_RADIUS):
+                        print("NO clicked! Cancelling selection.")
+                        from Building_Selection_Screen import BuildingSelectionScreen
+                        selection_screen = BuildingSelectionScreen()
+                        selection_screen.run()
+                        running = False
+
+            self.draw()
+
+        pygame.quit()
+
+    def draw(self):
+        self.screen.blit(self.background, (0, 0))
+        self.screen.blit(self.image, (self.square_x, self.square_y))
+        self.screen.blit(self.title, (self.square_x // 2 + 50, self.square_y - 150))
+
         # Draw YES and NO circles
-        pygame.draw.circle(screen, (0, 255, 0), (circle_left_x, circle_y), CIRCLE_RADIUS)  # Green circle
-        pygame.draw.circle(screen, (255, 0, 0), (circle_right_x, circle_y), CIRCLE_RADIUS)  # Red circle
-        
-        # Draw YES and NO text
-        screen.blit(yes_text, (circle_left_x - yes_text.get_width() // 2, circle_y - yes_text.get_height() // 2))
-        screen.blit(no_text, (circle_right_x - no_text.get_width() // 2, circle_y - no_text.get_height() // 2))
-        
+        pygame.draw.circle(self.screen, (0, 255, 0), (self.circle_left_x, self.circle_y), self.CIRCLE_RADIUS)
+        pygame.draw.circle(self.screen, (255, 0, 0), (self.circle_right_x, self.circle_y), self.CIRCLE_RADIUS)
+
+        # Draw text
+        self.screen.blit(self.yes_text, (self.circle_left_x - self.yes_text.get_width() // 2, self.circle_y - self.yes_text.get_height() // 2))
+        self.screen.blit(self.no_text, (self.circle_right_x - self.no_text.get_width() // 2, self.circle_y - self.no_text.get_height() // 2))
+
         pygame.display.flip()
 
-    pygame.quit()
-
-
+# Optional: Run directly
+if __name__ == "__main__":
+    screen = BuildingConfirmationScreen("assets/images/buildings/building1.png")
+    screen.run()
