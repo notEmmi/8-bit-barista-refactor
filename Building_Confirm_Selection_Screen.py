@@ -64,7 +64,7 @@ class BuildingConfirmationScreen:
                     elif self.is_inside_circle(mouse_pos, self.circle_right_x, self.circle_y, self.CIRCLE_RADIUS):
                         print("NO clicked! Cancelling selection.")
                         from Building_Selection_Screen import BuildingSelectionScreen
-                        selection_screen = BuildingSelectionScreen(self.playername)
+                        selection_screen = BuildingSelectionScreen()
                         selection_screen.run()
                         running = False
 

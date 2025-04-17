@@ -1,127 +1,120 @@
 import pygame
 import Popular
+import settingsdata
 from pygame import mixer
 
-# Initialize pygame
-pygame.init()
+class Recipes:
+    def __init__(self):
+        # Initialize pygame
+        pygame.init()
+        mixer.init()
 
-# Screen dimensions
-WIDTH, HEIGHT = 800, 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Recipes")
-recipes =pygame.image.load("images/recipes.png")
-recipes =pygame.transform.scale(recipes,(350, 150))
-
-kitchen =pygame.image.load("images/kitchen.png")
-kitchen =pygame.transform.scale(kitchen,(WIDTH, HEIGHT))
-
-# Colors
-WHITE = (255, 255, 255)
-BLUE = (0, 0, 255)
-LIGHTBROWN = (254, 195, 117)
-BACKGROUNDBROWN = (205, 149, 74)
-SADDLEBROWN =(139, 69, 19)
-BLACK = (0, 0, 0)
-
-# Rectangle dimensions
-RECT_WIDTH, RECT_HEIGHT = 200, 100
-SPACING = 20
-
-# Calculate center positions
-center_x, center_y = WIDTH // 2, HEIGHT // 2
-
-# Define rectangles
-backgroundRect = pygame.Rect(0, 0, WIDTH, HEIGHT)
-topLeftRect = pygame.Rect(center_x - RECT_WIDTH - SPACING // 2, center_y - RECT_HEIGHT - SPACING // 2, RECT_WIDTH, RECT_HEIGHT)
-topRightRect = pygame.Rect(center_x + SPACING // 2, center_y - RECT_HEIGHT - SPACING // 2, RECT_WIDTH, RECT_HEIGHT)
-bottomLeftRect = pygame.Rect(center_x - RECT_WIDTH - SPACING // 2, center_y + SPACING // 2, RECT_WIDTH, RECT_HEIGHT)
-bottomRightRect = pygame.Rect(center_x + SPACING // 2, center_y + SPACING // 2, RECT_WIDTH, RECT_HEIGHT)
-
-# Create surfaces for rectangles
-backgroundRect_surface = pygame.Surface((WIDTH, HEIGHT))
-backgroundRect_surface.fill(BACKGROUNDBROWN)
-
-topLeftRect_Surface = pygame.Surface((RECT_WIDTH, RECT_HEIGHT))
-topLeftRect_Surface.fill(LIGHTBROWN)
-topRightRect_Surface = pygame.Surface((RECT_WIDTH, RECT_HEIGHT))
-topRightRect_Surface.fill(LIGHTBROWN)
-bottomLeftRect_Surface = pygame.Surface((RECT_WIDTH, RECT_HEIGHT))
-bottomLeftRect_Surface.fill(LIGHTBROWN)
-bottomRightRect_Surface = pygame.Surface((RECT_WIDTH, RECT_HEIGHT))
-bottomRightRect_Surface.fill(LIGHTBROWN)
-
-# Load font
-font = pygame.font.Font(pygame.font.match_font("courier"), 24)
-mixer.init()
-mixer.music.load("tracks/08 - Shop.mp3")
-mixer.music.play()
-def draw_text(surface, text, rect, font, color):
-    text_surface = font.render(text, True, color)
-    text_rect = text_surface.get_rect(center=rect.center)
-    surface.blit(text_surface, text_rect.topleft)
-    
-   
-# Main loop
-running = True
-while running:
-    screen.fill(WHITE)
-    mouse_pos = pygame.mouse.get_pos()
-    
-    
-    
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+        # Screen dimensions
+        self.WIDTH, self.HEIGHT = 800, 600
+        self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
+        pygame.display.set_caption("Recipes")
         
-        ### check for hover over options event start #################
-        if topLeftRect.collidepoint(mouse_pos):
-            topLeftRect_Surface.fill(SADDLEBROWN)
+        # Load images
+        self.recipes = pygame.image.load("images/recipes.png")
+        self.recipes = pygame.transform.scale(self.recipes, (350, 150))
         
-        elif topRightRect.collidepoint(mouse_pos):
-
-            topRightRect_Surface.fill(SADDLEBROWN)
-
-        elif bottomLeftRect.collidepoint(mouse_pos):
-
-            bottomLeftRect_Surface.fill(SADDLEBROWN)
+        self.kitchen = pygame.image.load("images/kitchen.png")
+        self.kitchen = pygame.transform.scale(self.kitchen, (self.WIDTH, self.HEIGHT))
         
+        # Colors
+        self.WHITE = (255, 255, 255)
+        self.LIGHTBROWN = (254, 195, 117)
+        self.BACKGROUNDBROWN = (205, 149, 74)
+        self.SADDLEBROWN = (139, 69, 19)
+        self.BLACK = (0, 0, 0)
 
-        elif bottomRightRect.collidepoint(mouse_pos):
-
-            bottomRightRect_Surface.fill(SADDLEBROWN)
-
-        else:
-            topLeftRect_Surface.fill(LIGHTBROWN)
-            topRightRect_Surface.fill(LIGHTBROWN)
-            bottomLeftRect_Surface.fill(LIGHTBROWN)
-            bottomRightRect_Surface.fill(LIGHTBROWN)
-
-    ### check for hover over options event end#################
-      
-    ## check for click event start to naviagte between pages ###############  
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if topLeftRect.collidepoint(event.pos):   ### if the position of the mousedown event is in the top left rectange postiton.. 
-               Popular.runPopular()
-               running = False
-
+        # Rectangle dimensions
+        self.RECT_WIDTH, self.RECT_HEIGHT = 200, 100
+        self.SPACING = 20
         
-             
+        # Calculate center positions
+        center_x, center_y = self.WIDTH // 2, self.HEIGHT // 2
+        
+        # Define rectangles
+        self.topLeftRect = pygame.Rect(center_x - self.RECT_WIDTH - self.SPACING // 2, center_y - self.RECT_HEIGHT - self.SPACING // 2, self.RECT_WIDTH, self.RECT_HEIGHT)
+        self.topRightRect = pygame.Rect(center_x + self.SPACING // 2, center_y - self.RECT_HEIGHT - self.SPACING // 2, self.RECT_WIDTH, self.RECT_HEIGHT)
+        self.bottomLeftRect = pygame.Rect(center_x - self.RECT_WIDTH - self.SPACING // 2, center_y + self.SPACING // 2, self.RECT_WIDTH, self.RECT_HEIGHT)
+        self.bottomRightRect = pygame.Rect(center_x + self.SPACING // 2, center_y + self.SPACING // 2, self.RECT_WIDTH, self.RECT_HEIGHT)
+        
+        # Create surfaces for rectangles
+        self.topLeftRect_Surface = pygame.Surface((self.RECT_WIDTH, self.RECT_HEIGHT))
+        self.topLeftRect_Surface.fill(self.LIGHTBROWN)
+        self.topRightRect_Surface = pygame.Surface((self.RECT_WIDTH, self.RECT_HEIGHT))
+        self.topRightRect_Surface.fill(self.LIGHTBROWN)
+        self.bottomLeftRect_Surface = pygame.Surface((self.RECT_WIDTH, self.RECT_HEIGHT))
+        self.bottomLeftRect_Surface.fill(self.LIGHTBROWN)
+        self.bottomRightRect_Surface = pygame.Surface((self.RECT_WIDTH, self.RECT_HEIGHT))
+        self.bottomRightRect_Surface.fill(self.LIGHTBROWN)
+        
+        # Load font
+        self.font = pygame.font.Font(pygame.font.match_font("courier"), 24)
+        
+        # Load and play background music
+        mixer.music.load("tracks/08 - Shop.mp3")
+        mixer.music.set_volume(settingsdata.volumes[0] * settingsdata.volumes[1])
+        mixer.music.play()
+        
+    def draw_text(self, surface, text, rect, font, color):
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect(center=rect.center)
+        surface.blit(text_surface, text_rect.topleft)
     
-    # Draw rectangles using screen.blit
-    ##screen.blit(backgroundRect_surface, backgroundRect.topleft)
-    screen.blit(kitchen, (0,0))
-    screen.blit(recipes, (225,25))
-    screen.blit(topLeftRect_Surface, topLeftRect.topleft)
-    screen.blit(topRightRect_Surface, topRightRect.topleft)
-    screen.blit(bottomLeftRect_Surface, bottomLeftRect.topleft)
-    screen.blit(bottomRightRect_Surface, bottomRightRect.topleft)
-    
-    # Draw text centered in each rectangle
-    draw_text(screen, "Popular", topLeftRect, font, BLACK)
-    draw_text(screen, "Coffee", topRightRect, font, BLACK)
-    draw_text(screen, "Tea", bottomLeftRect, font, BLACK)
-    draw_text(screen, "Desserts", bottomRightRect, font, BLACK)
-    
-    pygame.display.flip()
+    def run(self):
+        running = True
+        while running:
+            self.screen.fill(self.WHITE)
+            mouse_pos = pygame.mouse.get_pos()
+            
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                
+                # Check for hover effect
+                if self.topLeftRect.collidepoint(mouse_pos):
+                    self.topLeftRect_Surface.fill(self.SADDLEBROWN)
+                elif self.topRightRect.collidepoint(mouse_pos):
+                    self.topRightRect_Surface.fill(self.SADDLEBROWN)
+                elif self.bottomLeftRect.collidepoint(mouse_pos):
+                    self.bottomLeftRect_Surface.fill(self.SADDLEBROWN)
+                elif self.bottomRightRect.collidepoint(mouse_pos):
+                    self.bottomRightRect_Surface.fill(self.SADDLEBROWN)
+                else:
+                    self.topLeftRect_Surface.fill(self.LIGHTBROWN)
+                    self.topRightRect_Surface.fill(self.LIGHTBROWN)
+                    self.bottomLeftRect_Surface.fill(self.LIGHTBROWN)
+                    self.bottomRightRect_Surface.fill(self.LIGHTBROWN)
+                
+                # Check for click event
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.topLeftRect.collidepoint(event.pos):
+                        Popular.runPopular()
+                        running = False
+            
+            # Draw background and UI elements
+            self.screen.blit(self.kitchen, (0, 0))
+            self.screen.blit(self.recipes, (225, 25))
+            self.screen.blit(self.topLeftRect_Surface, self.topLeftRect.topleft)
+            self.screen.blit(self.topRightRect_Surface, self.topRightRect.topleft)
+            self.screen.blit(self.bottomLeftRect_Surface, self.bottomLeftRect.topleft)
+            self.screen.blit(self.bottomRightRect_Surface, self.bottomRightRect.topleft)
+            
+            # Draw text on rectangles
+            self.draw_text(self.screen, "Popular", self.topLeftRect, self.font, self.BLACK)
+            self.draw_text(self.screen, "Coffee", self.topRightRect, self.font, self.BLACK)
+            self.draw_text(self.screen, "Tea", self.bottomLeftRect, self.font, self.BLACK)
+            self.draw_text(self.screen, "Desserts", self.bottomRightRect, self.font, self.BLACK)
+            
+            pygame.display.flip()
+        
+        pygame.quit()
 
-pygame.quit()
+# Create an instance of RecipeScreen and run it
+if __name__ == "__main__":
+     app = Recipes()
+     app.run()
+
