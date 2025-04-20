@@ -162,21 +162,24 @@ class OptionsMenu:
                 if self.save_button_rect.collidepoint(mouse_pos):
                     print("[DEBUG] Save button clicked!")
                     conn = sqlite3.connect("mydatabase.db")
-                    curr_hour, curr_minute = self.currentGameInstance.get_game_time()
-                    game_state = GameState(
-                        self.currentGameInstance.house,
-                        self.currentGameInstance.pet,
-                        self.currentGameInstance.playername,
-                        self.currentGameInstance.selected_character,
-                        self.currentGameInstance.current_day,
-                        self.currentGameInstance.current_weather,
-                        curr_hour,
-                        curr_minute,
-                        False,
-                        None
-                    )
-                    game_state.save_to_db(conn)
-                    conn.close()
+                    if self.currentGameInstance is None:
+                        print("[Debug] Can't save - no game instance available.")
+                    else:
+                        curr_hour, curr_minute = self.currentGameInstance.get_game_time()
+                        game_state = GameState(
+                            self.currentGameInstance.house,
+                            self.currentGameInstance.pet,
+                            self.currentGameInstance.playername,
+                            self.currentGameInstance.selected_character,
+                            self.currentGameInstance.current_day,
+                            self.currentGameInstance.current_weather,
+                            curr_hour,
+                            curr_minute,
+                            False,
+                            None
+                        )
+                        game_state.save_to_db(conn, self.currentGameInstance.username)
+                        conn.close()
                 if self.masterVolumeMuteButton.collidepoint(mouse_pos):
                     settingsdata.toggleMuteMasterVolume()
                     self.sliders["Master Volume"] = settingsdata.volumes[0]

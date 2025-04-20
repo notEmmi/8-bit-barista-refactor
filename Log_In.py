@@ -121,7 +121,7 @@ class LoginScreen:
             stored_hash = result[0]
             if self.check_password(self.password, stored_hash):
                 print("Login successful!")
-                start_menu = StartMenu()
+                start_menu = StartMenu(username=self.username)
                 loading_screen = LoadingScreen(start_menu.run)
                 loading_screen.run()
             else:

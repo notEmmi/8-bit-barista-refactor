@@ -2,7 +2,7 @@ import pygame
 from Building_Confirm_Selection_Screen import BuildingConfirmationScreen
 
 class BuildingSelectionScreen:
-    def __init__(self, playername):
+    def __init__(self, playername, selected_character, username):
         # Screen settings
         self.SCREEN_WIDTH, self.SCREEN_HEIGHT = 800, 600
         self.SCREEN_COLOR = (30, 30, 30)
@@ -17,6 +17,8 @@ class BuildingSelectionScreen:
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
         pygame.display.set_caption("Building Selection")
         self.playername = playername
+        self.selected_character = selected_character
+        self.username = username
         # Load background and sign
         self.background = pygame.image.load("assets/images/others/sky.png")
         self.background = pygame.transform.scale(self.background, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
@@ -70,7 +72,7 @@ class BuildingSelectionScreen:
                     for square in self.squares:
                         if square["rect"].collidepoint((mouse_x, mouse_y)):
                             print("Square clicked!")
-                            building_confirm_screen = BuildingConfirmationScreen(square["image_path"], self.playername)
+                            building_confirm_screen = BuildingConfirmationScreen(square["image_path"], self.playername, self.selected_character, self.username)
                             building_confirm_screen.run()
                             running = False
 
