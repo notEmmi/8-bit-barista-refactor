@@ -45,7 +45,6 @@ class OptionsMenu:
         # Buttons
         self.buttons = {
             "CONTROLS": pygame.Rect(200, 420, 100, 35),
-            "MUSIC TRACK": pygame.Rect(330, 420, 140, 35),
             "ADVANCED": pygame.Rect(500, 420, 100, 35),
             "BACK": pygame.Rect(self.WIDTH // 2 - 40, 485, 80, 30)
         }
@@ -58,7 +57,22 @@ class OptionsMenu:
         self.save_button_img.blit(raw_image, (0, 0))
         self.save_button_rect = self.save_button_img.get_rect(topleft=(58, 50))
 
+        # Transparent Save Button
+        raw_image = pygame.image.load("assets/buttons/save.png")
+        self.save_button_img = pygame.Surface(raw_image.get_size(), pygame.SRCALPHA)
+        self.save_button_img.blit(raw_image, (0, 0))
+        self.save_button_rect = self.save_button_img.get_rect(topleft=(58, 50))
+
+        self.masterVolumeMuteButton = pygame.Rect((self.WIDTH // 2) - 8, (self.HEIGHT // 2) - 168, 18, 18)
+
+        # Add "MUSIC TRACK" button only if gameInstance exists
         self.currentGameInstance = gameInstance
+        if self.currentGameInstance:
+            self.buttons["MUSIC TRACK"] = pygame.Rect(330, 420, 140, 35)
+        else:
+            # Move "CONTROLS" and "ADVANCED" closer together
+            self.buttons["CONTROLS"].x = 250
+            self.buttons["ADVANCED"].x = 400
 
     def draw_slider(self, name, y_pos, value):
         """Draw sliders with `+` and `-` buttons."""
@@ -148,21 +162,24 @@ class OptionsMenu:
                 if self.save_button_rect.collidepoint(mouse_pos):
                     print("[DEBUG] Save button clicked!")
                     conn = sqlite3.connect("mydatabase.db")
-                    curr_hour, curr_minute = self.currentGameInstance.get_game_time()
-                    game_state = GameState(
-                        self.currentGameInstance.house,
-                        self.currentGameInstance.pet,
-                        self.currentGameInstance.playername,
-                        self.currentGameInstance.selected_character,
-                        self.currentGameInstance.current_day,
-                        self.currentGameInstance.current_weather,
-                        curr_hour,
-                        curr_minute,
-                        False,
-                        None
-                    )
-                    game_state.save_to_db(conn)
-                    conn.close()
+                    if self.currentGameInstance is None:
+                        print("[Debug] Can't save - no game instance available.")
+                    else:
+                        curr_hour, curr_minute = self.currentGameInstance.get_game_time()
+                        game_state = GameState(
+                            self.currentGameInstance.house,
+                            self.currentGameInstance.pet,
+                            self.currentGameInstance.playername,
+                            self.currentGameInstance.selected_character,
+                            self.currentGameInstance.current_day,
+                            self.currentGameInstance.current_weather,
+                            curr_hour,
+                            curr_minute,
+                            False,
+                            None
+                        )
+                        game_state.save_to_db(conn, self.currentGameInstance.username)
+                        conn.close()
                 if self.masterVolumeMuteButton.collidepoint(mouse_pos):
                     settingsdata.toggleMuteMasterVolume()
                     self.sliders["Master Volume"] = settingsdata.volumes[0]
@@ -170,7 +187,7 @@ class OptionsMenu:
                     if rect.collidepoint(mouse_pos):
                         if name == "CONTROLS":
                             return "controls"
-                        elif name == "MUSIC TRACK":
+                        elif name == "MUSIC TRACK" and self.currentGameInstance:
                             music_selector = MusicSelector(
                                 self.screen, self.WIDTH, self.HEIGHT,
                                 current_track_index=0,  # Default to the first track

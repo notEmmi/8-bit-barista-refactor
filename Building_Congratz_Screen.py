@@ -4,13 +4,14 @@ import settingsdata
 from pet_selector import PetSelector
 
 class BuildingCongratzScreen:
-    def __init__(self, image_path, playername):
+    def __init__(self, image_path, playername, selected_character, username):
         pygame.init()
         mixer.init()
 
         self.img_path = image_path
         self.playername = playername
-
+        self.selected_character = selected_character
+        self.username = username
         # Screen dimensions
         self.WIDTH, self.HEIGHT = 800, 600
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
@@ -85,7 +86,7 @@ class BuildingCongratzScreen:
 
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     if self.button_rect.collidepoint(event.pos):
-                        pet_selector = PetSelector(self.img_path, self.playername)
+                        pet_selector = PetSelector(self.img_path, self.playername, self.selected_character, self.username)
                         pet_selector.run()
                         running = False
 
