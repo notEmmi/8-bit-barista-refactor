@@ -72,7 +72,8 @@ class Game:
         self.weather_icons = {
             "sunny": pygame.image.load(os.path.join("assets", "icons", "sunny.png")).convert_alpha(),
             "cloudy": pygame.image.load(os.path.join("assets", "icons", "cloudy.png")).convert_alpha(),
-            "rainy": pygame.image.load(os.path.join("assets", "icons", "rainy.png")).convert_alpha()
+            "rainy": pygame.image.load(os.path.join("assets", "icons", "rainy.png")).convert_alpha(),
+            "moon": pygame.image.load(os.path.join("assets", "icons", "moon.png")).convert_alpha()
         }
         self.is_paused = False
         self.show_new_day_prompt = False
@@ -483,7 +484,16 @@ class Game:
 
         
         hud_surface.blit(day_text, day_rect.topleft)
-        
+
+        # Determine if it's daytime (adjust if needed)
+        current_hour = self.get_game_time()[0]
+        is_daytime = 6 <= current_hour < 18
+
+        # Adjust icon to moon at night if it's sunny
+        if self.current_weather == "sunny" and not is_daytime:
+            self.current_weather = "moon"
+        else:
+            self.current_weather = self.current_weather
 
         # Weather Icon - Adjust Position Based on Type
         if self.current_weather in self.weather_icons:
