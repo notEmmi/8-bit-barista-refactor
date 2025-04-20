@@ -801,12 +801,9 @@ class Game:
                 break
 
     def drawPause(self) -> pygame.Rect:
-        # Load raw image
-        raw_image = pygame.image.load("assets/buttons/pause.png")
-
-        # Transparency
-        pauseButtonImage = pygame.Surface(raw_image.get_size(), pygame.SRCALPHA)
-        pauseButtonImage.blit(raw_image, (0, 0))
+        pauseButtonImage = pygame.image.load("assets/buttons/pause.png").convert_alpha()
+        pauseButtonImage = pygame.transform.scale(pauseButtonImage, (75, 75))
+        pauseButtonImage.set_colorkey((0, 0, 0))
 
         #pauseButtonImage = pygame.image.load("assets/buttons/pause.png").convert_alpha()
         #pauseButtonImage = pygame.transform.scale(pauseButtonImage, (64, 64))
@@ -991,7 +988,7 @@ class Game:
                 if popup_shown:
                     # Load and display the WASD image
                     try:
-                        wasd_image = pygame.image.load("wasd_image.png")
+                        wasd_image = pygame.image.load("wasd_image.png").convert_alpha()
                     except pygame.error as e:
                         print("Error loading image:", e)
                         wasd_image = pygame.Surface((200, 100))  # Temporary placeholder surface for debugging
