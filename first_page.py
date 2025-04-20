@@ -6,15 +6,19 @@ from weather import Rain, Raindrop, FloorDrop, Cloudy
 from toolbar import Toolbox
 import interactions
 import customers
-import shop
+import store
 import inventory
 import random
 import start_menu
+import subprocess
 import settingsdata
+import subprocess
 from pygame_gui import UI_BUTTON_PRESSED
+from fish import run_fishing_minigame
 from music_selector import MusicSelector
 import sqlite3
 from GameState import GameState
+from fish import run_fishing_minigame
 
 class Game:
     def __init__(self, chosen_building, petChoice, name, selected_character=None, current_day = 1, current_weather="sunny", time_hour=None, time_minute=None, fromPriorMenu = False, gameData = None):
@@ -39,6 +43,8 @@ class Game:
         self.house = chosen_building
         self.pet = petChoice
         self.playername = name
+
+        self.shop = store.ShopUI(self)
         self.selected_character = selected_character
         self.current_weather = current_weather
         self.apply_weather_effects()
@@ -170,6 +176,18 @@ class Game:
         self.time_multiplier = 1  # Normal speed, increased when pressing ''
       
         self.backpack = pygame.Rect(0,0,0,0)
+
+        #Initialize Water GID and Layer
+        self.water_gids = [
+            self.get_gid("Water", 0),
+            self.get_gid("Water", 1),
+            self.get_gid("Water", 2),
+            self.get_gid("Water", 3)
+        ]
+        self.water_layer = self.tmx_data.get_layer_by_name("Water")
+
+        #Gold
+        self.gold = 100
 
         # Load and play background music
         self.background_music = os.path.join(self.SOUND_PATH, "1_new_life_master.mp3")
@@ -608,6 +626,42 @@ class Game:
                 tile_x, tile_y = int(adjusted_x // self.TILE_WIDTH), int(adjusted_y // self.TILE_HEIGHT)
                 print(f"Mouse: ({mouse_x}, {mouse_y}), Adjusted: ({adjusted_x}, {adjusted_y}), Tile: ({tile_x}, {tile_y})")
 
+                clicked_gid = self.water_layer.data[tile_y][tile_x]
+                if clicked_gid in self.water_gids:
+                    print("Water tile clicked! Launching fishing game...")
+                    self.gold += run_fishing_minigame()
+                    # result = subprocess.Popen(["python", "fish.py"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+                    # # Capture the output from the subprocess
+                    # stdout, stderr = result.communicate()
+
+                    # # Ensure no errors occurred and the output is not empty
+                    # if result.returncode == 0 and stdout.strip():
+                    #     try:
+                    #         # Split the output by lines and get the last line, which should be the gold value
+                    #         output_lines = stdout.strip().splitlines()
+
+                    #         # If the output contains the Pygame version info or anything unexpected, filter it out
+                    #         gold_value_str = None
+                    #         for line in output_lines:
+                    #             # Try to find a numeric line (this should be the gold value)
+                    #             if line.isdigit():
+                    #                 gold_value_str = line
+                    #                 break
+
+                    #         if gold_value_str:
+                    #             # Try converting the last line to an integer
+                    #             self.gold += int(gold_value_str)
+                    #         else:
+                    #             print(f"Error: No valid gold output found in '{stdout}'.")
+
+                    #     except ValueError:
+                    #         print(f"Error: The output '{stdout}' cannot be converted to an integer.")
+                    # else:
+                    #     if result.returncode != 0:
+                    #         print("Error:", stderr)  # Handle any errors that occurred during execution of fish.py
+                    #     else:
+                    #         print("No valid gold output received from fish.py.")
                 # Check if the mouse click is within any building rectangle first
                 for building_name, rect in self.buildings_object.items():
                     if rect.collidepoint(adjusted_x, adjusted_y):
@@ -620,8 +674,7 @@ class Game:
                             # customers_ui.run()
                         elif building_name == "store":
                             # Open the store UI
-                            shop_ui = shop.ShopUI(self)
-                            shop_ui.run()
+                            self.shop.run()
                         return  # Exit early if a building was clicked
 
                 # If no building was clicked, use the tool
@@ -811,21 +864,30 @@ class Game:
         cloudy = self.cloudy_weather
         return (theGameTime, day, position, house, weather, character, direction, raining, cloudy)
     
-    def handle_music_selection(self):
-        """Handle music selection and update background music if confirmed."""
-        music_selector = MusicSelector(self.screen, self.SCREEN_WIDTH, self.SCREEN_HEIGHT)
-        next_screen, selected_track = music_selector.run()
-
-        if next_screen == "options" and selected_track:
-            # Stop current music and load the new track
-            pygame.mixer.music.stop()
-            pygame.mixer.music.load(selected_track)
-            pygame.mixer.music.play(-1)
-
-            # Save the confirmed track
-            self.background_music = selected_track
-
-        return next_screen
+    def draw_gold(self):
+        # Draw gold in the top right corner with coin icon - Enhanced with shadow effect
+        gold_bg = pygame.Rect(self.SCREEN_WIDTH - 280, 10, 100, 40)  # Moved further to the left
+        
+        # Draw shadow
+        shadow_rect = gold_bg.copy()
+        shadow_rect.x += 2
+        shadow_rect.y += 2
+        pygame.draw.rect(self.screen, (89, 40, 20), shadow_rect, border_radius=10)
+        
+        # Draw gold background
+        pygame.draw.rect(self.screen, (201, 121, 77), gold_bg, border_radius=10)
+        pygame.draw.rect(self.screen, (89, 40, 20), gold_bg, 2, border_radius=10)  # Border
+        
+        # Render gold text
+        font = pygame.font.Font(None, 24)
+        gold_surface = font.render(f"{self.gold}", True, (255, 215, 0))
+        self.screen.blit(gold_surface, (gold_bg.x + 10, gold_bg.y + 10))  # Adjusted position to fit inside the box
+        
+        # Draw coin icon inside the box
+        coin_icon = pygame.Surface((20, 20), pygame.SRCALPHA)
+        pygame.draw.circle(coin_icon, (255, 215, 0), (10, 10), 10)
+        pygame.draw.circle(coin_icon, (89, 40, 20), (10, 10), 10, 1)  # Border
+        self.screen.blit(coin_icon, (gold_bg.right - 30, gold_bg.y + 10))  # Positioned inside the box
 
     def run(self):
         # Main Game Loop
@@ -1032,6 +1094,9 @@ class Game:
             
             # Draw HUD
             self.draw_hud()
+
+            # Draw Gold
+            self.draw_gold()
 
             #draw pause button
             self.pauseButton = self.drawPause()
