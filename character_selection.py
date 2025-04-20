@@ -31,10 +31,11 @@ BUTTON_HEIGHT = 40
 ASSET_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'assets/images/character-selection'))
 
 class CharacterSelector:
-    def __init__(self):
+    def __init__(self, username):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))  # Create the game window
         pygame.display.set_caption("Character Selection")  # Set the window title
 
+        self.username = username
         self.selected_character = self.load_selected_character_from_db()
         # List of characters
         self.characters = ["boy1", "boy2", "boy3", "girl1", "girl2", "girl3"]
@@ -126,18 +127,20 @@ class CharacterSelector:
         # Create or update GameState with selected character and save to DB
         conn = sqlite3.connect('mydatabase.db')  # Connect to your SQLite database
         game_state = GameState(name=self.player_name, selected_character=character)
-        game_state.save_to_db(conn)  # Save the state with the selected character
+        game_state.save_to_db(conn, self.username)  # Save the state with the selected character
         conn.close()
 
     def load_selected_character_from_db(self):
-        """Load the selected character from the database."""
-        conn = sqlite3.connect('mydatabase.db')  # Connect to the SQLite database
-        game_state = GameState.load_from_db(conn)  # Load the game state from the DB
+        conn = sqlite3.connect("mydatabase.db")
+        game_state = GameState.load_from_db(conn, self.username)
         conn.close()
-        
-        print(f"Loaded character from DB: {game_state.selected_character}")  # Debug line
-        # Return the selected character, or default to "boy1" if no character is found
-        return game_state.selected_character if game_state.selected_character else "boy1"
+
+        if game_state is None:
+            print(f"[DEBUG] No save found for user: {self.username}")
+            return "boy1"
+
+        print(f"Loaded character from DB: {game_state.selected_character}")
+        return game_state.selected_character
 
     def draw_preview(self):
         # Draw large character preview
@@ -206,7 +209,7 @@ class CharacterSelector:
                     self.error_message = ""  # Clear the error message
                     self.player_name = self.name_input.strip()
                     print(self.player_name)
-                    building_select = BuildingSelectionScreen(self.player_name)  # Navigate to the building selection screen
+                    building_select = BuildingSelectionScreen(self.player_name, self.selected_character, self.username)  # Navigate to the building selection screen
                     building_select.run()
     def handle_key_press(self, event):
         # Handle key press events

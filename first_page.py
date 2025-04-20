@@ -21,7 +21,7 @@ from GameState import GameState
 from fish import run_fishing_minigame
 
 class Game:
-    def __init__(self, chosen_building, petChoice, name, selected_character=None, current_day = 1, current_weather="sunny", time_hour=None, time_minute=None, fromPriorMenu = False, gameData = None):
+    def __init__(self, chosen_building, petChoice, name, selected_character=None, current_day = 1, current_weather="sunny", time_hour=None, time_minute=None, fromPriorMenu = False, gameData = None, username=None):
         # Initialize Pygame
         pygame.init()
         pygame.font.init()
@@ -43,6 +43,7 @@ class Game:
         self.house = chosen_building
         self.pet = petChoice
         self.playername = name
+        self.username = username
 
         self.shop = store.ShopUI(self)
         self.selected_character = selected_character
@@ -201,23 +202,23 @@ class Game:
         self.pauseButton = pygame.Rect(0, 0, 0, 0)
 
         self.gameData = gameData
-        if fromPriorMenu: self.loadGameState()
+        if fromPriorMenu and gameData: 
+            self.loadGameState()
 
         
 
 ######## start of save data functions //////////////////////////////////
     
     def load_selected_character_from_db(self):
-        """Load the selected character from the database."""
-        conn = sqlite3.connect('mydatabase.db')  # Connect to the SQLite database
-        game_state = GameState.load_from_db(conn)  # Load the game state from the DB
+        conn = sqlite3.connect("mydatabase.db")
+        game_state = GameState.load_from_db(conn, self.username)
         conn.close()
 
-        # Return the selected character, or default to "boy1" if no character is found
-        if game_state.selected_character:
-            return game_state.selected_character 
-        else:
-            return "boy1"
+        if game_state is None:
+            print(f"[DEBUG] No save found for user {self.username}, defaulting to selected_character from menu")
+            return self.selected_character if hasattr(self, 'selected_character') else None
+
+        return game_state.selected_character
 
 ################ end save data functions ###########################
 
@@ -834,7 +835,7 @@ class Game:
         
     def pauseTheGame(self):
         self.is_paused = True
-        pauseMenu = start_menu.StartMenu(self)
+        pauseMenu = start_menu.StartMenu(username=self.username, gameInstance=self)
         pauseMenu.current_screen = "options"
         pauseMenu.isFromGame = True
         pauseMenu.run()

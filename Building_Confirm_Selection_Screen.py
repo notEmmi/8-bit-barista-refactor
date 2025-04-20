@@ -3,13 +3,14 @@ import Building_Selection_Screen
 from Building_Congratz_Screen import BuildingCongratzScreen
 
 class BuildingConfirmationScreen:
-    def __init__(self, image_path, playername):
+    def __init__(self, image_path, playername, selected_character, username):
         pygame.init()
 
         # Save image path
         self.image_path = image_path
         self.playername = playername
-
+        self.selected_character = selected_character
+        self.username = username
         # Screen settings
         self.SCREEN_WIDTH, self.SCREEN_HEIGHT = 800, 600
         self.SQUARE_SIZE = 200
@@ -57,7 +58,7 @@ class BuildingConfirmationScreen:
                     mouse_pos = pygame.mouse.get_pos()
                     if self.is_inside_circle(mouse_pos, self.circle_left_x, self.circle_y, self.CIRCLE_RADIUS):
                         print("YES clicked! Proceeding with selection.")
-                        congratz_screen = BuildingCongratzScreen(self.image_path, self.playername)
+                        congratz_screen = BuildingCongratzScreen(self.image_path, self.playername, self.selected_character, self.username)
                         congratz_screen.run()
                         running = False
 
