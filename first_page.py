@@ -486,33 +486,6 @@ class Game:
         
         hud_surface.blit(day_text, day_rect.topleft)
 
-        # Determine if it's daytime (adjust if needed)
-        current_hour = self.get_game_time()[0]
-        is_daytime = 6 <= current_hour < 18
-
-        # Adjust icon to moon at night if it's sunny
-        if self.current_weather == "sunny" and not is_daytime:
-            self.current_weather = "moon"
-        else:
-            self.current_weather = self.current_weather
-
-        # Weather Icon - Adjust Position Based on Type
-        if self.current_weather in self.weather_icons:
-            weather_icon = pygame.transform.scale(self.weather_icons[self.current_weather], (28, 28))
-            icon_x = 8  # Fixed left alignment
-
-            # Adjust icon height based on weather type
-            if self.current_weather == "sunny":
-                icon_y = day_rect.bottom + 5  # Default position
-            elif self.current_weather in ["cloudy", "rainy"]:
-                icon_y = day_rect.bottom + 2  # Move up slightly for balance
-            else:
-                icon_y = day_rect.bottom + 5  # Default fallback
-
-            hud_surface.blit(weather_icon, (icon_x, icon_y))
-        else:
-            print(f"WARNING: Missing weather icon for {self.current_weather}")
-
         # Clock - Fixed Position (Independent)
         clock_text = f"{self.get_game_time()[0]:02}:{self.get_game_time()[1]:02}"
         time_surface = clock_font.render(clock_text, True, (255, 255, 255))
@@ -525,22 +498,31 @@ class Game:
         day_rect = day_text.get_rect(midtop=(panel_width // 2, panel_y_margin))  # Centered horizontally
         hud_surface.blit(day_text, day_rect.topleft)
 
+        # Determine if it's daytime (adjust if needed)
+        current_hour = self.get_game_time()[0]
+        is_daytime = 6 <= current_hour < 18
+
+        # Dynamically select icon for sunny days (moon at night)
+        icon_key = self.current_weather
+        if self.current_weather == "sunny" and not is_daytime:
+            icon_key = "moon"
+
         # Weather Icon - Adjust Position Based on Type
-        if self.current_weather in self.weather_icons:
-            weather_icon = pygame.transform.scale(self.weather_icons[self.current_weather], (28, 28))
+        if icon_key in self.weather_icons:
+            weather_icon = pygame.transform.scale(self.weather_icons[icon_key], (28, 28))
             icon_x = 8  # Fixed left alignment
 
-            # Adjust icon height based on weather type
-            if self.current_weather == "sunny":
-                icon_y = day_rect.bottom + 5  # Default position
-            elif self.current_weather in ["cloudy", "rainy"]:
-                icon_y = day_rect.bottom + 2  # Move up slightly for balance
-            else:
-                icon_y = day_rect.bottom + 5  # Default fallback
+            # Adjust icon height based on type
+            if icon_key == "sunny":
+                icon_y = day_rect.bottom + 5
+            elif icon_key in ["cloudy", "rainy"]:
+                icon_y = day_rect.bottom + 2
+            else:  # moon or fallback
+                icon_y = day_rect.bottom + 5
 
             hud_surface.blit(weather_icon, (icon_x, icon_y))
         else:
-            print(f"WARNING: Missing weather icon for {self.current_weather}")
+            print(f"WARNING: Missing weather icon for {icon_key}")
 
         # Clock - Fixed Position (Independent)
         clock_text = f"{self.get_game_time()[0]:02}:{self.get_game_time()[1]:02}"
@@ -1096,13 +1078,7 @@ class Game:
             
             self.toolbox.draw(self.screen)
             self.backpack = inventory.drawBundle(self.screen)
-
-            # Ensure weather icon is updated dynamically
-            if self.current_weather in self.weather_icons:
-                self.current_weather_icon = self.weather_icons[self.current_weather]
-            else:
-                self.current_weather_icon = None  # Fallback if missing
-            
+                            
             # Draw HUD
             self.draw_hud()
 
@@ -1125,5 +1101,6 @@ if __name__ == "__main__":
     image_path = "assets/map/house2.png"
     pet = "assets/images/pets/browncat.png"
     name = "jake"
-    game = Game(image_path, pet, name)
+    selected_character = "boy1"
+    game = Game(image_path, pet, name, selected_character)
     game.run()
