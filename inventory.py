@@ -158,8 +158,16 @@ def run(gameInstance):
         pygame.display.flip()
 
 def drawBundle(screen) -> pygame.Rect:
-    backpackImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + "backpack" + ".png")
-    backpackImage = pygame.transform.scale(backpackImage, (64, 64))
-    rect = pygame.Rect(32, 550 - 32, 64, 64)
+    # Load raw image
+    raw_image = pygame.image.load("assets/buttons/backpack.png")
+
+    # Transparency
+    backpackImage = pygame.Surface(raw_image.get_size(), pygame.SRCALPHA)
+    backpackImage.blit(raw_image, (0, 0))
+    
+    #backpackImage = pygame.image.load("assets/" + "buttons/" + "backpack" + ".png").convert_alpha()
+    #backpackImage = pygame.transform.scale(backpackImage, (64, 64))
+    
+    rect = pygame.Rect(25, 485, 90, 90)
     screen.blit(backpackImage, rect)
     return rect
