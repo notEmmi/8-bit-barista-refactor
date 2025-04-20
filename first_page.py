@@ -39,7 +39,8 @@ class Game:
         self.weather_icons = {
             "sunny": pygame.image.load(os.path.join("assets", "icons", "sunny.png")).convert_alpha(),
             "cloudy": pygame.image.load(os.path.join("assets", "icons", "cloudy.png")).convert_alpha(),
-            "rainy": pygame.image.load(os.path.join("assets", "icons", "rainy.png")).convert_alpha()
+            "rainy": pygame.image.load(os.path.join("assets", "icons", "rainy.png")).convert_alpha(),
+            "moon": pygame.image.load(os.path.join("assets", "icons", "moon.png")).convert_alpha()
         }
         self.is_paused = False
         self.show_new_day_prompt = False
@@ -378,22 +379,33 @@ class Game:
         day_rect = day_text.get_rect(midtop=(panel_width // 2, panel_y_margin))  # Centered horizontally
         hud_surface.blit(day_text, day_rect.topleft)
 
+        # Determine if it's daytime (adjust if needed)
+        is_daytime = 6 <= self.current_hour < 18
+
+        # Adjust icon to moon at night if it's sunny
+        if self.current_weather == "sunny" and not is_daytime:
+            displayed_weather = "moon"
+        else:
+            displayed_weather = self.current_weather
+
         # Weather Icon - Adjust Position Based on Type
-        if self.current_weather in self.weather_icons:
-            weather_icon = pygame.transform.scale(self.weather_icons[self.current_weather], (28, 28))
+        if displayed_weather in self.weather_icons:
+            weather_icon = pygame.transform.scale(self.weather_icons[displayed_weather], (28, 28))
             icon_x = 8  # Fixed left alignment
 
             # Adjust icon height based on weather type
-            if self.current_weather == "sunny":
+            if displayed_weather == "sunny":
                 icon_y = day_rect.bottom + 5  # Default position
-            elif self.current_weather in ["cloudy", "rainy"]:
+            elif displayed_weather in ["cloudy", "rainy"]:
                 icon_y = day_rect.bottom + 2  # Move up slightly for balance
+            elif displayed_weather == "moon":
+                icon_y = day_rect.bottom + 5  # Or customize for moon if needed
             else:
                 icon_y = day_rect.bottom + 5  # Default fallback
 
             hud_surface.blit(weather_icon, (icon_x, icon_y))
         else:
-            print(f"WARNING: Missing weather icon for {self.current_weather}")
+            print(f"WARNING: Missing weather icon for {displayed_weather}")
 
         # Clock - Fixed Position (Independent)
         clock_text = f"{self.get_game_time()[0]:02}:{self.get_game_time()[1]:02}"
