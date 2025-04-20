@@ -158,12 +158,9 @@ def run(gameInstance):
         pygame.display.flip()
 
 def drawBundle(screen) -> pygame.Rect:
-    # Load raw image
-    raw_image = pygame.image.load("assets/buttons/backpack.png")
-
-    # Transparency
-    backpackImage = pygame.Surface(raw_image.get_size(), pygame.SRCALPHA)
-    backpackImage.blit(raw_image, (0, 0))
+    backpackImage = pygame.image.load("assets/buttons/backpack.png").convert_alpha()
+    backpackImage = pygame.transform.scale(backpackImage, (80, 80))
+    backpackImage.set_colorkey((0, 0, 0))
     
     #backpackImage = pygame.image.load("assets/" + "buttons/" + "backpack" + ".png").convert_alpha()
     #backpackImage = pygame.transform.scale(backpackImage, (64, 64))
