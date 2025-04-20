@@ -2,6 +2,38 @@ import os
 import pygame
 import sys
 import random
+import math
+
+class SwimmingFish:
+    def __init__(self, image, tile_rect, fish_index):
+        self.image_original = image
+        self.image = image
+        self.angle = random.uniform(0, 360)
+        self.tile_rect = tile_rect
+        self.fish_index = fish_index
+        # Start fish in center of tile
+        self.x = tile_rect.x + tile_rect.width / 2
+        self.y = tile_rect.y + tile_rect.height / 2
+        self.speed = 1  # You can randomize this too
+
+    def update(self):
+        # Move the fish in its current direction
+        dx = self.speed * pygame.math.Vector2(1, 0).rotate(-self.angle).x
+        dy = self.speed * pygame.math.Vector2(1, 0).rotate(-self.angle).y
+        self.x += dx
+        self.y += dy
+
+        # Bounce off tile edges
+        if not self.tile_rect.collidepoint(self.x, self.y):
+            self.angle = (self.angle + 180 + random.uniform(-30, 30)) % 360
+
+        # Rotate image to face direction
+        self.image = pygame.transform.rotate(self.image_original, self.angle)
+
+    def draw(self, screen):
+        fish_rect = self.image.get_rect(center=(self.x, self.y))
+        screen.blit(self.image, fish_rect)
+
 
 def generate_random_tile_positions(tile_count, tile_size, screen_width, screen_height, padding=10):
     positions = []
@@ -30,6 +62,13 @@ def run_fishing_minigame():
     WHITE = (255, 255, 255)
     GREEN = (0, 255, 0)
 
+    # Load fish images
+    fish_images = [
+        pygame.transform.scale(pygame.image.load('fish_images/Orange.png').convert_alpha(), (25, 25)),
+        pygame.transform.scale(pygame.image.load('fish_images/pink.png').convert_alpha(), (25, 25)),
+        pygame.transform.scale(pygame.image.load('fish_images/Blue.png').convert_alpha(), (25, 25))
+    ]
+
     # Player
     player = pygame.Rect(100, 100, 50, 50)
     player_speed = 5
@@ -49,7 +88,14 @@ def run_fishing_minigame():
     # fishing_tile_size = 50
     # fishing_tile_count = 4
     fishing_tiles = generate_random_tile_positions(NUM_TILES, TILE_SIZE, WIDTH, HEIGHT)
-    tile_fish_indices = [random.randint(0, 2) for _ in range(NUM_TILES)]
+    # tile_fish_indices = [random.randint(0, 2) for _ in range(NUM_TILES)]
+    swimming_fish_list = []
+    for tile in fishing_tiles:
+        fish_index = random.randint(0, 2)
+        fish_img = fish_images[fish_index]
+        fish = SwimmingFish(fish_img, tile, fish_index)
+        swimming_fish_list.append(fish)
+
 
 
     # for _ in range(NUM_TILES):
@@ -68,13 +114,6 @@ def run_fishing_minigame():
     #         tile_fish_indices.append(random.randint(0, 2))
     #         break
 
-
-    # Load fish images
-    fish_images = [
-        pygame.transform.scale(pygame.image.load('fish_images/Orange.png').convert_alpha(), (25, 25)),
-        pygame.transform.scale(pygame.image.load('fish_images/pink.png').convert_alpha(), (25, 25)),
-        pygame.transform.scale(pygame.image.load('fish_images/Blue.png').convert_alpha(), (25, 25))
-    ]
 
     hand_image = pygame.transform.scale(
         pygame.image.load('fish_images/hand.png').convert_alpha(), (50, 50)
@@ -141,16 +180,15 @@ def run_fishing_minigame():
         #     slider_direction = 1
 
         if not fishing_minigame and keys[pygame.K_e]:
-            for idx, tile in enumerate(fishing_tiles):
-                if player.colliderect(tile):
+            for fish in swimming_fish_list:
+                if player.colliderect(fish.tile_rect):
                     fishing_minigame = True
-                    fish_index = tile_fish_indices[idx]
-                    current_fish = fish_data[fish_index]
+                    current_fish = fish_data[fish.fish_index]
                     slider_speed = current_fish["slider_speed"]
                     green_target.x = random.randint(ui_rect.x + 50, ui_rect.right - green_target_width - 50)
                     white_slider.x = ui_rect.x
                     slider_direction = 1
-                    active_tile_index = idx  # remember which tile is active
+                    # active_tile_index = idx  # remember which tile is active
                     break
 
 
@@ -165,8 +203,14 @@ def run_fishing_minigame():
                     earned_gold += current_fish["gold"]
                     fishing_minigame = False
                     # Refresh all fish and positions after successful catch
+                    # fishing_tiles = generate_random_tile_positions(NUM_TILES, TILE_SIZE, WIDTH, HEIGHT)
+                    # tile_fish_indices = [random.randint(0, 2) for _ in range(NUM_TILES)]
                     fishing_tiles = generate_random_tile_positions(NUM_TILES, TILE_SIZE, WIDTH, HEIGHT)
-                    tile_fish_indices = [random.randint(0, 2) for _ in range(NUM_TILES)]
+                    swimming_fish_list = []
+                    for tile in fishing_tiles:
+                        fish_index = random.randint(0, 2)
+                        fish_img = fish_images[fish_index]
+                        swimming_fish_list.append(SwimmingFish(fish_img, tile, fish_index))
                     # for i in range(len(tile_fish_indices)):
                     #     tile_fish_indices[i] = random.randint(0, 2)
                     # current_tile_fish_index = random.randint(0, 2)  # New fish on the tile!
@@ -193,13 +237,18 @@ def run_fishing_minigame():
         #     screen.blit(fish_img, (fish_x, fish_y))
 
         # Draw multiple blue fishing tiles with their respective fish
-        for i, tile in enumerate(fishing_tiles):
-            pygame.draw.rect(screen, BLUE, tile) #Change Blue Tile color here
+        # for i, tile in enumerate(fishing_tiles):
+        #     pygame.draw.rect(screen, (150, 200, 255), tile) #Change Blue Tile color here
+        #     if not fishing_minigame:
+        #         fish_img = fish_images[tile_fish_indices[i]]
+        #         fish_x = tile.x + (tile.width // 2) - (fish_img.get_width() // 2)
+        #         fish_y = tile.y + (tile.height // 2) - (fish_img.get_height() // 2)
+        #         screen.blit(fish_img, (fish_x, fish_y))
+        for fish in swimming_fish_list:
+            pygame.draw.rect(screen, (150, 200, 255), fish.tile_rect)
             if not fishing_minigame:
-                fish_img = fish_images[tile_fish_indices[i]]
-                fish_x = tile.x + (tile.width // 2) - (fish_img.get_width() // 2)
-                fish_y = tile.y + (tile.height // 2) - (fish_img.get_height() // 2)
-                screen.blit(fish_img, (fish_x, fish_y))
+                fish.update()
+                fish.draw(screen)
 
 
         # Player
@@ -214,6 +263,9 @@ def run_fishing_minigame():
             # Draw current fish icon inside UI
             screen.blit(pygame.transform.scale(fish_images[fish_index], (50, 50)),
                         (WIDTH - 70, ui_rect.y + 10))
+            space_text = font.render("Space", True, WHITE)
+            screen.blit(space_text, (ui_rect.x + 10 + shake_offset[0], ui_rect.y + 10 + shake_offset[1]))
+
 
         # Gold counter
         gold_text = font.render(f'Gold: {earned_gold}', True, (0, 0, 0))
