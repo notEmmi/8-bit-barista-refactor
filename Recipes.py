@@ -132,7 +132,7 @@ class Recipes:
             self.draw_text(self.screen, "Desserts", self.bottomRightRect, self.font, self.BLACK)
             pygame.draw.rect(self.screen, self.SADDLEBROWN, self.backButton.inflate(4, 4), border_radius=12)
             pygame.draw.rect(self.screen, self.LIGHTBROWN, self.backButton, border_radius=12)
-            self.draw_text(self.screen, "Back to Game", self.backButton, self.font, self.BLACK)
+            self.draw_text(self.screen, "Back to Cafe", self.backButton, self.font, self.BLACK)
             
             pygame.display.flip()
         
