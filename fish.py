@@ -15,6 +15,9 @@ class SwimmingFish:
         self.x = tile_rect.x + tile_rect.width / 2
         self.y = tile_rect.y + tile_rect.height / 2
         self.speed = 1  # You can randomize this too
+        self.last_angle_change = pygame.time.get_ticks()  # current time in milliseconds
+        self.angle_cooldown = 2000  # 2000 milliseconds = 2 seconds
+
 
     def update(self):
         # Move the fish in its current direction
@@ -23,9 +26,21 @@ class SwimmingFish:
         self.x += dx
         self.y += dy
 
-        # Bounce off tile edges
-        if not self.tile_rect.collidepoint(self.x, self.y):
-            self.angle = (self.angle + 180 + random.uniform(-30, 30)) % 360
+        # Move the tile with the fish (centering it around the fish)
+        self.tile_rect.center = (self.x, self.y)
+
+        # Get the current time
+        current_time = pygame.time.get_ticks()
+
+        screen_width, screen_height = pygame.display.get_surface().get_size()
+        if self.x < 0 or self.x > screen_width:
+            self.angle = (180 - self.angle) % 360
+        elif self.y < 0 or self.y > screen_height:
+            self.angle = (-self.angle) % 360
+        else:
+            if current_time - self.last_angle_change > self.angle_cooldown:
+                self.angle = (self.angle + random.uniform(0, 360)) % 360
+                self.last_angle_change = current_time  # reset timer
 
         # Rotate image to face direction
         self.image = pygame.transform.rotate(self.image_original, self.angle)
@@ -129,6 +144,7 @@ def run_fishing_minigame():
     fishing_minigame = False
     earned_gold = 0
     current_fish = None
+    saved_fish = None
 
     # Minigame UI setup
     ui_rect = pygame.Rect(0, HEIGHT * 3 // 4, WIDTH, HEIGHT // 4)
@@ -181,15 +197,17 @@ def run_fishing_minigame():
 
         if not fishing_minigame and keys[pygame.K_e]:
             for fish in swimming_fish_list:
-                if player.colliderect(fish.tile_rect):
+                # Check if the player is within a range of the fish's tile or center
+                if player.colliderect(fish.tile_rect.inflate(20, 20)):  # Expanded collision range
                     fishing_minigame = True
                     current_fish = fish_data[fish.fish_index]
+                    saved_fish = fish
                     slider_speed = current_fish["slider_speed"]
                     green_target.x = random.randint(ui_rect.x + 50, ui_rect.right - green_target_width - 50)
                     white_slider.x = ui_rect.x
                     slider_direction = 1
-                    # active_tile_index = idx  # remember which tile is active
                     break
+
 
 
         # Fishing minigame
@@ -245,7 +263,8 @@ def run_fishing_minigame():
         #         fish_y = tile.y + (tile.height // 2) - (fish_img.get_height() // 2)
         #         screen.blit(fish_img, (fish_x, fish_y))
         for fish in swimming_fish_list:
-            pygame.draw.rect(screen, (150, 200, 255), fish.tile_rect)
+            pygame.draw.rect(screen, BLUE, fish.tile_rect)
+            fish.draw(screen)
             if not fishing_minigame:
                 fish.update()
                 fish.draw(screen)
@@ -261,7 +280,7 @@ def run_fishing_minigame():
             pygame.draw.rect(screen, GREEN, green_target.move(shake_offset))
             pygame.draw.rect(screen, WHITE, white_slider.move(shake_offset))
             # Draw current fish icon inside UI
-            screen.blit(pygame.transform.scale(fish_images[fish_index], (50, 50)),
+            screen.blit(pygame.transform.scale(saved_fish.image, (50, 50)),
                         (WIDTH - 70, ui_rect.y + 10))
             space_text = font.render("Space", True, WHITE)
             screen.blit(space_text, (ui_rect.x + 10 + shake_offset[0], ui_rect.y + 10 + shake_offset[1]))
