@@ -224,11 +224,12 @@ class InteractionsUI:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     for name, rect in self.menuButtons.items():
                         
-                            if name == "Back to Game":
-                                print("Returning to game...")
-                                self.running = False  # You can swap this to a callback to your Game instance
-                                self.game.run()
-                            break
+                            if rect.collidepoint(mouse_pos):
+                             if name == "Back to Game":
+                              print("Returning to game...")
+                              self.running = False
+                              self.game.run()
+                              break
                     for name, info in self.renderedButtons.items():
                         if not (info[0].collidepoint(mouse_pos) and self.currentScene == info[1]): continue
                         if name == "Recipes": Recipes.Recipes(self).run()

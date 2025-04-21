@@ -52,6 +52,9 @@ class Recipes:
         self.bottomLeftRect_Surface.fill(self.LIGHTBROWN)
         self.bottomRightRect_Surface = pygame.Surface((self.RECT_WIDTH, self.RECT_HEIGHT))
         self.bottomRightRect_Surface.fill(self.LIGHTBROWN)
+
+
+        self.backButton = pygame.Rect(self.WIDTH // 2 - 100, self.HEIGHT - 60, 200, 40)
         
         # Load font
         self.font = pygame.font.Font(pygame.font.match_font("courier"), 24)
@@ -97,11 +100,10 @@ class Recipes:
                         Popular.runPopular()
                         running = False
                 
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_TAB:
-                        from interactions import InteractionsUI
-                        running = False  # close the Recipes screen
-                        self.pathbacktocafe.run()  
+                    if self.backButton.collidepoint(event.pos):
+                      print("Returning to cafe...")
+                      running = False
+                      self.pathbacktocafe.run()
             # Draw background and UI elements
             self.screen.blit(self.kitchen, (0, 0))
             self.screen.blit(self.recipes, (225, 25))
@@ -115,6 +117,9 @@ class Recipes:
             self.draw_text(self.screen, "Coffee", self.topRightRect, self.font, self.BLACK)
             self.draw_text(self.screen, "Tea", self.bottomLeftRect, self.font, self.BLACK)
             self.draw_text(self.screen, "Desserts", self.bottomRightRect, self.font, self.BLACK)
+            pygame.draw.rect(self.screen, self.SADDLEBROWN, self.backButton.inflate(4, 4), border_radius=12)
+            pygame.draw.rect(self.screen, self.LIGHTBROWN, self.backButton, border_radius=12)
+            self.draw_text(self.screen, "Back to Game", self.backButton, self.font, self.BLACK)
             
             pygame.display.flip()
         
