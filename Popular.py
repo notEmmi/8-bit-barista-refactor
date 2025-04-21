@@ -1,5 +1,5 @@
 import pygame
-import Unlock
+from Unlock import Unlock
 import settingsdata
 from pygame import mixer
 
@@ -85,7 +85,8 @@ class Popular:
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.bottomRightRect.collidepoint(event.pos):
-                        Unlock.runUnlock()
+                        unlockPage = Unlock(self)
+                        unlockPage.run()
                         running = False
 
                     if self.backButton.collidepoint(event.pos):
