@@ -19,6 +19,7 @@ from music_selector import MusicSelector
 import sqlite3
 from GameState import GameState
 from fish import run_fishing_minigame
+import inventorydata
 
 class Game:
     def __init__(self, chosen_building, petChoice, name, selected_character=None, current_day = 1, current_weather="sunny", time_hour=None, time_minute=None, fromPriorMenu = False, gameData = None, username=None):
@@ -741,6 +742,18 @@ class Game:
                         
                         # Indicate the item was added to inventory
                         print("+++ Added to inventory +++")
+                        source = tile_properties.get("source", "Unknown")
+                        if (source != "Unknown"):
+                            name = str.split(source, '/')[-1]
+                            name = str.replace(name, ".png", "")
+                            name = str.replace(name, "1", "")
+                            name = str.replace(name, "2", "")
+                            name = str.replace(name, "3", "")
+                            name = str.replace(name, "4", "")
+                            name = str.replace(name, "5", "")
+                            name = str.replace(name, "6", "")
+                            name = str.capitalize(name)
+                            inventorydata.insertItemIntoSpareSlot((name, 1))
 
     def get_seed_gid(self, seed_name):
         # Map seed names to their initial GID in the tileset using get_gid
