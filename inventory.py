@@ -163,7 +163,7 @@ def run(gameInstance):
 
 def drawBundle(screen) -> pygame.Rect:
     backpackImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + "backpack" + ".png")
-    backpackImage = pygame.transform.scale(backpackImage, (64, 64))
+    backpackImage = pygame.transform.scale(backpackImage, (50, 50))
     rect = pygame.Rect(32, 550 - 32, 64, 64)
     screen.blit(backpackImage, rect)
     return rect

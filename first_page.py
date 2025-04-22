@@ -813,7 +813,7 @@ class Game:
 
     def drawPause(self) -> pygame.Rect:
         pauseButtonImage = pygame.image.load("assets/buttons/pause.png").convert_alpha()
-        pauseButtonImage = pygame.transform.scale(pauseButtonImage, (75, 75))
+        pauseButtonImage = pygame.transform.scale(pauseButtonImage, (50, 50))
         pauseButtonImage.set_colorkey((0, 0, 0))
 
         #pauseButtonImage = pygame.image.load("assets/buttons/pause.png").convert_alpha()
