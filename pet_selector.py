@@ -1,7 +1,7 @@
 import pygame
 import sys
 class PetSelector:
-    def __init__(self, img_path, playername): ## pass a pet type that will be used to decide between lists of pngs to choose from
+    def __init__(self, img_path, playername, selected_character, username): ## pass a pet type that will be used to decide between lists of pngs to choose from
         # Initialize Pygame
         pygame.init()
 
@@ -10,6 +10,7 @@ class PetSelector:
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Pet Selector")
         self.playername = playername
+        self.username = username
         self.building = img_path
         # Set up clock for frame rate
         self.clock = pygame.time.Clock()
@@ -41,12 +42,8 @@ class PetSelector:
         self.leftarrow2 = pygame.image.load("images/leftarrow.png")
         self.leftarrow2 = pygame.transform.scale(self.leftarrow2, (50, 50))
 
-        
-        
-        
-        
-        
-        
+        self.selected_character = selected_character    
+            
         self.dogsList = ["assets/images/pets/greydog.png", "assets/images/pets/yellowdog.png", "assets/images/pets/browndog.png"]
         self.dogRect = pygame.Rect(self.WIDTH/1.3, self.HEIGHT/1.7, 150,150)
         self.dog = pygame.image.load("assets/images/pets/greydog.png")
@@ -147,7 +144,7 @@ class PetSelector:
                          if self.madeachoice >0:
                             
                             from first_page import Game
-                            game = Game(self.building, self.petChoice, self.playername)
+                            game = Game(self.building, self.petChoice, self.playername, selected_character=self.selected_character, username=self.username)
                             game.run()
                             running = False
                    
