@@ -198,6 +198,7 @@ class Game:
         pygame.mixer.music.play(-1)  # Play on repeat
 
         self.toolbox = Toolbox()
+        self.toolbox.selected_tool = -1  # Ensure no tool is selected initially
 
         self.pauseButton = pygame.Rect(0, 0, 0, 0)
 
@@ -597,7 +598,7 @@ class Game:
                     print(f"Cloudy Weather Enabled: {self.cloudy_weather}")
                 if self.show_new_day_prompt and event.key == pygame.K_RETURN:  # Confirm new day
                     self.time_multiplier, self.confirm_new_day, self.show_new_day_prompt, self.is_paused = 1, True, False, False
-                if pygame.K_1 <= event.key <= pygame.K_5:  # Tool or seed selection
+                if pygame.K_1 <= event.key <= pygame.K_4:  # Tool or seed selection
                     if self.toolbox.seed_inventory_open:
                         selected_seed_index = event.key - pygame.K_1
                         if self.toolbox.selected_seed == selected_seed_index:
@@ -702,10 +703,7 @@ class Game:
             self.place_tile("Dirt", tile_x, tile_y, dirt_id)
             print(f"Tilled soil at ({tile_x}, {tile_y})")
 
-        elif self.toolbox.selected_tool == 1:  # Placeholder for another tool
-            print("Using another tool")
-
-        elif self.toolbox.selected_tool == 2:  # Seed pouch
+        elif self.toolbox.selected_tool == 1:  # Seed pouch
             if self.toolbox.selected_seed is not None:
                 seed_name = self.toolbox.seed_slots[self.toolbox.selected_seed]
                 dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
@@ -718,13 +716,13 @@ class Game:
                     else:
                         print(f"Tile ({tile_x}, {tile_y}) is already occupied.")
 
-        elif self.toolbox.selected_tool == 3:  # Watering can
+        elif self.toolbox.selected_tool == 2:  # Watering can
             dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
             dirt_id, watered_id = self.get_gid("Tilled_Dirt", 12), self.get_gid("Tilled_Dirt", 56)
             if dirt_layer and dirt_layer.data[tile_y][tile_x] == dirt_id:  # Check if tile is tilled
                 self.place_tile("Watered", tile_x, tile_y, watered_id)
 
-        elif self.toolbox.selected_tool == 4:  # Harvesting tool
+        elif self.toolbox.selected_tool == 3:  # Harvesting tool
             plant_layer = self.tmx_data.get_layer_by_name("Plants")
             watered_layer = self.tmx_data.get_layer_by_name("Watered")
             if plant_layer:
