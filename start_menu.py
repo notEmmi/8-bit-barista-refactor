@@ -173,7 +173,8 @@ class StartMenu:
                                             loaded_game_state.current_weather,
                                             loaded_game_state.time_hour,
                                             loaded_game_state.time_minute,
-                                            loaded_game_state.GameData
+                                            loaded_game_state.GameData,
+                                            self.username
                                         )
 
                                         from first_page import Game
@@ -187,7 +188,8 @@ class StartMenu:
                                             time_hour=loaded_game_state.time_hour,
                                             time_minute=loaded_game_state.time_minute,
                                             fromPriorMenu=loaded_game_state.fromPriorMenu,
-                                            gameData=loaded_game_state.GameData
+                                            gameData=loaded_game_state.GameData,
+                                            username=self.username
                                         )
                                         loadSave.run()
                                         running = False
