@@ -2,7 +2,7 @@ import pygame
 from pygame import mixer
 import sqlite3
 from config_logIn import *
-import ErrorScreen as ErrorScreen
+
 from Loading import LoadingScreen
 from start_menu import StartMenu
 import bcrypt
@@ -109,7 +109,9 @@ class LoginScreen:
     def try_login(self):
         print(f"Logging in with:\nUsername: {self.username}\nPassword: {self.password}")
         if not self.check_username(self.username):
-            ErrorScreen.runError()
+            from ErrorScreen import ErrorScreen
+            Error_Screen = ErrorScreen("invalid Username")
+            Error_Screen.run()
             self.running = False
             
             print("Invalid username!")
@@ -121,12 +123,14 @@ class LoginScreen:
             stored_hash = result[0]
             if self.check_password(self.password, stored_hash):
                 print("Login successful!")
-                start_menu = StartMenu()
+                start_menu = StartMenu(username=self.username)
                 loading_screen = LoadingScreen(start_menu.run)
                 loading_screen.run()
             else:
                 print("Invalid password!")
-                ErrorScreen.runError()
+                from ErrorScreen import ErrorScreen
+                Error_Screen = ErrorScreen("Incorrect password")
+                Error_Screen.run()
                 self.running = False
         else:
             print("Username not found in DB.")

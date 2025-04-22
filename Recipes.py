@@ -1,13 +1,15 @@
 import pygame
-import Popular
+
 import settingsdata
 from pygame import mixer
 
 class Recipes:
-    def __init__(self):
+    def __init__(self,path_back_to_cafe):
         # Initialize pygame
         pygame.init()
         mixer.init()
+
+        self.pathbacktocafe = path_back_to_cafe 
 
         # Screen dimensions
         self.WIDTH, self.HEIGHT = 800, 600
@@ -50,6 +52,9 @@ class Recipes:
         self.bottomLeftRect_Surface.fill(self.LIGHTBROWN)
         self.bottomRightRect_Surface = pygame.Surface((self.RECT_WIDTH, self.RECT_HEIGHT))
         self.bottomRightRect_Surface.fill(self.LIGHTBROWN)
+
+
+        self.backButton = pygame.Rect(self.WIDTH // 2 - 100, self.HEIGHT - 60, 200, 40)
         
         # Load font
         self.font = pygame.font.Font(pygame.font.match_font("courier"), 24)
@@ -63,6 +68,16 @@ class Recipes:
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect(center=rect.center)
         surface.blit(text_surface, text_rect.topleft)
+
+    def draw_button_with_depth(self, surface, rect, button_color, shadow_offset=4, shadow_alpha=100):
+    # Shadow
+     shadow_surf = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+     shadow_color = (0, 0, 0, shadow_alpha)  # translucent black
+     pygame.draw.rect(shadow_surf, shadow_color, shadow_surf.get_rect(), border_radius=10)
+     surface.blit(shadow_surf, (rect.x + shadow_offset, rect.y + shadow_offset))
+
+    # Button
+     pygame.draw.rect(surface, button_color, rect, border_radius=10)
     
     def run(self):
         running = True
@@ -92,22 +107,32 @@ class Recipes:
                 # Check for click event
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.topLeftRect.collidepoint(event.pos):
-                        Popular.runPopular()
+                        from Popular import Popular
+                        popularPage = Popular(self)
+                        popularPage.run()
+
                         running = False
-            
+                
+                    if self.backButton.collidepoint(event.pos):
+                      print("Returning to cafe...")
+                      running = False
+                      self.pathbacktocafe.run()
             # Draw background and UI elements
             self.screen.blit(self.kitchen, (0, 0))
             self.screen.blit(self.recipes, (225, 25))
-            self.screen.blit(self.topLeftRect_Surface, self.topLeftRect.topleft)
-            self.screen.blit(self.topRightRect_Surface, self.topRightRect.topleft)
-            self.screen.blit(self.bottomLeftRect_Surface, self.bottomLeftRect.topleft)
-            self.screen.blit(self.bottomRightRect_Surface, self.bottomRightRect.topleft)
+            self.draw_button_with_depth(self.screen, self.topLeftRect, self.topLeftRect_Surface.get_at((0, 0)))
+            self.draw_button_with_depth(self.screen, self.topRightRect, self.topRightRect_Surface.get_at((0, 0)))
+            self.draw_button_with_depth(self.screen, self.bottomLeftRect, self.bottomLeftRect_Surface.get_at((0, 0)))
+            self.draw_button_with_depth(self.screen, self.bottomRightRect, self.bottomRightRect_Surface.get_at((0, 0)))
             
             # Draw text on rectangles
             self.draw_text(self.screen, "Popular", self.topLeftRect, self.font, self.BLACK)
             self.draw_text(self.screen, "Coffee", self.topRightRect, self.font, self.BLACK)
             self.draw_text(self.screen, "Tea", self.bottomLeftRect, self.font, self.BLACK)
             self.draw_text(self.screen, "Desserts", self.bottomRightRect, self.font, self.BLACK)
+            pygame.draw.rect(self.screen, self.SADDLEBROWN, self.backButton.inflate(4, 4), border_radius=12)
+            pygame.draw.rect(self.screen, self.LIGHTBROWN, self.backButton, border_radius=12)
+            self.draw_text(self.screen, "Back to Cafe", self.backButton, self.font, self.BLACK)
             
             pygame.display.flip()
         

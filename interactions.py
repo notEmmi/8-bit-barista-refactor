@@ -55,8 +55,8 @@ class InteractionsUI:
 
         # Buttons
         self.menuButtons = {
-            "QUIT": pygame.Rect(self.WIDTH // 2 - 150, 540, 80, 30),
-            "Back to Garden": pygame.Rect(self.WIDTH // 2 - 20, 540, 200, 30)
+            
+            "Back to Game": pygame.Rect(self.WIDTH // 2 - 20, 540, 200, 30)
         }
 
         self.listOfRecipes = list(recipedata.theRecipes.keys())
@@ -223,17 +223,16 @@ class InteractionsUI:
                     self.running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     for name, rect in self.menuButtons.items():
-                        if rect.collidepoint(mouse_pos):
-                            if name == "QUIT":
-                                self.running = False
-                            elif name == "Back to Garden":
-                                print("Returning to game...")
-                                self.running = False  # You can swap this to a callback to your Game instance
-                                self.game.run()
-                            break
+                        
+                            if rect.collidepoint(mouse_pos):
+                             if name == "Back to Game":
+                              print("Returning to game...")
+                              self.running = False
+                              self.game.run()
+                              break
                     for name, info in self.renderedButtons.items():
                         if not (info[0].collidepoint(mouse_pos) and self.currentScene == info[1]): continue
-                        if name == "Recipes": Recipes.Recipes().run()
+                        if name == "Recipes": Recipes.Recipes(self).run()
                         elif info[2] != "":
                             print(f"{name} clicked! switching scene to {info[2]}")
                             self.closed = True

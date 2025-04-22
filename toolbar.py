@@ -8,10 +8,9 @@ class Toolbox:
         
         self.tools = {
             "hoe": pygame.image.load(os.path.join(self.TOOLS_PATH, "hoe.png")),
-            "mallet": pygame.image.load(os.path.join(self.TOOLS_PATH, "mallet.png")),
             "seedpouch": pygame.image.load(os.path.join(self.TOOLS_PATH, "seedpouch.png")),
             "watercan": pygame.image.load(os.path.join(self.TOOLS_PATH, "watercan.png")),
-            "axe": pygame.image.load(os.path.join(self.TOOLS_PATH, "axe.png"))
+            "shears": pygame.image.load(os.path.join(self.TOOLS_PATH, "shears.png"))
         }
         self.selected_tool = 0  # Index of the selected tool
         
@@ -22,7 +21,7 @@ class Toolbox:
         
         # Layout configuration
         self.rows = 1  # Change to 1 row
-        self.cols = 5  # Adjust the number of columns to fit all tools
+        self.cols = 4  # Adjust the number of columns to fit the remaining tools
         self.slot_width = 50
         self.slot_height = 50  # Make the height equal to the width to form a square
         self.slot_margin = 10
@@ -85,9 +84,10 @@ class Toolbox:
             inventory_height = box_height  # Same height as the toolbar
             inventory_y = box_y - inventory_height - 10  # 10px padding above the toolbar
             
-            # Draw the inventory background
+            # Calculate inventory width dynamically based on seed slots
+            inventory_width = (self.slot_width + self.slot_margin) * len(self.seed_slots) + self.slot_margin
             pygame.draw.rect(surface, self.background_color, 
-                            (box_x, inventory_y, box_width, inventory_height), 
+                            (box_x, inventory_y, inventory_width, inventory_height), 
                             border_radius=self.corner_radius)
             
             # Draw seed slots
