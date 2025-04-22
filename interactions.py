@@ -1,4 +1,4 @@
-import pygame, random, sys, recipedata, os, Recipes  # type: ignore
+import pygame, random, sys, recipedata, os, Recipes, inventorydata  # type: ignore
 
 class InteractionsUI:
     def __init__(self, game_instance):
@@ -43,7 +43,7 @@ class InteractionsUI:
 
         self.mainButtons = {
             "Enter Shop": ("exterior", "interior", "PROBABLY_ILLEGAL_ASSETS/shop.png"),
-            # "Exit Shop": ("interior", "exterior", "PROBABLY_ILLEGAL_ASSETS/exit.png"),  # Commented out
+            "Exit Shop": ("interior", "exterior", "PROBABLY_ILLEGAL_ASSETS/exit.png"),
             "View Customer Order": ("interior", "customerOrder", "PROBABLY_ILLEGAL_ASSETS/customer.png"),
             "Complete Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/complete.png"),
             "Close": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/exit.png"),
@@ -55,8 +55,8 @@ class InteractionsUI:
 
         # Buttons
         self.menuButtons = {
-            
-            "Back to Game": pygame.Rect(self.WIDTH // 2 - 20, 540, 200, 30)
+            "QUIT": pygame.Rect(self.WIDTH // 2 - 150, 540, 80, 30),
+            "Back to Garden": pygame.Rect(self.WIDTH // 2 - 20, 540, 200, 30)
         }
 
         self.listOfRecipes = list(recipedata.theRecipes.keys())
@@ -67,6 +67,7 @@ class InteractionsUI:
 
         self.generatedFakeAmounts = False
         self.notEnoughIngredients = False
+        self.editedItemsAlready = False
 
         self.dialougeAnchorX = -60
         self.dialougeAnchorY = 275
@@ -80,14 +81,16 @@ class InteractionsUI:
         buttonRect = pygame.Rect(xPos // 2 + 60, yPos, length // 2, length // 2)
         if name == "Enter Shop":
             buttonRect = buttonRect.scale_by(2).move(185, 50)
+        elif name == "Exit Shop":
+            buttonRect = buttonRect.scale_by(.5).move(-125, -95)
         elif name == "View Customer Order":
-            buttonRect = buttonRect.move((self.WIDTH - buttonRect.width) // 2 - (buttonRect.x), (self.HEIGHT // 2) - 80)  # Center horizontally
+            buttonRect = buttonRect.move((self.WIDTH - buttonRect.width) // 2 - (buttonRect.x), (self.HEIGHT // 2) - 40)  # Center horizontally
         elif name == "Complete Order" and not self.notEnoughIngredients:
-            buttonRect = buttonRect.scale_by(.5).move(400, -100)
+            buttonRect = buttonRect.scale_by(.5).move(400, -80)
         elif name == "Reject Order":
-            buttonRect = buttonRect.scale_by(.5).move(130, -100)
+            buttonRect = buttonRect.scale_by(.5).move(130, -80)
         elif name == "Close":
-            buttonRect = buttonRect.scale_by(0.4).move(-250, -100)
+            buttonRect = buttonRect.scale_by(0.4).move(-230, -80)
         elif name == "Protagonist":
             buttonRect = pygame.Rect(330, 150, 14 * 3, 29 * 3)
         elif name == "Recipes":
@@ -133,7 +136,7 @@ class InteractionsUI:
             yPosition = xOffset
             for name, info in self.mainButtons.items():
                 self.drawMainButton(name, xOffset, yPosition, info)
-                if self.currentScene == info[0]:
+                if self.currentScene == info[0] and name != "Exit Shop":
                     xOffset += 350
 
             showDialogue = self.currentScene == "interior" and self.previousScene == "customerOrder"
@@ -159,13 +162,13 @@ class InteractionsUI:
 
                 if not self.generatedFakeAmounts:
                     bootlegIngredients = []
+                    self.notEnoughIngredients = False
                     for i in range(len(ingredients)):
-                        originalName = ingredients[i][0]
-                        originalAmount = ingredients[i][1]
-                        randAmountToSimulateInventory = random.randint(originalAmount - 1, originalAmount * 4)
-                        tupleForced = (originalName, randAmountToSimulateInventory)
-                        if randAmountToSimulateInventory < originalAmount: self.notEnoughIngredients = True
-                        bootlegIngredients.append(tupleForced)
+                        # inventorydata.insertItemIntoSpareSlot(ingredients[i]) # uncomment this line to insert items into inventory
+                        if not inventorydata.hasEnoughOfItem(ingredients[i]) and not self.notEnoughIngredients:
+                            self.notEnoughIngredients = True
+                            print(f"there was not enough of {ingredients[i]}")
+                        bootlegIngredients.append((ingredients[i][0], inventorydata.quantityForItem(ingredients[i])))
                     self.generatedFakeAmounts = True
 
                 bodyLabel = self.bodyText.render("You have:\n" + recipedata.parseIngredients(bootlegIngredients), True, self.WHITE)
@@ -198,6 +201,10 @@ class InteractionsUI:
 
                     bodyLabel = self.bodyText.render("+" + str(self.randomAmount), True, self.BROWN)
                     self.screen.blit(bodyLabel, (15, self.HEIGHT - 90))
+
+                    if not self.editedItemsAlready:
+                        self.game.gold += self.randomAmount
+                        self.editedItemsAlready = True
                 elif (not self.closed):
                     sadImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/sad.png")
                     sadImage = pygame.transform.scale(sadImage, (40, 40))
@@ -210,11 +217,17 @@ class InteractionsUI:
                     bodyLabel = self.bodyText.render("-" + str(self.randomAmount), True, self.BROWN)
                     self.screen.blit(bodyLabel, (15, self.HEIGHT - 90))
 
+                    if not self.editedItemsAlready:
+                        self.game.gold -= self.randomAmount
+                        self.editedItemsAlready = True
+
+            """
             for name, rect in self.menuButtons.items():
                 pygame.draw.rect(self.screen, self.BRIGHT_BROWN, rect.inflate(9, 9), border_radius=14)
                 pygame.draw.rect(self.screen, self.BRIGHTEST_BROWN, rect, border_radius=14)
                 text = self.buttonText.render(name, True, self.WHITE)
                 self.screen.blit(text, text.get_rect(center=rect.center))
+            """
 
             # Event Handling
             mouse_pos = pygame.mouse.get_pos()
@@ -222,17 +235,25 @@ class InteractionsUI:
                 if event.type == pygame.QUIT:
                     self.running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
+                    """
                     for name, rect in self.menuButtons.items():
-                        
-                            if rect.collidepoint(mouse_pos):
-                             if name == "Back to Game":
-                              print("Returning to game...")
-                              self.running = False
-                              self.game.run()
-                              break
+                        if rect.collidepoint(mouse_pos):
+                            if name == "QUIT":
+                                self.running = False
+                            elif name == "Back to Garden":
+                                print("Returning to game...")
+                                self.running = False  # You can swap this to a callback to your Game instance
+                                self.game.run()
+                            break
+                    """
                     for name, info in self.renderedButtons.items():
                         if not (info[0].collidepoint(mouse_pos) and self.currentScene == info[1]): continue
-                        if name == "Recipes": Recipes.Recipes(self).run()
+                        if name == "Recipes": Recipes.Recipes().run()
+                        elif name == "Exit Shop":
+                                print("Returning to game...")
+                                self.running = False  # You can swap this to a callback to your Game instance
+                                self.game.run()
+                                break
                         elif info[2] != "":
                             print(f"{name} clicked! switching scene to {info[2]}")
                             self.closed = True
@@ -242,6 +263,11 @@ class InteractionsUI:
                                     break
                                 self.orderAccepted = name == "Complete Order"
                                 self.closed = False
+                                toDeduct = recipedata.theRecipes.get(self.currentOrder)
+                                for i in range(len(toDeduct)):
+                                    if not self.orderAccepted: break
+                                    fakeAmount = toDeduct[i][1] * -1
+                                    inventorydata.insertItemIntoSpareSlot((toDeduct[i][0], fakeAmount))
                                 self.currentOrder = random.choice(self.listOfRecipes)
                                 self.nameIndex += 1
                                 if self.nameIndex > len(self.randomCustomerNames) - 1: self.nameIndex = 0
@@ -249,6 +275,7 @@ class InteractionsUI:
                                 self.randomAmount = random.randint(100, 700)
                                 self.generatedFakeAmounts = False
                                 self.notEnoughIngredients = False
+                                self.editedItemsAlready = False
                             self.previousScene = self.currentScene
                             self.currentScene = info[2]
                             break

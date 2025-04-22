@@ -1,4 +1,4 @@
-import pygame, inventorydata # type: ignore [this is so vscode doesn't yell at me]
+import pygame, inventorydata, os # type: ignore [this is so vscode doesn't yell at me]
 
 def run(gameInstance):
     # Initialize Pygame
@@ -40,7 +40,10 @@ def run(gameInstance):
         # rect for collisionpoint, itemName for display, (row/column inven slot location), rawData
         renderedInventorySlots[str(xPos) + str(yPos)] = (buttonRect, itemName, (rowInt, columnInt), rawData)
         if (rawData == None): return
-        itemImage = pygame.image.load("assets/images/tools/" + str.lower(str.replace(inventorydata.baseItemString(item), " ", "")) + ".png")
+        filePath = "assets/images/tools/" + str.lower(str.replace(inventorydata.baseItemString(item), " ", "")) + ".png"
+        if not os.path.isfile(filePath):
+            filePath = "PROBABLY_ILLEGAL_ASSETS/" + str.lower(str.replace(inventorydata.baseItemString(item), " ", "")) + ".png"
+        itemImage = pygame.image.load(filePath)
         itemImage = pygame.transform.scale(itemImage, (height, height))
         screen.blit(itemImage, (buttonRect.x + length // 4, buttonRect.y))
 
@@ -158,13 +161,8 @@ def run(gameInstance):
         pygame.display.flip()
 
 def drawBundle(screen) -> pygame.Rect:
-    backpackImage = pygame.image.load("assets/buttons/backpack.png").convert_alpha()
-    backpackImage = pygame.transform.scale(backpackImage, (80, 80))
-    backpackImage.set_colorkey((0, 0, 0))
-    
-    #backpackImage = pygame.image.load("assets/" + "buttons/" + "backpack" + ".png").convert_alpha()
-    #backpackImage = pygame.transform.scale(backpackImage, (64, 64))
-    
-    rect = pygame.Rect(25, 485, 90, 90)
+    backpackImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + "backpack" + ".png")
+    backpackImage = pygame.transform.scale(backpackImage, (64, 64))
+    rect = pygame.Rect(32, 550 - 32, 64, 64)
     screen.blit(backpackImage, rect)
     return rect
