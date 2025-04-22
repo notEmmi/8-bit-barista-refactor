@@ -1,4 +1,4 @@
-import pygame, inventorydata # type: ignore [this is so vscode doesn't yell at me]
+import pygame, inventorydata, os # type: ignore [this is so vscode doesn't yell at me]
 
 def run(gameInstance):
     # Initialize Pygame
@@ -40,7 +40,10 @@ def run(gameInstance):
         # rect for collisionpoint, itemName for display, (row/column inven slot location), rawData
         renderedInventorySlots[str(xPos) + str(yPos)] = (buttonRect, itemName, (rowInt, columnInt), rawData)
         if (rawData == None): return
-        itemImage = pygame.image.load("assets/images/tools/" + str.lower(str.replace(inventorydata.baseItemString(item), " ", "")) + ".png")
+        filePath = "assets/images/tools/" + str.lower(str.replace(inventorydata.baseItemString(item), " ", "")) + ".png"
+        if not os.path.isfile(filePath):
+            filePath = "PROBABLY_ILLEGAL_ASSETS/" + str.lower(str.replace(inventorydata.baseItemString(item), " ", "")) + ".png"
+        itemImage = pygame.image.load(filePath)
         itemImage = pygame.transform.scale(itemImage, (height, height))
         screen.blit(itemImage, (buttonRect.x + length // 4, buttonRect.y))
 

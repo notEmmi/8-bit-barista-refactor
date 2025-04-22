@@ -1,5 +1,7 @@
 import pygame, settingsdata
 from music_selector import MusicSelector
+import sqlite3
+from GameState import GameState
 
 class OptionsMenu:
     def __init__(self, gameInstance = None):
@@ -25,9 +27,7 @@ class OptionsMenu:
 
         # Sliders (Volume Controls)
         self.sliders = {
-            "Master Volume": settingsdata.volumes[0],
-            "Music": settingsdata.volumes[1],
-            "SFX": settingsdata.volumes[2]
+            "Master Volume": settingsdata.volumes[0]
         }
         self.slider_rects = {}
         self.active_slider = None
@@ -47,9 +47,19 @@ class OptionsMenu:
             "BACK": pygame.Rect(self.WIDTH // 2 - 40, 485, 80, 30)
         }
 
-        self.masterVolumeMuteButton = pygame.Rect((self.WIDTH // 2) - 8, (self.HEIGHT // 2) - 168, 18, 18)
+        self.masterVolumeMuteButton = pygame.Rect((self.WIDTH // 2) - 40, (self.HEIGHT // 2) - 28, 80, 18)
 
-        self.masterVolumeMuteButton = pygame.Rect((self.WIDTH // 2) - 8, (self.HEIGHT // 2) - 168, 18, 18)
+        # Transparent Save Button
+        raw_image = pygame.image.load("assets/buttons/save.png")
+        self.save_button_img = pygame.Surface(raw_image.get_size(), pygame.SRCALPHA)
+        self.save_button_img.blit(raw_image, (0, 0))
+        self.save_button_rect = self.save_button_img.get_rect(topleft=(58, 50))
+
+        # Transparent Save Button
+        raw_image = pygame.image.load("assets/buttons/save.png")
+        self.save_button_img = pygame.Surface(raw_image.get_size(), pygame.SRCALPHA)
+        self.save_button_img.blit(raw_image, (0, 0))
+        self.save_button_rect = self.save_button_img.get_rect(topleft=(58, 50))
 
         # Add "MUSIC TRACK" button only if gameInstance exists
         self.currentGameInstance = gameInstance
@@ -84,10 +94,11 @@ class OptionsMenu:
 
         pygame.draw.rect(self.screen, (201, 125, 96), self.masterVolumeMuteButton, border_radius=3)
         if (settingsdata.volumes[0] == 0.0): 
-            muteToggleText = self.button_font.render("V", True, (255, 255, 255))
+            muteToggleText = self.button_font.render("Unmute", True, (255, 255, 255))
+            self.screen.blit(muteToggleText, plus_text.get_rect(center=(self.WIDTH // 2 - 28, self.HEIGHT // 2 - 20)))
         else:
-            muteToggleText = self.button_font.render("X", True, (255, 255, 255))
-        self.screen.blit(muteToggleText, plus_text.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2 - 160)))
+            muteToggleText = self.button_font.render("Mute", True, (255, 255, 255))
+            self.screen.blit(muteToggleText, plus_text.get_rect(center=(self.WIDTH // 2 - 18, self.HEIGHT // 2 - 20)))
 
     def draw_textures(self):
         """Draw texture options."""
@@ -103,8 +114,8 @@ class OptionsMenu:
     
     def findVolumeToUpdate(self, slider: str, volume):
         if slider == "Master Volume": settingsdata.updateMasterVolume(volume)
-        elif slider == "Music": settingsdata.updateMusicVolume(volume)
-        elif slider == "SFX": settingsdata.updateSFXVolume(volume)
+        # elif slider == "Music": settingsdata.updateMusicVolume(volume)
+        # elif slider == "SFX": settingsdata.updateSFXVolume(volume)
 
     def show_options(self, events):
         """Show options menu."""
@@ -122,15 +133,15 @@ class OptionsMenu:
         self.screen.blit(title_text, (self.WIDTH // 2 - title_text.get_width() // 2, 85))
 
         # Draw Sliders
-        y_offset = 180
+        y_offset = self.HEIGHT // 2 - 50
         for name, value in self.sliders.items():
             self.draw_slider(name, y_offset, value)
             y_offset += 50
 
         # Draw Texture Selection
-        texture_text = self.button_font.render("TEXTURES", True, self.WHITE)
-        self.screen.blit(texture_text, (self.WIDTH // 2 - texture_text.get_width() // 2, 310))
-        self.draw_textures()
+        # texture_text = self.button_font.render("TEXTURES", True, self.WHITE)
+        # self.screen.blit(texture_text, (self.WIDTH // 2 - texture_text.get_width() // 2, 310))
+        # self.draw_textures()
 
         # Draw Buttons
         mouse_pos = pygame.mouse.get_pos()
@@ -139,10 +150,33 @@ class OptionsMenu:
             text = self.button_font.render(name, True, self.WHITE)
             self.screen.blit(text, text.get_rect(center=rect.center))
 
+        self.screen.blit(self.save_button_img, self.save_button_rect)
+
         # Handle Events
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Check Buttons
+                if self.save_button_rect.collidepoint(mouse_pos):
+                    print("[DEBUG] Save button clicked!")
+                    conn = sqlite3.connect("mydatabase.db")
+                    if self.currentGameInstance is None:
+                        print("[Debug] Can't save - no game instance available.")
+                    else:
+                        curr_hour, curr_minute = self.currentGameInstance.get_game_time()
+                        game_state = GameState(
+                            self.currentGameInstance.house,
+                            self.currentGameInstance.pet,
+                            self.currentGameInstance.playername,
+                            self.currentGameInstance.selected_character,
+                            self.currentGameInstance.current_day,
+                            self.currentGameInstance.current_weather,
+                            curr_hour,
+                            curr_minute,
+                            False,
+                            None
+                        )
+                        game_state.save_to_db(conn, self.currentGameInstance.username)
+                        conn.close()
                 if self.masterVolumeMuteButton.collidepoint(mouse_pos):
                     settingsdata.toggleMuteMasterVolume()
                     self.sliders["Master Volume"] = settingsdata.volumes[0]
