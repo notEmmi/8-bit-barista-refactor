@@ -198,6 +198,7 @@ class Game:
         pygame.mixer.music.play(-1)  # Play on repeat
 
         self.toolbox = Toolbox()
+        self.toolbox.selected_tool = -1  # Ensure no tool is selected initially
 
         self.pauseButton = pygame.Rect(0, 0, 0, 0)
 
