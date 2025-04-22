@@ -162,8 +162,9 @@ def run(gameInstance):
         pygame.display.flip()
 
 def drawBundle(screen) -> pygame.Rect:
-    backpackImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + "backpack" + ".png")
-    backpackImage = pygame.transform.scale(backpackImage, (50, 50))
-    rect = pygame.Rect(32, 550 - 32, 64, 64)
+    backpackImage = pygame.image.load("assets/buttons/backpack.png").convert_alpha()
+    backpackImage = pygame.transform.scale(backpackImage, (70, 70))
+    backpackImage.set_colorkey((0, 0, 0))
+    rect = pygame.Rect(25, 505, 70, 70)
     screen.blit(backpackImage, rect)
     return rect

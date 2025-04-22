@@ -813,13 +813,13 @@ class Game:
 
     def drawPause(self) -> pygame.Rect:
         pauseButtonImage = pygame.image.load("assets/buttons/pause.png").convert_alpha()
-        pauseButtonImage = pygame.transform.scale(pauseButtonImage, (50, 50))
+        pauseButtonImage = pygame.transform.scale(pauseButtonImage, (65, 65))
         pauseButtonImage.set_colorkey((0, 0, 0))
 
         #pauseButtonImage = pygame.image.load("assets/buttons/pause.png").convert_alpha()
         #pauseButtonImage = pygame.transform.scale(pauseButtonImage, (64, 64))
         
-        rect = pygame.Rect(16, 16, 90, 90)
+        rect = pygame.Rect(16, 16, 65, 65)
         self.screen.blit(pauseButtonImage, rect)
         return rect
         
@@ -1069,7 +1069,6 @@ class Game:
                 # Now, overlay is always defined before blitting
                 zoomed_surface.blit(overlay, (0, 0))  
                 
-
                 # Update & Draw Rain (Only if raining)
                 if self.raining:
                     self.rain.update(self.camera_x, self.camera_y)
