@@ -4,7 +4,6 @@ import os
 import time
 from weather import Rain, Raindrop, FloorDrop, Cloudy
 from toolbar import Toolbox
-from character_utils import load_selected_character
 import interactions
 import customers
 import store
@@ -22,7 +21,7 @@ from GameState import GameState
 from fish import run_fishing_minigame
 
 class Game:
-    def __init__(self, chosen_building, petChoice, name, fromPriorMenu = False, gameData = None):
+    def __init__(self, chosen_building, petChoice, name, selected_character=None, current_day = 1, current_weather="sunny", time_hour=None, time_minute=None, fromPriorMenu = False, gameData = None, username=None):
         # Initialize Pygame
         pygame.init()
         pygame.font.init()
@@ -44,12 +43,24 @@ class Game:
         self.house = chosen_building
         self.pet = petChoice
         self.playername = name
+        self.username = username
 
         self.shop = store.ShopUI(self)
-        
-       
-       
-       
+        self.selected_character = selected_character
+        self.current_weather = current_weather
+        self.apply_weather_effects()
+        self.time_hour = time_hour
+        self.time_minute = time_minute
+
+        if self.time_hour is not None and self.time_minute is not None:
+            self.resume_start_minutes = self.time_hour * 60 + self.time_minute
+        else:
+            self.resume_start_minutes = 6 * 60  # fallback to default
+
+            self.game_start_time = time.time()  # Reset base time reference
+            self.last_game_time = self.game_start_time  # For pause/resume support
+
+    
         # Create Dark Rain Overlay
        
        
@@ -57,13 +68,13 @@ class Game:
         self.rain_overlay.fill((0, 0, 0, 100))  # Semi-transparent black layer (100/255 opacity)
 
         # Day transition
-        self.current_day = 1
-        self.current_weather = "sunny"
+        self.current_day = current_day
         self.last_processed_day = 0
         self.weather_icons = {
             "sunny": pygame.image.load(os.path.join("assets", "icons", "sunny.png")).convert_alpha(),
             "cloudy": pygame.image.load(os.path.join("assets", "icons", "cloudy.png")).convert_alpha(),
-            "rainy": pygame.image.load(os.path.join("assets", "icons", "rainy.png")).convert_alpha()
+            "rainy": pygame.image.load(os.path.join("assets", "icons", "rainy.png")).convert_alpha(),
+            "moon": pygame.image.load(os.path.join("assets", "icons", "moon.png")).convert_alpha()
         }
         self.is_paused = False
         self.show_new_day_prompt = False
@@ -120,8 +131,9 @@ class Game:
 
         # Characters list
         characters = ["boy1", "boy2", "boy3", "girl1", "girl2", "girl3"]
-        self.selected_character = load_selected_character()  # Load saved character
 
+        # Load char from DB
+        self.selected_character = self.load_selected_character_from_db()
         print(f"Loaded character: {self.selected_character}")
         
         self.SPRITE_PATH = os.path.join(self.BASE_DIR, "assets", "images", "character-selection")
@@ -190,15 +202,26 @@ class Game:
         self.pauseButton = pygame.Rect(0, 0, 0, 0)
 
         self.gameData = gameData
-        if fromPriorMenu: self.loadGameState()
+        if fromPriorMenu and gameData: 
+            self.loadGameState()
 
         
 
-######## start of save data fucntions //////////////////////////////////
+######## start of save data functions //////////////////////////////////
     
+    def load_selected_character_from_db(self):
+        conn = sqlite3.connect("mydatabase.db")
+        game_state = GameState.load_from_db(conn, self.username)
+        conn.close()
 
+        if game_state is None:
+            print(f"[DEBUG] No save found for user {self.username}, defaulting to selected_character from menu")
+            return self.selected_character if hasattr(self, 'selected_character') else None
 
-################ end save data functions ###########################3
+        return game_state.selected_character
+
+################ end save data functions ###########################
+
     def load_map(self, map_file):
         """Load TMX map and extract collidable and building objects."""
         self.tmx_data = pytmx.load_pygame(map_file, load_all_tiles=True)
@@ -277,16 +300,23 @@ class Game:
     def get_game_time(self):
         """Converts real-time seconds to in-game hours and minutes."""
         if self.is_paused:
-            # Return the last calculated time (freeze the clock)
+            # Freeze time
             elapsed_time = (self.last_game_time - self.game_start_time) * self.time_multiplier
         else:
-            # Calculate elapsed time normally
             elapsed_time = (time.time() - self.game_start_time) * self.time_multiplier
-            self.last_game_time = time.time()  # Store the last calculated time
+            self.last_game_time = time.time()
 
-        game_minutes = int(elapsed_time / self.SECONDS_PER_GAME_MINUTE)
-        game_hour = (self.GAME_START_HOUR + game_minutes // 60) % 24
-        game_minute = game_minutes % 60
+        # How many game minutes have passed since start
+        elapsed_game_minutes = int(elapsed_time / self.SECONDS_PER_GAME_MINUTE)
+
+        # Use resume_start_minutes if it exists, otherwise fall back to GAME_START_HOUR
+        if hasattr(self, "resume_start_minutes"):
+            total_game_minutes = self.resume_start_minutes + elapsed_game_minutes
+        else:
+            total_game_minutes = self.GAME_START_HOUR * 60 + elapsed_game_minutes
+
+        game_hour = (total_game_minutes // 60) % 24
+        game_minute = total_game_minutes % 60
 
         return game_hour, game_minute
     
@@ -297,17 +327,10 @@ class Game:
         # Calculate the total minutes since midnight
         total_minutes_since_midnight = hour * 60 + minute
 
-        # Calculate the total minutes since GAME_START_HOUR (6:00 AM)
-        # GAME_START_HOUR is 6, so 6 * 60 = 360 minutes
-        total_minutes_since_game_start = total_minutes_since_midnight - (self.GAME_START_HOUR * 60)
-
-        # If the result is negative, it means the time is before 6:00 AM
-        # Add 24 hours (1440 minutes) to handle the wrap-around
-        if total_minutes_since_game_start < 0:
-            total_minutes_since_game_start += 24 * 60
-
-        # Update game_start_time to reflect the new time
-        self.game_start_time = time.time() - (total_minutes_since_game_start * self.SECONDS_PER_GAME_MINUTE)
+        # Fully reset time
+        self.resume_start_minutes = total_minutes_since_midnight
+        self.game_start_time = time.time()
+        self.last_game_time = self.game_start_time
 
     def is_night_time(self):
         """Returns True if the current game time is night (after 5:30 PM or before 6 AM)."""
@@ -348,6 +371,27 @@ class Game:
         alpha_value = int(transition_progress * 180)  # Max opacity at night
 
         return alpha_value
+
+    def apply_weather_effects(self):
+        from weather import Rain, Cloudy  # Import here to avoid circular issues
+
+        print(f"[DEBUG] Applying weather effects for: {self.current_weather}")
+
+        if self.current_weather == "rainy":
+            self.raining = True
+            self.cloudy_weather = False
+            self.rain = Rain()
+            self.cloudy = None
+        elif self.current_weather == "cloudy":
+            self.raining = False
+            self.cloudy_weather = True
+            self.cloudy = Cloudy()
+            self.rain = None
+        else:
+            self.raining = False
+            self.cloudy_weather = False
+            self.rain = None
+            self.cloudy = None
 
     def check_new_day(self):
         game_hour, game_minute = self.get_game_time()
@@ -441,24 +485,6 @@ class Game:
 
         
         hud_surface.blit(day_text, day_rect.topleft)
-        
-
-        # Weather Icon - Adjust Position Based on Type
-        if self.current_weather in self.weather_icons:
-            weather_icon = pygame.transform.scale(self.weather_icons[self.current_weather], (28, 28))
-            icon_x = 8  # Fixed left alignment
-
-            # Adjust icon height based on weather type
-            if self.current_weather == "sunny":
-                icon_y = day_rect.bottom + 5  # Default position
-            elif self.current_weather in ["cloudy", "rainy"]:
-                icon_y = day_rect.bottom + 2  # Move up slightly for balance
-            else:
-                icon_y = day_rect.bottom + 5  # Default fallback
-
-            hud_surface.blit(weather_icon, (icon_x, icon_y))
-        else:
-            print(f"WARNING: Missing weather icon for {self.current_weather}")
 
         # Clock - Fixed Position (Independent)
         clock_text = f"{self.get_game_time()[0]:02}:{self.get_game_time()[1]:02}"
@@ -472,22 +498,31 @@ class Game:
         day_rect = day_text.get_rect(midtop=(panel_width // 2, panel_y_margin))  # Centered horizontally
         hud_surface.blit(day_text, day_rect.topleft)
 
+        # Determine if it's daytime (adjust if needed)
+        current_hour = self.get_game_time()[0]
+        is_daytime = 6 <= current_hour < 18
+
+        # Dynamically select icon for sunny days (moon at night)
+        icon_key = self.current_weather
+        if self.current_weather == "sunny" and not is_daytime:
+            icon_key = "moon"
+
         # Weather Icon - Adjust Position Based on Type
-        if self.current_weather in self.weather_icons:
-            weather_icon = pygame.transform.scale(self.weather_icons[self.current_weather], (28, 28))
+        if icon_key in self.weather_icons:
+            weather_icon = pygame.transform.scale(self.weather_icons[icon_key], (28, 28))
             icon_x = 8  # Fixed left alignment
 
-            # Adjust icon height based on weather type
-            if self.current_weather == "sunny":
-                icon_y = day_rect.bottom + 5  # Default position
-            elif self.current_weather in ["cloudy", "rainy"]:
-                icon_y = day_rect.bottom + 2  # Move up slightly for balance
-            else:
-                icon_y = day_rect.bottom + 5  # Default fallback
+            # Adjust icon height based on type
+            if icon_key == "sunny":
+                icon_y = day_rect.bottom + 5
+            elif icon_key in ["cloudy", "rainy"]:
+                icon_y = day_rect.bottom + 2
+            else:  # moon or fallback
+                icon_y = day_rect.bottom + 5
 
             hud_surface.blit(weather_icon, (icon_x, icon_y))
         else:
-            print(f"WARNING: Missing weather icon for {self.current_weather}")
+            print(f"WARNING: Missing weather icon for {icon_key}")
 
         # Clock - Fixed Position (Independent)
         clock_text = f"{self.get_game_time()[0]:02}:{self.get_game_time()[1]:02}"
@@ -527,12 +562,13 @@ class Game:
 
         # Trigger interactions, customers, or shop with respective keys
         # The following keybinds have been replaced by left click
-        if keys[pygame.K_TAB]: 
-            print("pressed TAB")
-            conn = sqlite3.connect("mydatabase.db")
-            game_state = GameState(self.house, self.pet, self.playername, False, None)
-            game_state.save_to_db(conn)
-            conn.close()
+        # if keys[pygame.K_TAB]: 
+        #     print("pressed TAB")
+        #     conn = sqlite3.connect("mydatabase.db")
+        #     curr_hour, curr_minute = self.get_game_time()
+        #     game_state = GameState(self.house, self.pet, self.playername, self.selected_character, self.current_day, self.current_weather, curr_hour, curr_minute, False, None)
+        #     game_state.save_to_db(conn)
+        #     conn.close()
         # if keys[pygame.K_CAPSLOCK]: 
         #     customers_ui= customers.CustomerUI(self)
         #     customers_ui.run()
@@ -765,15 +801,20 @@ class Game:
                 break
 
     def drawPause(self) -> pygame.Rect:
-        pauseButtonImage = pygame.image.load("assets/buttons/pause.png")
-        pauseButtonImage = pygame.transform.scale(pauseButtonImage, (64, 64))
-        rect = pygame.Rect(16, 16, 64, 64)
+        pauseButtonImage = pygame.image.load("assets/buttons/pause.png").convert_alpha()
+        pauseButtonImage = pygame.transform.scale(pauseButtonImage, (75, 75))
+        pauseButtonImage.set_colorkey((0, 0, 0))
+
+        #pauseButtonImage = pygame.image.load("assets/buttons/pause.png").convert_alpha()
+        #pauseButtonImage = pygame.transform.scale(pauseButtonImage, (64, 64))
+        
+        rect = pygame.Rect(16, 16, 90, 90)
         self.screen.blit(pauseButtonImage, rect)
         return rect
         
     def pauseTheGame(self):
         self.is_paused = True
-        pauseMenu = start_menu.StartMenu(self)
+        pauseMenu = start_menu.StartMenu(username=self.username, gameInstance=self)
         pauseMenu.current_screen = "options"
         pauseMenu.isFromGame = True
         pauseMenu.run()
@@ -867,6 +908,8 @@ class Game:
                 self.raining = self.current_weather == "rainy"
                 self.cloudy_weather = self.current_weather == "cloudy"
                 self.confirm_new_day = False  # Reset confirmation flag
+
+                self.apply_weather_effects()
                 print(f"New day started at 5:30 AM. Day {self.current_day} - Weather: {self.current_weather}")
 
             # Only update game logic if not paused
@@ -945,7 +988,7 @@ class Game:
                 if popup_shown:
                     # Load and display the WASD image
                     try:
-                        wasd_image = pygame.image.load("wasd_image.png")
+                        wasd_image = pygame.image.load("wasd_image.png").convert_alpha()
                     except pygame.error as e:
                         print("Error loading image:", e)
                         wasd_image = pygame.Surface((200, 100))  # Temporary placeholder surface for debugging
@@ -1032,17 +1075,7 @@ class Game:
             
             self.toolbox.draw(self.screen)
             self.backpack = inventory.drawBundle(self.screen)
-
-            # Draw the new day prompt if active
-            if self.show_new_day_prompt:
-                self.draw_new_day_prompt()
-
-            # Ensure weather icon is updated dynamically
-            if self.current_weather in self.weather_icons:
-                self.current_weather_icon = self.weather_icons[self.current_weather]
-            else:
-                self.current_weather_icon = None  # Fallback if missing
-            
+                            
             # Draw HUD
             self.draw_hud()
 
@@ -1051,6 +1084,10 @@ class Game:
 
             #draw pause button
             self.pauseButton = self.drawPause()
+
+            # Draw the new day prompt if active
+            if self.show_new_day_prompt:
+                self.draw_new_day_prompt()
 
             pygame.display.flip()  # Update display
             clock.tick(FPS)
@@ -1061,5 +1098,6 @@ if __name__ == "__main__":
     image_path = "assets/map/house2.png"
     pet = "assets/images/pets/browncat.png"
     name = "jake"
-    game = Game(image_path, pet, name)
+    selected_character = "boy1"
+    game = Game(image_path, pet, name, selected_character)
     game.run()

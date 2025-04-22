@@ -53,6 +53,13 @@ class RegistrationApp:
 
         encrypted_password = self.hash_password(password)
         self.cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, encrypted_password))
+
+        # Add initial save entry
+        self.cursor.execute("""
+            INSERT INTO saves (username, character, building, pet, day, weather, hour, minute)
+            VALUES (?, ?, ?, ?, 1, 'sunny', 6, 0)
+        """, (username, None, None, None))
+
         self.conn.commit()
         self.message = f"User '{username}' registered!"
         self.username = ""
