@@ -84,6 +84,16 @@ def run_fishing_minigame():
         pygame.transform.scale(pygame.image.load('fish_images/Blue.png').convert_alpha(), (25, 25))
     ]
 
+    #WASD
+    show_wasd_popup = True
+    wasd_popup_timer = pygame.time.get_ticks()
+    WASD_POPUP_DURATION = 2000  # milliseconds (2 seconds)
+
+    wasd_image = pygame.transform.scale(pygame.image.load('wasd_image.png').convert_alpha(), (60, 60))
+
+    #E
+    e_popup = pygame.transform.scale(pygame.image.load('e.png').convert_alpha(), (60, 60))
+
     # Player
     player = pygame.Rect(100, 100, 50, 50)
     player_speed = 5
@@ -274,13 +284,20 @@ def run_fishing_minigame():
         # pygame.draw.rect(screen, (255, 0, 0), player)
         screen.blit(hand_image, (player.x, player.y))
 
+        if show_wasd_popup and pygame.time.get_ticks() - wasd_popup_timer < WASD_POPUP_DURATION:
+            popup_rect = wasd_image.get_rect(center=(player.centerx, player.top - 30))
+            screen.blit(wasd_image, popup_rect)
+        else:
+            show_wasd_popup = False  # permanently hide after 2 seconds
+
+
         # Fishing Minigame UI
         if fishing_minigame:
             pygame.draw.rect(screen, BLACK, ui_rect.move(shake_offset), border_radius=5)
             pygame.draw.rect(screen, GREEN, green_target.move(shake_offset))
             pygame.draw.rect(screen, WHITE, white_slider.move(shake_offset))
             # Draw current fish icon inside UI
-            screen.blit(pygame.transform.scale(saved_fish.image, (50, 50)),
+            screen.blit(pygame.transform.scale(saved_fish.image_original, (50, 50)),
                         (WIDTH - 70, ui_rect.y + 10))
             space_text = font.render("Space", True, WHITE)
             screen.blit(space_text, (ui_rect.x + 10 + shake_offset[0], ui_rect.y + 10 + shake_offset[1]))
@@ -296,6 +313,18 @@ def run_fishing_minigame():
         text_rect = back_text.get_rect(center=back_button_rect.center)
         screen.blit(back_text, text_rect)
 
+        # Draw E popup only if player is on a fish tile
+        if not fishing_minigame:
+            show_popup = False
+            for fish in swimming_fish_list:
+                if player.colliderect(fish.tile_rect):
+                    show_popup = True
+                    popup_x = player.centerx - e_popup.get_width() // 2
+                    popup_y = player.top - e_popup.get_height() - 5
+                    break  # Stop at the first matching tile
+
+            if show_popup:
+                screen.blit(e_popup, (popup_x, popup_y))
 
         pygame.display.flip()
 
