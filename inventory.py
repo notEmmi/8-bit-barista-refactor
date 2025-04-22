@@ -19,6 +19,7 @@ def run(gameInstance):
 
     # Fonts
     titleText = pygame.font.Font(pygame.font.match_font('courier'), 45)
+    stackSizeText = pygame.font.Font(pygame.font.match_font('courier'), 24)
     buttonText = pygame.font.Font(pygame.font.match_font('courier'), 18)
     smallText = pygame.font.Font(pygame.font.match_font('courier'), 18)
 
@@ -46,6 +47,8 @@ def run(gameInstance):
         itemImage = pygame.image.load(filePath)
         itemImage = pygame.transform.scale(itemImage, (height, height))
         screen.blit(itemImage, (buttonRect.x + length // 4, buttonRect.y))
+        stackSizeLabel = stackSizeText.render(str(rawData[1]), True, WHITE)
+        screen.blit(stackSizeLabel, (xPos + (length // 2) + 15, yPos + (height - 20)))
 
     # Main Loop
     running = True
@@ -77,7 +80,7 @@ def run(gameInstance):
         screen.blit(titleLabel, (WIDTH // 2 - titleLabel.get_width() // 2, 68.5))
         # Draw Current Selected
         chosenString = "None"
-        if (itemSelected is not None): chosenString = inventorydata.parseInventoryItem(itemSelected)
+        if (itemSelected is not None): chosenString = inventorydata.parseStacklessInventoryItem(itemSelected)
         smallLabel = smallText.render(("Currently Selected: " + chosenString), True, WHITE)
         screen.blit(smallLabel, (WIDTH // 2 - smallLabel.get_width() // 2, 108.5))
         
@@ -144,8 +147,6 @@ def run(gameInstance):
                         itemSelectedOriginalX = clickedItemInvenX
                         itemSelectedOriginalY = clickedItemInvenY
                         print(f"selected {clickedItemName}!")
-                        break
-                    elif clickedItemInvenX == itemSelectedOriginalX and clickedItemInvenY == itemSelectedOriginalY:
                         break
                     elif itemSelected is not None:
                         # clear both inventory slots so no data loss happens
