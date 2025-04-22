@@ -1,180 +1,133 @@
 import pygame
-import Unlock
+from Unlock import Unlock
+import settingsdata
 from pygame import mixer
 
-# Initialize pygame
-def runPopular():
+class Popular:
+    def __init__(self, return_to_recipes_instance):
+        self.return_to_recipes = return_to_recipes_instance
+        pygame.init()
+        mixer.init()
 
-    pygame.init()
+        # Screen setup
+        self.WIDTH, self.HEIGHT = 800, 600
+        self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
+        pygame.display.set_caption("Popular")
 
-    # Screen dimensions
-    WIDTH, HEIGHT = 800, 600
-    # Colors
-    WHITE = (255, 255, 255)
-    BLUE = (0, 0, 255)
-    LIGHTBROWN = (254, 195, 117)
-    BACKGROUNDBROWN = (205, 149, 74)
-    SADDLEBROWN =(139, 69, 19)
-    BLACK = (0, 0, 0)
+        # Colors
+        self.WHITE = (255, 255, 255)
+        self.LIGHTBROWN = (254, 195, 117)
+        self.BACKGROUNDBROWN = (205, 149, 74)
+        self.SADDLEBROWN = (139, 69, 19)
+        self.BLUE = (0, 0, 255)
+        self.BLACK = (0, 0, 0)
 
-    # Rectangle dimensions
-    POPULAR_TEXT_WIDTH,POPULAR_TEXT_HEIGHT = 300, 100
-    RECT_WIDTH, RECT_HEIGHT = 200, 100
-    SPACING = 20
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Popular")
+        # Load images
+        self.kitchen = pygame.transform.scale(pygame.image.load("images/kitchen.png"), (self.WIDTH, self.HEIGHT))
+        self.bagel = pygame.transform.scale(pygame.image.load("images/bagel.png"), (100, 50))
+        self.coffee = pygame.transform.scale(pygame.image.load("images/coffee.png"), (100, 50))
+        self.croissant = pygame.transform.scale(pygame.image.load("images/croisant.png"), (100, 50))
+        self.lock = pygame.transform.scale(pygame.image.load("images/lock.png"), (100, 50))
+        self.popup = pygame.transform.scale(pygame.image.load("images/popup.png"), (75, 75))
+        self.exclaimationPoint = pygame.transform.scale(pygame.image.load("images/exPoint.png"), (30, 30))
 
-    kitchen =pygame.image.load("images/kitchen.png")
-    kitchen =pygame.transform.scale(kitchen,(WIDTH, HEIGHT))
+        # Font
+        self.font = pygame.font.Font(pygame.font.match_font("Irish Grover"), 24)
+        self.popularFont = pygame.font.Font(pygame.font.match_font("Irish Grover"), 48)
 
-    bagel =pygame.image.load("images/bagel.png")
-    bagel =pygame.transform.scale(bagel,(RECT_WIDTH/2, RECT_HEIGHT/2))
+        # Rectangles
+        self.setup_rectangles()
 
-    coffee =pygame.image.load("images/coffee.png")
-    coffee =pygame.transform.scale(coffee,(RECT_WIDTH/2, RECT_HEIGHT/2))
+        # Music
+        mixer.music.load("tracks/08 - Shop.mp3")
+        mixer.music.set_volume(settingsdata.volumes[0] * settingsdata.volumes[1])
+        mixer.music.play()
 
-    croisant =pygame.image.load("images/croisant.png")
-    croisant =pygame.transform.scale(croisant,(RECT_WIDTH/2, RECT_HEIGHT/2))
+    def setup_rectangles(self):
+        center_x, center_y = self.WIDTH // 2, self.HEIGHT // 2
+        self.RECT_WIDTH, self.RECT_HEIGHT = 200, 100
+        spacing = 20
 
-    lock =pygame.image.load("images/lock.png")
-    lock =pygame.transform.scale(lock,(RECT_WIDTH/2, RECT_HEIGHT/2))
-
-    exclaimationPoint = pygame.image.load("images/exPoint.png")
-    exclaimationPoint = pygame.transform.scale(exclaimationPoint,(30,30))
-
-    popup = pygame.image.load("images/popup.png")
-    popup = pygame.transform.scale(popup,(75,75))
-
-
-    
-
-    # Calculate center positions
-    center_x, center_y = WIDTH // 2, HEIGHT // 2
-
-    # Define rectangles
-    popularTextRect = pygame.Rect(center_x-150, center_y - 225, POPULAR_TEXT_WIDTH,POPULAR_TEXT_HEIGHT )
-    backgroundRect = pygame.Rect(0, 0, WIDTH, HEIGHT)
-    topLeftRect = pygame.Rect(center_x - RECT_WIDTH - SPACING // 2, center_y - RECT_HEIGHT - SPACING // 2, RECT_WIDTH, RECT_HEIGHT)
-    topRightRect = pygame.Rect(center_x + SPACING // 2, center_y - RECT_HEIGHT - SPACING // 2, RECT_WIDTH, RECT_HEIGHT)
-    bottomLeftRect = pygame.Rect(center_x - RECT_WIDTH - SPACING // 2, center_y + SPACING // 2, RECT_WIDTH, RECT_HEIGHT)
-    bottomRightRect = pygame.Rect(center_x + SPACING // 2, center_y + SPACING // 2, RECT_WIDTH, RECT_HEIGHT)
-
-    # Create surfaces for rectangles
-    popularTextRect_surface = pygame.Surface((POPULAR_TEXT_WIDTH, POPULAR_TEXT_HEIGHT))
-    popularTextRect_surface.fill(LIGHTBROWN)
-    backgroundRect_surface = pygame.Surface((WIDTH, HEIGHT))
-    backgroundRect_surface.fill(BACKGROUNDBROWN)
-    topLeftRect_Surface = pygame.Surface((RECT_WIDTH, RECT_HEIGHT))
-    topLeftRect_Surface.fill(LIGHTBROWN)
-    topRightRect_Surface = pygame.Surface((RECT_WIDTH, RECT_HEIGHT))
-    topRightRect_Surface.fill(LIGHTBROWN)
-    bottomLeftRect_Surface = pygame.Surface((RECT_WIDTH, RECT_HEIGHT))
-    bottomLeftRect_Surface.fill(LIGHTBROWN)
-    bottomRightRect_Surface = pygame.Surface((RECT_WIDTH, RECT_HEIGHT))
-    bottomRightRect_Surface.fill(LIGHTBROWN)
-
-    ## positions of images relative to the rectangles there drawn in ##############
-    bagel_x = topLeftRect.x + (topLeftRect.width - bagel.get_width()) // 2
-    bagel_y = topLeftRect.y + (topLeftRect.height - bagel.get_height()) // 2
-
-    coffee_x = topRightRect.x + (topRightRect.width - coffee.get_width()) // 2
-    coffee_y = topRightRect.y + (topRightRect.height - coffee.get_height()) // 2
-
-    croisant_x = bottomLeftRect.x + (bottomLeftRect.width - croisant.get_width()) // 2
-    croisant_y = bottomLeftRect.y + (bottomLeftRect.height - croisant.get_height()) // 2
-
-    lock_x = bottomRightRect.x + (bottomRightRect.width - lock.get_width()) // 2
-    lock_y = bottomRightRect.y + (bottomRightRect.height - lock.get_height()) // 2
+        self.popularTextRect = pygame.Rect(center_x - 150, center_y - 225, 300, 100)
+        self.topLeftRect = pygame.Rect(center_x - self.RECT_WIDTH - spacing // 2, center_y - self.RECT_HEIGHT - spacing // 2, self.RECT_WIDTH, self.RECT_HEIGHT)
+        self.topRightRect = pygame.Rect(center_x + spacing // 2, center_y - self.RECT_HEIGHT - spacing // 2, self.RECT_WIDTH, self.RECT_HEIGHT)
+        self.bottomLeftRect = pygame.Rect(center_x - self.RECT_WIDTH - spacing // 2, center_y + spacing // 2, self.RECT_WIDTH, self.RECT_HEIGHT)
+        self.bottomRightRect = pygame.Rect(center_x + spacing // 2, center_y + spacing // 2, self.RECT_WIDTH, self.RECT_HEIGHT)
+        
+        
+        self.backButton = pygame.Rect(self.WIDTH // 2 - 100, self.HEIGHT - 60, 200, 40)
 
 
-
-    # Load font
-    font = pygame.font.Font(pygame.font.match_font("Irish Grover"), 24)
-    popularFont = pygame.font.Font(pygame.font.match_font("Irish Grover"), 48)
-    mixer.init()
-    mixer.music.load("tracks/08 - Shop.mp3")
-    mixer.music.play()
-    def draw_text(surface, text, rect, font, color):
+    def draw_text(self, surface, text, rect, font, color):
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect(center=rect.center)
         surface.blit(text_surface, text_rect.topleft)
 
-    # Main loop
-    running = True
-    while running:
-        screen.fill(WHITE)
-        mouse_pos = pygame.mouse.get_pos()
-        
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if topLeftRect.collidepoint(mouse_pos):
-                topLeftRect_Surface.fill(SADDLEBROWN)
-            
-            elif topRightRect.collidepoint(mouse_pos):
+    def draw_button_with_depth(self, surface, rect, color, shadow_offset=4, shadow_alpha=100):
+    # Draw shadow
+     shadow = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+     shadow.fill((0, 0, 0, 0))
+     pygame.draw.rect(shadow, (0, 0, 0, shadow_alpha), shadow.get_rect(), border_radius=10)
+     surface.blit(shadow, (rect.x + shadow_offset, rect.y + shadow_offset))
 
-                topRightRect_Surface.fill(SADDLEBROWN)
+    # Draw button on top
+     pygame.draw.rect(surface, color, rect, border_radius=10)
 
-            elif bottomLeftRect.collidepoint(mouse_pos):
+    def run(self):
+        running = True
+        while running:
+            self.screen.fill(self.WHITE)
+            mouse_pos = pygame.mouse.get_pos()
 
-                bottomLeftRect_Surface.fill(SADDLEBROWN)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
 
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.bottomRightRect.collidepoint(event.pos):
+                        unlockPage = Unlock(self)
+                        unlockPage.run()
+                        running = False
 
-            
-
-            elif bottomRightRect.collidepoint(mouse_pos):
-
-                bottomRightRect_Surface.fill(BLUE)
-
-                ### logic for pop up bubble here
-
-                
-
-
-
-
-            
-            
-            
-            else:
-                topLeftRect_Surface.fill(LIGHTBROWN)
-                topRightRect_Surface.fill(LIGHTBROWN)
-                bottomLeftRect_Surface.fill(LIGHTBROWN)
-                bottomRightRect_Surface.fill(LIGHTBROWN)
-
-
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if bottomRightRect.collidepoint(event.pos):   ### if the position of the mousedown event is in the top left rectange postiton.. 
-                 Unlock.runUnlock()
-                 running = False
-
+                    if self.backButton.collidepoint(event.pos):
+                     print("Returning to Recipes...")
+                     running = False
+                     self.return_to_recipes.run()
 
                 
-        
-        # Draw rectangles using screen.blit
-        screen.blit(kitchen, (0,0))
-        screen.blit(popularTextRect_surface, popularTextRect.topleft)
-        
-        screen.blit(topLeftRect_Surface, topLeftRect.topleft)
-        screen.blit(bagel, (bagel_x, bagel_y))
-        screen.blit(topRightRect_Surface, topRightRect.topleft)
-        screen.blit(coffee, (coffee_x, coffee_y))
-        screen.blit(bottomLeftRect_Surface, bottomLeftRect.topleft)
-        screen.blit(croisant, (croisant_x, croisant_y))
-        screen.blit(bottomRightRect_Surface, bottomRightRect.topleft)
-        screen.blit(lock, (lock_x, lock_y))
-        mouse_pos = pygame.mouse.get_pos()
-        if bottomRightRect.collidepoint(mouse_pos):
-         screen.blit(popup,(425,250))
-        
-        # Draw text centered in each rectangle
-        draw_text(screen, "Popular", popularTextRect, popularFont, BLACK)
-        ##pygame.draw.circle(screen, WHITE, (bottomRightRect.topleft), 16)
 
-        screen.blit(exclaimationPoint, (bottomRightRect.topleft))
+            # Highlight logic
+            topLeftColor = self.SADDLEBROWN if self.topLeftRect.collidepoint(mouse_pos) else self.LIGHTBROWN
+            topRightColor = self.SADDLEBROWN if self.topRightRect.collidepoint(mouse_pos) else self.LIGHTBROWN
+            bottomLeftColor = self.SADDLEBROWN if self.bottomLeftRect.collidepoint(mouse_pos) else self.LIGHTBROWN
+            bottomRightColor = self.BLUE if self.bottomRightRect.collidepoint(mouse_pos) else self.LIGHTBROWN
 
-        ##center_x - RECT_WIDTH - SPACING // 2
-        
-        pygame.display.flip()
+            # Draw background
+            self.screen.blit(self.kitchen, (0, 0))
 
-    pygame.quit()
+            # Draw rectangles and images
+            self.draw_button_with_depth(self.screen, self.topLeftRect, topLeftColor)
+            self.draw_button_with_depth(self.screen, self.topRightRect, topRightColor)
+            self.draw_button_with_depth(self.screen, self.bottomLeftRect, bottomLeftColor)
+            self.draw_button_with_depth(self.screen, self.bottomRightRect, bottomRightColor)
+            self.draw_button_with_depth(self.screen, self.popularTextRect, self.LIGHTBROWN)
+            self.screen.blit(self.bagel, self.bagel.get_rect(center=self.topLeftRect.center))
+            self.screen.blit(self.coffee, self.coffee.get_rect(center=self.topRightRect.center))
+            self.screen.blit(self.croissant, self.croissant.get_rect(center=self.bottomLeftRect.center))
+            self.screen.blit(self.lock, self.lock.get_rect(center=self.bottomRightRect.center))
+
+            # Draw popup if hovering bottom right
+            if self.bottomRightRect.collidepoint(mouse_pos):
+                self.screen.blit(self.popup, (425, 250))
+
+            # Text and icons
+            self.draw_text(self.screen, "Popular", self.popularTextRect, self.popularFont, self.BLACK)
+            self.screen.blit(self.exclaimationPoint, self.bottomRightRect.topleft)
+
+            pygame.draw.rect(self.screen, self.SADDLEBROWN, self.backButton.inflate(4, 4), border_radius=12)
+            pygame.draw.rect(self.screen, self.LIGHTBROWN, self.backButton, border_radius=12)
+            self.draw_text(self.screen, "Back to Recipes", self.backButton, self.font, self.BLACK)
+
+            pygame.display.flip()
+
+        pygame.quit()

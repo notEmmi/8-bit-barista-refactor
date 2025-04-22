@@ -4,19 +4,24 @@ import os
 import time
 from weather import Rain, Raindrop, FloorDrop, Cloudy
 from toolbar import Toolbox
-from character_utils import load_selected_character
 import interactions
 import customers
-import shop
+import store
 import inventory
 import random
 import start_menu
 import subprocess
+import settingsdata
+import subprocess
 from pygame_gui import UI_BUTTON_PRESSED
+from fish import run_fishing_minigame
+from music_selector import MusicSelector
+import sqlite3
+from GameState import GameState
 from fish import run_fishing_minigame
 
 class Game:
-    def __init__(self, chosen_building, fromPriorMenu = False, gameData = None):
+    def __init__(self, chosen_building, petChoice, name, selected_character=None, current_day = 1, current_weather="sunny", time_hour=None, time_minute=None, fromPriorMenu = False, gameData = None, username=None):
         # Initialize Pygame
         pygame.init()
         pygame.font.init()
@@ -33,19 +38,43 @@ class Game:
         # Initalize cloudy weather
         self.cloudy = Cloudy()
         self.cloudy_weather = False
+        
+        
         self.house = chosen_building
+        self.pet = petChoice
+        self.playername = name
+        self.username = username
+
+        self.shop = store.ShopUI(self)
+        self.selected_character = selected_character
+        self.current_weather = current_weather
+        self.apply_weather_effects()
+        self.time_hour = time_hour
+        self.time_minute = time_minute
+
+        if self.time_hour is not None and self.time_minute is not None:
+            self.resume_start_minutes = self.time_hour * 60 + self.time_minute
+        else:
+            self.resume_start_minutes = 6 * 60  # fallback to default
+
+            self.game_start_time = time.time()  # Reset base time reference
+            self.last_game_time = self.game_start_time  # For pause/resume support
+
+    
         # Create Dark Rain Overlay
+       
+       
         self.rain_overlay = pygame.Surface((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.SRCALPHA)
         self.rain_overlay.fill((0, 0, 0, 100))  # Semi-transparent black layer (100/255 opacity)
 
         # Day transition
-        self.current_day = 1
-        self.current_weather = "sunny"
+        self.current_day = current_day
         self.last_processed_day = 0
         self.weather_icons = {
             "sunny": pygame.image.load(os.path.join("assets", "icons", "sunny.png")).convert_alpha(),
             "cloudy": pygame.image.load(os.path.join("assets", "icons", "cloudy.png")).convert_alpha(),
-            "rainy": pygame.image.load(os.path.join("assets", "icons", "rainy.png")).convert_alpha()
+            "rainy": pygame.image.load(os.path.join("assets", "icons", "rainy.png")).convert_alpha(),
+            "moon": pygame.image.load(os.path.join("assets", "icons", "moon.png")).convert_alpha()
         }
         self.is_paused = False
         self.show_new_day_prompt = False
@@ -102,8 +131,9 @@ class Game:
 
         # Characters list
         characters = ["boy1", "boy2", "boy3", "girl1", "girl2", "girl3"]
-        self.selected_character = load_selected_character()  # Load saved character
 
+        # Load char from DB
+        self.selected_character = self.load_selected_character_from_db()
         print(f"Loaded character: {self.selected_character}")
         
         self.SPRITE_PATH = os.path.join(self.BASE_DIR, "assets", "images", "character-selection")
@@ -159,19 +189,39 @@ class Game:
         self.water_layer = self.tmx_data.get_layer_by_name("Water")
 
         #Gold
-        self.gold = 0
+        self.gold = 100
 
         # Load and play background music
         self.background_music = os.path.join(self.SOUND_PATH, "1_new_life_master.mp3")
         pygame.mixer.music.load(self.background_music)
+        pygame.mixer.music.set_volume(settingsdata.volumes[0] * settingsdata.volumes[1])
         pygame.mixer.music.play(-1)  # Play on repeat
 
         self.toolbox = Toolbox()
+        self.toolbox.selected_tool = -1  # Ensure no tool is selected initially
 
         self.pauseButton = pygame.Rect(0, 0, 0, 0)
 
         self.gameData = gameData
-        if fromPriorMenu: self.loadGameState()
+        if fromPriorMenu and gameData: 
+            self.loadGameState()
+
+        
+
+######## start of save data functions //////////////////////////////////
+    
+    def load_selected_character_from_db(self):
+        conn = sqlite3.connect("mydatabase.db")
+        game_state = GameState.load_from_db(conn, self.username)
+        conn.close()
+
+        if game_state is None:
+            print(f"[DEBUG] No save found for user {self.username}, defaulting to selected_character from menu")
+            return self.selected_character if hasattr(self, 'selected_character') else None
+
+        return game_state.selected_character
+
+################ end save data functions ###########################
 
     def load_map(self, map_file):
         """Load TMX map and extract collidable and building objects."""
@@ -217,7 +267,8 @@ class Game:
 
         # Draw objects (e.g., trees, buildings)
         for obj in self.tmx_data.objects:
-           target_id = 315  # ID of the object using house2.png
+           target_id = 315
+           target_id2 = 139  # ID of the object using house2.png
            obj_x = obj.x - cam_x
            obj_y = obj.y - cam_y
 
@@ -227,6 +278,15 @@ class Game:
               custom_image = pygame.image.load(custom_path).convert_alpha()
               custom_image = pygame.transform.scale(custom_image, (int(obj.width), int(obj.height)))
               surface.blit(custom_image, (obj_x, obj_y))
+              continue
+
+           
+           if obj.id == target_id2:
+               custom_path2 = self.pet
+               custom_image2 = pygame.image.load(custom_path2).convert_alpha()
+               custom_image2 = pygame.transform.scale(custom_image2, (int(obj.width+15), int(obj.height+15))) 
+               surface.blit(custom_image2, (obj_x, obj_y))
+               continue
            else:
         # Default behavior
                image = self.tmx_data.get_tile_image_by_gid(obj.gid)
@@ -241,16 +301,23 @@ class Game:
     def get_game_time(self):
         """Converts real-time seconds to in-game hours and minutes."""
         if self.is_paused:
-            # Return the last calculated time (freeze the clock)
+            # Freeze time
             elapsed_time = (self.last_game_time - self.game_start_time) * self.time_multiplier
         else:
-            # Calculate elapsed time normally
             elapsed_time = (time.time() - self.game_start_time) * self.time_multiplier
-            self.last_game_time = time.time()  # Store the last calculated time
+            self.last_game_time = time.time()
 
-        game_minutes = int(elapsed_time / self.SECONDS_PER_GAME_MINUTE)
-        game_hour = (self.GAME_START_HOUR + game_minutes // 60) % 24
-        game_minute = game_minutes % 60
+        # How many game minutes have passed since start
+        elapsed_game_minutes = int(elapsed_time / self.SECONDS_PER_GAME_MINUTE)
+
+        # Use resume_start_minutes if it exists, otherwise fall back to GAME_START_HOUR
+        if hasattr(self, "resume_start_minutes"):
+            total_game_minutes = self.resume_start_minutes + elapsed_game_minutes
+        else:
+            total_game_minutes = self.GAME_START_HOUR * 60 + elapsed_game_minutes
+
+        game_hour = (total_game_minutes // 60) % 24
+        game_minute = total_game_minutes % 60
 
         return game_hour, game_minute
     
@@ -261,17 +328,10 @@ class Game:
         # Calculate the total minutes since midnight
         total_minutes_since_midnight = hour * 60 + minute
 
-        # Calculate the total minutes since GAME_START_HOUR (6:00 AM)
-        # GAME_START_HOUR is 6, so 6 * 60 = 360 minutes
-        total_minutes_since_game_start = total_minutes_since_midnight - (self.GAME_START_HOUR * 60)
-
-        # If the result is negative, it means the time is before 6:00 AM
-        # Add 24 hours (1440 minutes) to handle the wrap-around
-        if total_minutes_since_game_start < 0:
-            total_minutes_since_game_start += 24 * 60
-
-        # Update game_start_time to reflect the new time
-        self.game_start_time = time.time() - (total_minutes_since_game_start * self.SECONDS_PER_GAME_MINUTE)
+        # Fully reset time
+        self.resume_start_minutes = total_minutes_since_midnight
+        self.game_start_time = time.time()
+        self.last_game_time = self.game_start_time
 
     def is_night_time(self):
         """Returns True if the current game time is night (after 5:30 PM or before 6 AM)."""
@@ -312,6 +372,27 @@ class Game:
         alpha_value = int(transition_progress * 180)  # Max opacity at night
 
         return alpha_value
+
+    def apply_weather_effects(self):
+        from weather import Rain, Cloudy  # Import here to avoid circular issues
+
+        print(f"[DEBUG] Applying weather effects for: {self.current_weather}")
+
+        if self.current_weather == "rainy":
+            self.raining = True
+            self.cloudy_weather = False
+            self.rain = Rain()
+            self.cloudy = None
+        elif self.current_weather == "cloudy":
+            self.raining = False
+            self.cloudy_weather = True
+            self.cloudy = Cloudy()
+            self.rain = None
+        else:
+            self.raining = False
+            self.cloudy_weather = False
+            self.rain = None
+            self.cloudy = None
 
     def check_new_day(self):
         game_hour, game_minute = self.get_game_time()
@@ -369,12 +450,7 @@ class Game:
     def draw_hud(self):
         """Displays 'Day X' on top, with the Weather Icon and Clock properly aligned at the top-right."""
 
-        # Define Panel Dimensions & Styling
-        panel_x_margin = 12  # Space between panel and screen edges
-        panel_y_margin = 8
-        panel_width = 115  # Unified width
-        panel_height = 65  # Height to fit stacked elements
-        border_radius = 8  # Rounded corners
+       
 
         # Load a Smaller & Thinner Font
         clock_font = pygame.font.Font(None, 30)  # Smaller size & thinner weight
@@ -386,13 +462,14 @@ class Game:
         # Define Panel Dimensions & Styling
         panel_x_margin = 12  # Space between panel and screen edges
         panel_y_margin = 8
-        panel_width = 115  # Unified width
-        panel_height = 65  # Height to fit stacked elements
+        panel_width = 150 # Unified width
+        panel_height = 100  # Height to fit stacked elements
         border_radius = 8  # Rounded corners
 
         # Load a Smaller & Thinner Font
         clock_font = pygame.font.Font(None, 30)  # Smaller size & thinner weight
-        day_font = pygame.font.Font(None, 25)  # Smaller size & thinner weight
+        day_font = pygame.font.Font(None, 25)
+        name_font = pygame.font.Font(None, 25)  # Smaller size & thinner weight
 
         # Create HUD Panel Background
         hud_surface = pygame.Surface((panel_width, panel_height), pygame.SRCALPHA)
@@ -403,24 +480,12 @@ class Game:
         # "Day X" - Positioned at the top with internal padding
         day_text = day_font.render(f"Day {self.current_day}", True, (255, 255, 255))
         day_rect = day_text.get_rect(midtop=(panel_width // 2, panel_y_margin))  # Centered horizontally
+        
+        name_text = name_font.render(self.playername, True,(255, 255, 255))
+        name_rect = name_text.get_rect(midtop=(panel_width // 2 + 600 , panel_y_margin +80))
+
+        
         hud_surface.blit(day_text, day_rect.topleft)
-
-        # Weather Icon - Adjust Position Based on Type
-        if self.current_weather in self.weather_icons:
-            weather_icon = pygame.transform.scale(self.weather_icons[self.current_weather], (28, 28))
-            icon_x = 8  # Fixed left alignment
-
-            # Adjust icon height based on weather type
-            if self.current_weather == "sunny":
-                icon_y = day_rect.bottom + 5  # Default position
-            elif self.current_weather in ["cloudy", "rainy"]:
-                icon_y = day_rect.bottom + 2  # Move up slightly for balance
-            else:
-                icon_y = day_rect.bottom + 5  # Default fallback
-
-            hud_surface.blit(weather_icon, (icon_x, icon_y))
-        else:
-            print(f"WARNING: Missing weather icon for {self.current_weather}")
 
         # Clock - Fixed Position (Independent)
         clock_text = f"{self.get_game_time()[0]:02}:{self.get_game_time()[1]:02}"
@@ -434,22 +499,31 @@ class Game:
         day_rect = day_text.get_rect(midtop=(panel_width // 2, panel_y_margin))  # Centered horizontally
         hud_surface.blit(day_text, day_rect.topleft)
 
+        # Determine if it's daytime (adjust if needed)
+        current_hour = self.get_game_time()[0]
+        is_daytime = 6 <= current_hour < 18
+
+        # Dynamically select icon for sunny days (moon at night)
+        icon_key = self.current_weather
+        if self.current_weather == "sunny" and not is_daytime:
+            icon_key = "moon"
+
         # Weather Icon - Adjust Position Based on Type
-        if self.current_weather in self.weather_icons:
-            weather_icon = pygame.transform.scale(self.weather_icons[self.current_weather], (28, 28))
+        if icon_key in self.weather_icons:
+            weather_icon = pygame.transform.scale(self.weather_icons[icon_key], (28, 28))
             icon_x = 8  # Fixed left alignment
 
-            # Adjust icon height based on weather type
-            if self.current_weather == "sunny":
-                icon_y = day_rect.bottom + 5  # Default position
-            elif self.current_weather in ["cloudy", "rainy"]:
-                icon_y = day_rect.bottom + 2  # Move up slightly for balance
-            else:
-                icon_y = day_rect.bottom + 5  # Default fallback
+            # Adjust icon height based on type
+            if icon_key == "sunny":
+                icon_y = day_rect.bottom + 5
+            elif icon_key in ["cloudy", "rainy"]:
+                icon_y = day_rect.bottom + 2
+            else:  # moon or fallback
+                icon_y = day_rect.bottom + 5
 
             hud_surface.blit(weather_icon, (icon_x, icon_y))
         else:
-            print(f"WARNING: Missing weather icon for {self.current_weather}")
+            print(f"WARNING: Missing weather icon for {icon_key}")
 
         # Clock - Fixed Position (Independent)
         clock_text = f"{self.get_game_time()[0]:02}:{self.get_game_time()[1]:02}"
@@ -473,6 +547,7 @@ class Game:
         screen_x = self.SCREEN_WIDTH - panel_width - panel_x_margin  # Fixed position
         screen_y = panel_y_margin  # Fixed vertical margin
         self.screen.blit(hud_surface, (screen_x, screen_y))
+        self.screen.blit(name_text, name_rect.topleft )
 
     def handle_input(self):
         """Handles keyboard and mouse input, including time acceleration and tool usage."""
@@ -489,8 +564,12 @@ class Game:
         # Trigger interactions, customers, or shop with respective keys
         # The following keybinds have been replaced by left click
         # if keys[pygame.K_TAB]: 
-            # interactions_ui= interactions.InteractionsUI(self)
-            # interactions_ui.run()
+        #     print("pressed TAB")
+        #     conn = sqlite3.connect("mydatabase.db")
+        #     curr_hour, curr_minute = self.get_game_time()
+        #     game_state = GameState(self.house, self.pet, self.playername, self.selected_character, self.current_day, self.current_weather, curr_hour, curr_minute, False, None)
+        #     game_state.save_to_db(conn)
+        #     conn.close()
         # if keys[pygame.K_CAPSLOCK]: 
         #     customers_ui= customers.CustomerUI(self)
         #     customers_ui.run()
@@ -519,7 +598,7 @@ class Game:
                     print(f"Cloudy Weather Enabled: {self.cloudy_weather}")
                 if self.show_new_day_prompt and event.key == pygame.K_RETURN:  # Confirm new day
                     self.time_multiplier, self.confirm_new_day, self.show_new_day_prompt, self.is_paused = 1, True, False, False
-                if pygame.K_1 <= event.key <= pygame.K_5:  # Tool or seed selection
+                if pygame.K_1 <= event.key <= pygame.K_4:  # Tool or seed selection
                     if self.toolbox.seed_inventory_open:
                         selected_seed_index = event.key - pygame.K_1
                         if self.toolbox.selected_seed == selected_seed_index:
@@ -589,8 +668,7 @@ class Game:
                             # customers_ui.run()
                         elif building_name == "store":
                             # Open the store UI
-                            shop_ui = shop.ShopUI(self)
-                            shop_ui.run()
+                            self.shop.run()
                         return  # Exit early if a building was clicked
 
                 # If no building was clicked, use the tool
@@ -625,10 +703,7 @@ class Game:
             self.place_tile("Dirt", tile_x, tile_y, dirt_id)
             print(f"Tilled soil at ({tile_x}, {tile_y})")
 
-        elif self.toolbox.selected_tool == 1:  # Placeholder for another tool
-            print("Using another tool")
-
-        elif self.toolbox.selected_tool == 2:  # Seed pouch
+        elif self.toolbox.selected_tool == 1:  # Seed pouch
             if self.toolbox.selected_seed is not None:
                 seed_name = self.toolbox.seed_slots[self.toolbox.selected_seed]
                 dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
@@ -641,13 +716,13 @@ class Game:
                     else:
                         print(f"Tile ({tile_x}, {tile_y}) is already occupied.")
 
-        elif self.toolbox.selected_tool == 3:  # Watering can
+        elif self.toolbox.selected_tool == 2:  # Watering can
             dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
             dirt_id, watered_id = self.get_gid("Tilled_Dirt", 12), self.get_gid("Tilled_Dirt", 56)
             if dirt_layer and dirt_layer.data[tile_y][tile_x] == dirt_id:  # Check if tile is tilled
                 self.place_tile("Watered", tile_x, tile_y, watered_id)
 
-        elif self.toolbox.selected_tool == 4:  # Harvesting tool
+        elif self.toolbox.selected_tool == 3:  # Harvesting tool
             plant_layer = self.tmx_data.get_layer_by_name("Plants")
             watered_layer = self.tmx_data.get_layer_by_name("Watered")
             if plant_layer:
@@ -724,15 +799,20 @@ class Game:
                 break
 
     def drawPause(self) -> pygame.Rect:
-        pauseButtonImage = pygame.image.load("assets/buttons/pause.png")
-        pauseButtonImage = pygame.transform.scale(pauseButtonImage, (64, 64))
-        rect = pygame.Rect(16, 16, 64, 64)
+        pauseButtonImage = pygame.image.load("assets/buttons/pause.png").convert_alpha()
+        pauseButtonImage = pygame.transform.scale(pauseButtonImage, (75, 75))
+        pauseButtonImage.set_colorkey((0, 0, 0))
+
+        #pauseButtonImage = pygame.image.load("assets/buttons/pause.png").convert_alpha()
+        #pauseButtonImage = pygame.transform.scale(pauseButtonImage, (64, 64))
+        
+        rect = pygame.Rect(16, 16, 90, 90)
         self.screen.blit(pauseButtonImage, rect)
         return rect
         
     def pauseTheGame(self):
         self.is_paused = True
-        pauseMenu = start_menu.StartMenu(self)
+        pauseMenu = start_menu.StartMenu(username=self.username, gameInstance=self)
         pauseMenu.current_screen = "options"
         pauseMenu.isFromGame = True
         pauseMenu.run()
@@ -758,6 +838,7 @@ class Game:
         self.player_direction = direction
         self.raining = raining
         self.cloudy_weather = cloudy
+        self.pla
     
     def saveGameState(self):
         theGameTime = self.get_game_time()
@@ -772,17 +853,29 @@ class Game:
         return (theGameTime, day, position, house, weather, character, direction, raining, cloudy)
     
     def draw_gold(self):
-        # Font for displaying the gold
-        font = pygame.font.SysFont('Arial', 30)
-
-        # Render the text displaying the gold
-        gold_text = font.render(f"Gold: {self.gold}", True, (255, 255, 255))
-
-        # Calculate the position to center the text horizontally at the top
-        text_rect = gold_text.get_rect(center=(self.SCREEN_WIDTH // 2, 30))
-
-        # Blit the text onto the screen
-        self.screen.blit(gold_text, text_rect)
+        # Draw gold in the top right corner with coin icon - Enhanced with shadow effect
+        gold_bg = pygame.Rect(self.SCREEN_WIDTH - 280, 10, 100, 40)  # Moved further to the left
+        
+        # Draw shadow
+        shadow_rect = gold_bg.copy()
+        shadow_rect.x += 2
+        shadow_rect.y += 2
+        pygame.draw.rect(self.screen, (89, 40, 20), shadow_rect, border_radius=10)
+        
+        # Draw gold background
+        pygame.draw.rect(self.screen, (201, 121, 77), gold_bg, border_radius=10)
+        pygame.draw.rect(self.screen, (89, 40, 20), gold_bg, 2, border_radius=10)  # Border
+        
+        # Render gold text
+        font = pygame.font.Font(None, 24)
+        gold_surface = font.render(f"{self.gold}", True, (255, 215, 0))
+        self.screen.blit(gold_surface, (gold_bg.x + 10, gold_bg.y + 10))  # Adjusted position to fit inside the box
+        
+        # Draw coin icon inside the box
+        coin_icon = pygame.Surface((20, 20), pygame.SRCALPHA)
+        pygame.draw.circle(coin_icon, (255, 215, 0), (10, 10), 10)
+        pygame.draw.circle(coin_icon, (89, 40, 20), (10, 10), 10, 1)  # Border
+        self.screen.blit(coin_icon, (gold_bg.right - 30, gold_bg.y + 10))  # Positioned inside the box
 
     def run(self):
         # Main Game Loop
@@ -813,6 +906,8 @@ class Game:
                 self.raining = self.current_weather == "rainy"
                 self.cloudy_weather = self.current_weather == "cloudy"
                 self.confirm_new_day = False  # Reset confirmation flag
+
+                self.apply_weather_effects()
                 print(f"New day started at 5:30 AM. Day {self.current_day} - Weather: {self.current_weather}")
 
             # Only update game logic if not paused
@@ -891,7 +986,7 @@ class Game:
                 if popup_shown:
                     # Load and display the WASD image
                     try:
-                        wasd_image = pygame.image.load("wasd_image.png")
+                        wasd_image = pygame.image.load("wasd_image.png").convert_alpha()
                     except pygame.error as e:
                         print("Error loading image:", e)
                         wasd_image = pygame.Surface((200, 100))  # Temporary placeholder surface for debugging
@@ -978,17 +1073,7 @@ class Game:
             
             self.toolbox.draw(self.screen)
             self.backpack = inventory.drawBundle(self.screen)
-
-            # Draw the new day prompt if active
-            if self.show_new_day_prompt:
-                self.draw_new_day_prompt()
-
-            # Ensure weather icon is updated dynamically
-            if self.current_weather in self.weather_icons:
-                self.current_weather_icon = self.weather_icons[self.current_weather]
-            else:
-                self.current_weather_icon = None  # Fallback if missing
-            
+                            
             # Draw HUD
             self.draw_hud()
 
@@ -998,6 +1083,10 @@ class Game:
             #draw pause button
             self.pauseButton = self.drawPause()
 
+            # Draw the new day prompt if active
+            if self.show_new_day_prompt:
+                self.draw_new_day_prompt()
+
             pygame.display.flip()  # Update display
             clock.tick(FPS)
 
@@ -1005,5 +1094,8 @@ class Game:
 
 if __name__ == "__main__":
     image_path = "assets/map/house2.png"
-    game = Game(image_path)
+    pet = "assets/images/pets/browncat.png"
+    name = "jake"
+    selected_character = "boy1"
+    game = Game(image_path, pet, name, selected_character)
     game.run()
