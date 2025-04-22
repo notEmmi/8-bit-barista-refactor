@@ -8,7 +8,6 @@ class Toolbox:
         
         self.tools = {
             "hoe": pygame.image.load(os.path.join(self.TOOLS_PATH, "hoe.png")),
-            "mallet": pygame.image.load(os.path.join(self.TOOLS_PATH, "mallet.png")),
             "seedpouch": pygame.image.load(os.path.join(self.TOOLS_PATH, "seedpouch.png")),
             "watercan": pygame.image.load(os.path.join(self.TOOLS_PATH, "watercan.png")),
             "axe": pygame.image.load(os.path.join(self.TOOLS_PATH, "axe.png"))
