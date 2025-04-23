@@ -254,7 +254,12 @@ def run_fishing_minigame():
             shake_offset = [0, 0]
 
         # Drawing
-        screen.fill((150, 200, 255))
+        #screen.fill((150, 200, 255))
+
+        background = pygame.image.load('background.png').convert()
+        background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+
+        screen.blit(background, (0,0))
 
         # # Blue fishing tile with fish image
         # pygame.draw.rect(screen, BLUE, fishing_tile)
@@ -273,7 +278,8 @@ def run_fishing_minigame():
         #         fish_y = tile.y + (tile.height // 2) - (fish_img.get_height() // 2)
         #         screen.blit(fish_img, (fish_x, fish_y))
         for fish in swimming_fish_list:
-            pygame.draw.rect(screen, (150, 200, 255), fish.tile_rect)
+            #pygame.draw.rect(screen, (150, 200, 255), fish.tile_rect)
+            screen.blit(background, fish.tile_rect, area=fish.tile_rect)
             fish.draw(screen)
             if not fishing_minigame:
                 fish.update()

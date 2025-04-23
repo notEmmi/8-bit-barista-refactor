@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.11.2" name="Biom_Objects" tilewidth="36" tileheight="34" tilecount="34" columns="0">
+<tileset version="1.10" tiledversion="1.11.2" name="Biom_Objects" tilewidth="50" tileheight="34" tilecount="36" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image source="bush2.png" width="16" height="18"/>
@@ -102,5 +102,11 @@
  </tile>
  <tile id="33">
   <image source="tree2cut.png" width="36" height="18"/>
+ </tile>
+ <tile id="38">
+  <image source="fishing (1) (2).png" width="50" height="33"/>
+ </tile>
+ <tile id="39">
+  <image source="water ripple (1) (1).png" width="25" height="25"/>
  </tile>
 </tileset>
