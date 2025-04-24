@@ -47,7 +47,7 @@ class ShopUI:
         self.back_arrow = pygame.Rect(60, 40, 50, 50)
 
         # Gold and Inventory
-        self.inventory = {}
+        self.inventory = {}  # This will be synchronized with inventorydata
 
         # Shop Items - Arranged in a grid pattern with proper spacing
         self.shop_items_crops = [
@@ -94,6 +94,23 @@ class ShopUI:
 
         self.warning_message = None
         self.warning_timer = 0
+
+    def sync_inventory_from_data(self):
+        """Load inventory data from inventorydata into the shop."""
+        self.inventory = {}
+        for row in inventorydata.theInventory:
+            for item in row:
+                if item is not None:
+                    name = inventorydata.baseItemString(item)
+                    quantity = item[1] if isinstance(item, tuple) else 1
+                    self.inventory[name] = self.inventory.get(name, 0) + quantity
+
+    def sync_inventory_to_data(self):
+        """Save inventory changes from the shop back to inventorydata."""
+        inventorydata.theInventory = [[None for _ in range(4)] for _ in range(4)]  # Reset inventory
+        for name, quantity in self.inventory.items():
+            normalized_name = inventorydata.normalize_item_name(name)
+            inventorydata.insertItemIntoSpareSlot((normalized_name, quantity))
 
     def update_gold_display(self):
         # Draw gold in the top right corner with coin icon - Enhanced with shadow effect
@@ -273,7 +290,8 @@ class ShopUI:
 
     def run(self):
         running = True
-        self.shop_open = True  # Ensure the shop opens immediately
+        self.shop_open = True
+        self.sync_inventory_from_data()  # Sync inventory when shop opens
 
         while running:
             time_delta = self.clock.tick(60) / 1000.0
@@ -502,6 +520,7 @@ class ShopUI:
 
             pygame.display.flip()
 
+        self.sync_inventory_to_data()  # Sync inventory when shop closes
         pygame.quit()
 
 # if __name__ == "__main__":
