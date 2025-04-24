@@ -172,7 +172,7 @@ class InteractionsUI:
         lost_money_y = 0  # Track the current y position of the animation
         waiting_for_click = False  # Track if waiting for user to dismiss dialogue
 
-        while True:
+        while self.running:
             if self.currentScene == "customerOrder":
                 if not self.currentOrder:  # Only set the order if it's not already set
                     self.currentOrder = random.choice(self.listOfRecipes)
@@ -273,11 +273,6 @@ class InteractionsUI:
                 # Render "Complete Order" button only if ingredients are sufficient
                 if not self.notEnoughIngredients:
                     complete_order_button = pygame.Rect((self.WIDTH - 60) // 2 - 40, self.HEIGHT - 130, 60, 60)
-                    pygame.draw.rect(self.screen, self.BRIGHT_BROWN, complete_order_button, border_radius=5)
-                    pygame.draw.rect(self.screen, self.DARK_BROWN, complete_order_button, 2, border_radius=5)
-                    complete_order_text = self.buttonText.render("✔", True, self.WHITE)
-                    text_rect = complete_order_text.get_rect(center=complete_order_button.center)
-                    self.screen.blit(complete_order_text, text_rect)
                     self.renderedButtons["Complete Order"] = (complete_order_button, "customerOrder", "interior")
                 else:
                     self.renderedButtons.pop("Complete Order", None)
