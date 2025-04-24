@@ -39,6 +39,12 @@ class Recipes:
         self.description_box3 = pygame.Rect(200, 250, 150, 100)
         self.description_box4 = pygame.Rect(200, 350, 150, 100)
         self.description_box5 = pygame.Rect(200, 450, 150, 100)
+
+        self.ingredients_box1 = pygame.Rect(500, 50, 150, 100)
+        self.ingredients_box2 = pygame.Rect(500, 150, 150, 100)
+        self.ingredients_box3 = pygame.Rect(500, 250, 150, 100)
+        self.ingredients_box4 = pygame.Rect(500, 350, 150, 100)
+        self.ingredients_box5 = pygame.Rect(500, 450, 150, 100)
         
         
         # Colors
@@ -65,6 +71,7 @@ class Recipes:
         
         # Load font
         self.font = pygame.font.Font(pygame.font.match_font("courier"), 24)
+        self.font2 = pygame.font.Font(pygame.font.match_font("courier"), 14)
         
         # Load and play background music
         mixer.music.load("tracks/08 - Shop.mp3")
@@ -118,6 +125,13 @@ class Recipes:
 
             self.draw_text(self.screen, "Tomato Jam", self.description_box5, self.font, self.BLACK)
             self.screen.blit(self.tomatojam, (80, 450))
+
+            self.draw_text(self.screen, "Ingredients: Cocoa/Milk/Sugar", self.ingredients_box1, self.font2, self.BLACK)
+            self.draw_text(self.screen, "Ingredients: Coffee Beans/Milk/Sugar", self.ingredients_box2, self.font2, self.BLACK)
+            self.draw_text(self.screen, "Ingredients: Wheat/TeaLeaves/Milk/Sugar", self.ingredients_box3, self.font2, self.BLACK)
+            self.draw_text(self.screen, "Ingredients: Corn/Milk/Honey", self.ingredients_box4, self.font2, self.BLACK)
+            self.draw_text(self.screen, "Ingredients: Tomato/Sugar", self.ingredients_box5, self.font2, self.BLACK)
+            
 
             
            
