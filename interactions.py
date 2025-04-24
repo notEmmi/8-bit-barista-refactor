@@ -44,6 +44,32 @@ class InteractionsUI:
         self.nameIndex = 0
         self.currentCustomerName = self.randomCustomerNames[self.nameIndex]  # Initialize with the first customer
         self.previousCustomerName = ""  # Track the previous customer for dialogue
+        self.customerResponses = {
+            "Pheonix": {
+            "accepted": "Wow, this is amazing! You're a true \nartist.",
+            "rejected": "Hmm, not quite what I expected. \nBetter luck next time."
+            },
+            "Riley": {
+            "accepted": "This is perfect! Thank you so much!",
+            "rejected": "Oh no, this isn't what I wanted.\nI'm disappointed."
+            },
+            "Alex": {
+            "accepted": "Nice! This is exactly what I needed.\nYou're the best!",
+            "rejected": "Ugh, this isn't good. I expected \nbetter."
+            },
+            "Emma": {
+            "accepted": "This is delightful! You're so \ntalented!",
+            "rejected": "Oh dear, this isn't what I was \nhoping for.I'm sad."
+            },
+            "Liam": {
+            "accepted": "This is fantastic! You're a \ngenius!",
+            "rejected": "Hmm, this isn't what I wanted.\nI'm not happy."
+            },
+            "Sophia": {
+            "accepted": "This is wonderful! You're amazing!",
+            "rejected": "Oh no, this isn't good.\nI'm disappointed."
+            }
+        }
 
         # Create a round coin icon for gold display
         self.coin_icon = pygame.Surface((25, 25), pygame.SRCALPHA)
@@ -345,10 +371,10 @@ class InteractionsUI:
 
             elif showDialogue:
                 # Widen the dialogue box
-                dialogue_width = self.dialougeMaxWidth + 150  # Increase width by 150
-                dialogue_height = self.dialougeMaxHeight
+                dialogue_width = self.dialougeMaxWidth + 200  # Increase width by 150
+                dialogue_height = self.dialougeMaxHeight + 40  # Increase height by 50
                 dialogue_x = 20  # Left side
-                dialogue_y = self.HEIGHT - dialogue_height - 20  # Bottom
+                dialogue_y = self.HEIGHT - dialogue_height - 20  # Adjust for increased height
 
                 # Draw dialogue box with smaller border
                 dialougeBrownRectPseudoOutline = pygame.Rect(dialogue_x, dialogue_y, dialogue_width, dialogue_height)
@@ -367,8 +393,11 @@ class InteractionsUI:
                 # Dialogue text
                 dialogue_name = self.previousCustomerName if (self.orderAccepted or not self.closed) else self.currentCustomerName
                 text = dialogue_name + ":\n\""
-                text = text + (self.acceptedResponse if self.orderAccepted else self.rejectedResponse)
-                text = text + "\""
+                if self.orderAccepted:
+                    text += self.customerResponses[dialogue_name]["accepted"]
+                else:
+                    text += self.customerResponses[dialogue_name]["rejected"]
+                text += "\""
 
                 dialogueLabel = self.dialougeText.render(text, True, self.BROWN)
                 text_x = dialogue_x + (padding * 2) + 90  # Adjust for portrait
@@ -381,34 +410,16 @@ class InteractionsUI:
                 portrait_y = dialogue_y + padding + 5
                 self.screen.blit(portrait, (portrait_x, portrait_y))
 
-                # Happy or Sad icon - repositioned to align with the end of the dialogue text
-                iconImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/happy.png" if self.orderAccepted else "PROBABLY_ILLEGAL_ASSETS/sad.png")
-                iconImage = pygame.transform.scale(iconImage, (40, 40))
-                icon_x = text_x + dialogueLabel.get_width() + 10  # Position to the right of the text
-                icon_y = dialogue_y + (dialogue_height - 40) // 2  # Centered vertically
-                self.screen.blit(iconImage, (icon_x, icon_y))
-
-                dialogueLabel = self.dialougeText.render(text, True, self.BROWN)
-                text_x = dialogue_x + (padding * 2) + 90  # Adjust for portrait
-                text_y = dialogue_y + (padding * 2)
-                self.screen.blit(dialogueLabel, (text_x, text_y))
-
-                # Portrait remains inside the dialogue box
-                portrait = self.load_customer_portrait(dialogue_name)
-                portrait_x = dialogue_x + padding + 10
-                portrait_y = dialogue_y + padding + 5
-                self.screen.blit(portrait, (portrait_x, portrait_y))
-
-                # Happy or Sad icon - repositioned to align with the end of the dialogue text
-                iconImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/happy.png" if self.orderAccepted else "PROBABLY_ILLEGAL_ASSETS/sad.png")
-                iconImage = pygame.transform.scale(iconImage, (40, 40))
-                icon_x = text_x + dialogueLabel.get_width() + 10  # Position to the right of the text
-                icon_y = dialogue_y + (dialogue_height - 40) // 2  # Centered vertically
-                self.screen.blit(iconImage, (icon_x, icon_y))
+                # # Happy or Sad icon - repositioned to align with the end of the dialogue text
+                # iconImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/happy.png" if self.orderAccepted else "PROBABLY_ILLEGAL_ASSETS/sad.png")
+                # iconImage = pygame.transform.scale(iconImage, (40, 40))
+                # icon_x = text_x + dialogueLabel.get_width() + 10  # Position to the right of the text
+                # icon_y = dialogue_y + (dialogue_height - 40) // 2  # Centered vertically
+                # self.screen.blit(iconImage, (icon_x, icon_y))
 
                 # Add "Click to Continue" text for accepted/rejected dialogue
                 if not self.closed:
-                    click_to_continue = self.bodyText.render("Click to Continue", True, self.BROWN)
+                    click_to_continue = self.bodyText.render("Click to Continue", True, (0, 0, 0))
                     click_x = dialogue_x + dialogue_width - click_to_continue.get_width() - 20
                     click_y = dialogue_y + dialogue_height - click_to_continue.get_height() - 10
                     self.screen.blit(click_to_continue, (click_x, click_y))
