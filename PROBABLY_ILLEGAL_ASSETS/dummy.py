@@ -12,21 +12,11 @@ def process_sprite(image_path):
 			# Crop the image to the bounding box
 			cropped_img = img.crop(bbox)
 			
-			# Calculate the size of each sprite (2x2 grid)
-			sprite_width = cropped_img.width // 2
-			sprite_height = cropped_img.height // 2
-			
-			# Coordinates for the last sprite (bottom-right)
-			left = sprite_width
-			upper = sprite_height
-			right = left + sprite_width
-			lower = upper + sprite_height
-			
-			# Crop the last sprite
-			last_sprite = cropped_img.crop((left, upper, right, lower))
+			 # Mirror the cropped image horizontally
+			mirrored_img = cropped_img.transpose(Image.FLIP_LEFT_RIGHT)
 			
 			# Save the processed image, replacing the original
-			last_sprite.save(image_path)
+			mirrored_img.save(image_path)
 
 def main():
 	# Get the directory of the current script
