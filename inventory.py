@@ -123,6 +123,7 @@ def run(gameInstance):
                     if not rect.collidepoint(mousePosition): continue
                     if name == "BACK":
                         running = False
+                        gameInstance.shop.sync_inventory_from_data()  # Sync inventory before returning to the shop
                         return gameInstance.run()
                     if name == "DELETE":
                         if itemSelected is not None:
