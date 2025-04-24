@@ -35,16 +35,17 @@ class InteractionsUI:
         self.closed = False
 
         self.randomCustomerNames = [
-            "Taylor", "Riley", "Alex", "Rowan", "Ashton", "Parker",
-            "Riley", "Charlie", "Aubrey", "Blake", "Phoenix", "Reagan"
-        ] # gotta go gender neutral to simplify things i think
-        random.shuffle(self.randomCustomerNames)
+            "Pheonix", "Riley", "Alex",  # Neutral names
+            "Emma", "Liam", "Sophia"   # 3 girls, 3 boys
+        ]
+        random.shuffle(self.randomCustomerNames)  # Shuffle the list in place
         self.nameIndex = 0
+        self.currentCustomerName = self.randomCustomerNames[self.nameIndex]  # Initialize with the first customer
 
         self.mainButtons = {
             "Enter Shop": ("exterior", "interior", "PROBABLY_ILLEGAL_ASSETS/shop.png"),
             "Exit Shop": ("interior", "exterior", "PROBABLY_ILLEGAL_ASSETS/exit.png"),
-            "View Customer Order": ("interior", "customerOrder", "PROBABLY_ILLEGAL_ASSETS/customer.png"),
+            "View Customer Order": ("interior", "customerOrder", os.path.join("PROBABLY_ILLEGAL_ASSETS", f"{self.currentCustomerName.lower()}.png")),
             "Complete Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/complete.png"),
             "Close": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/exit.png"),
             "Reject Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/reject.png"),
@@ -61,7 +62,6 @@ class InteractionsUI:
 
         self.listOfRecipes = list(recipedata.theRecipes.keys())
         self.currentOrder = ""
-        self.currentCustomerName = self.randomCustomerNames[self.nameIndex]
         print(f"currentOrder: {self.currentOrder}")
         print(f"currentCustomerName: {self.currentCustomerName}")
 
