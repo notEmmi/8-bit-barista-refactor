@@ -173,7 +173,7 @@ class InteractionsUI:
             # Position at bottom left corner
             buttonRect = pygame.Rect((self.WIDTH - 60) // 2 + 40, self.HEIGHT - 130, 60, 60)
         elif name == "Protagonist":
-            buttonRect = pygame.Rect(330, 150, 14 * 3, 29 * 3)
+            buttonRect = pygame.Rect(330, 220, 14 * 3, 29 * 3)
         elif name == "Recipes":
             buttonRect = pygame.Rect(self.WIDTH - 90, self.HEIGHT - 90, 64, 64)
 
@@ -304,7 +304,7 @@ class InteractionsUI:
                 if self.previousScene == "customerOrder" and not waiting_for_click:
                     self.currentOrder = ""
                 self.screen.fill(self.WHITE)
-                bg = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + str.lower(self.currentScene) + ".png")
+                bg = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/cafe_bg_og.png")  # Updated background
                 bg = pygame.transform.scale(bg, (self.WIDTH, self.HEIGHT))
                 self.screen.blit(bg, (0, 0))
                 
@@ -315,7 +315,7 @@ class InteractionsUI:
                     # Draw customer name above their head
                     customer_name_surface = self.buttonText.render(self.currentCustomerName, True, self.WHITE)
                     name_x = 400 - customer_name_surface.get_width() // 2  # Center above customer
-                    name_y = 290  # Position above customer
+                    name_y = 330  # Position slightly lower
                     
                     # Draw name background for better visibility
                     name_bg = pygame.Rect(name_x - 5, name_y - 5, 
@@ -332,7 +332,7 @@ class InteractionsUI:
                         # Match protagonist size (14*3 x 29*3)
                         customer_img = pygame.transform.scale(customer_img, (14 * 3, 29 * 3))
                         customer_x = 400 - (14 * 3) // 2  # Center horizontally
-                        customer_y = 330  # Position lower down
+                        customer_y = 370  # Position slightly lower
                         self.screen.blit(customer_img, (customer_x, customer_y))
                     except:
                         # Fallback if image can't be loaded
@@ -342,7 +342,7 @@ class InteractionsUI:
                         self.screen.blit(placeholder, (customer_x, customer_y))
                     
                     # Position and draw Take Order button below customer image - wider button
-                    self.take_order_button = pygame.Rect(320, 420, 160, 40)  # Wider button
+                    self.take_order_button = pygame.Rect(320, 460, 160, 40)  # Wider button, positioned lower
                     pygame.draw.rect(self.screen, self.BRIGHT_BROWN, self.take_order_button, border_radius=5)
                     pygame.draw.rect(self.screen, self.DARK_BROWN, self.take_order_button, 2, border_radius=5)  # Border
                     
