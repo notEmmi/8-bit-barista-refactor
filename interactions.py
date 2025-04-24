@@ -60,7 +60,7 @@ class InteractionsUI:
         }
 
         self.listOfRecipes = list(recipedata.theRecipes.keys())
-        self.currentOrder = random.choice(self.listOfRecipes)
+        self.currentOrder = ""
         self.currentCustomerName = self.randomCustomerNames[self.nameIndex]
         print(f"currentOrder: {self.currentOrder}")
         print(f"currentCustomerName: {self.currentCustomerName}")
@@ -95,16 +95,15 @@ class InteractionsUI:
             buttonRect = buttonRect.move((self.WIDTH - buttonRect.width) // 2 - (buttonRect.x), (self.HEIGHT // 2) - 40)
         elif name == "Complete Order" and not self.notEnoughIngredients:
             buttonRect = buttonRect.scale_by(.5)
-            buttonRect.x = self.WIDTH - buttonRect.width - 50
+            buttonRect.x = self.center_x(buttonRect.width) - 50  # Move slightly more to the right
             buttonRect.y = self.HEIGHT - buttonRect.height - 50
         elif name == "Reject Order":
             buttonRect = buttonRect.scale_by(.5)
-            buttonRect.x = self.center_x(buttonRect.width)
+            buttonRect.x = self.center_x(buttonRect.width) + 50  # Move slightly to the left
             buttonRect.y = self.HEIGHT - buttonRect.height - 50
         elif name == "Close":
-            buttonRect = buttonRect.scale_by(0.4)
-            buttonRect.x = 50
-            buttonRect.y = self.HEIGHT - buttonRect.height - 50
+            buttonRect = pygame.Rect(60, 60, 80, 80)  # Increased size of the close button
+            self.close_button = buttonRect
         elif name == "Protagonist":
             buttonRect = pygame.Rect(330, 150, 14 * 3, 29 * 3)
         elif name == "Recipes":
@@ -124,6 +123,9 @@ class InteractionsUI:
     def run(self):
         while self.running:
             if self.currentScene == "customerOrder":
+                if not self.currentOrder:  # Only set the order if it's not already set
+                    self.currentOrder = random.choice(self.listOfRecipes)
+
                 self.screen.fill(self.LIGHT_BROWN)
                 middle_rect = pygame.Rect(30, 20, self.WIDTH - 60, self.HEIGHT - 40)
                 shadow_offset = 6
@@ -140,6 +142,9 @@ class InteractionsUI:
                 self.screen.blit(shadow_surface_inner, (panel_rect.x + shadow_offset, panel_rect.y + shadow_offset))
                 pygame.draw.rect(self.screen, self.BROWN, panel_rect, border_radius=12)
             else:
+                # Reset the order when leaving the customerOrder scene
+                if self.previousScene == "customerOrder":
+                    self.currentOrder = ""
                 self.screen.fill(self.WHITE)
                 bg = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + str.lower(self.currentScene) + ".png")
                 bg = pygame.transform.scale(bg, (self.WIDTH, self.HEIGHT))
@@ -234,56 +239,6 @@ class InteractionsUI:
                     have_label = self.bodyText.render(str(inventory_amount), True, self.WHITE)
                     self.screen.blit(have_label, (have_x + 20, row_y + 10))
 
-                # Accept and Reject buttons - positioned next to each other
-                button_y = self.HEIGHT - 100  # Position near the bottom
-                reject_button_x = self.WIDTH // 2 - 60  # Centered horizontally
-                accept_button_x = reject_button_x + 120  # Positioned to the right of the reject button
-
-                # Reject button
-                reject_button = pygame.Rect(reject_button_x, button_y, 100, 40)
-                pygame.draw.rect(self.screen, self.BRIGHT_BROWN, reject_button, border_radius=10)
-                pygame.draw.rect(self.screen, self.DARK_BROWN, reject_button, 2, border_radius=10)
-                reject_text = self.bodyText.render("Reject", True, self.WHITE)
-                self.screen.blit(reject_text, reject_text.get_rect(center=reject_button.center))
-
-                # Accept button (only if ingredients are sufficient)
-                if not self.notEnoughIngredients:
-                    accept_button = pygame.Rect(accept_button_x, button_y, 100, 40)
-                    pygame.draw.rect(self.screen, (34, 139, 34), accept_button, border_radius=10)  # Green color
-                    pygame.draw.rect(self.screen, self.DARK_BROWN, accept_button, 2, border_radius=10)
-                    accept_text = self.bodyText.render("Accept", True, self.WHITE)
-                    self.screen.blit(accept_text, accept_text.get_rect(center=accept_button.center))
-
-                # Handle button clicks
-                mouse_pos = pygame.mouse.get_pos()
-                for event in pygame.event.get():
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        if reject_button.collidepoint(mouse_pos):
-                            print("Order rejected!")
-                            self.orderAccepted = False
-                            self.closed = False
-                            self.previousScene = self.currentScene
-                            self.currentScene = "interior"
-                        elif not self.notEnoughIngredients and accept_button.collidepoint(mouse_pos):
-                            print("Order accepted!")
-                            self.orderAccepted = True
-                            self.closed = False
-                            toDeduct = recipedata.theRecipes.get(self.currentOrder)
-                            for i in range(len(toDeduct)):
-                                fakeAmount = toDeduct[i][1] * -1
-                                inventorydata.insertItemIntoSpareSlot((toDeduct[i][0], fakeAmount))
-                            self.currentOrder = random.choice(self.listOfRecipes)
-                            self.nameIndex += 1
-                            if self.nameIndex > len(self.randomCustomerNames) - 1:
-                                self.nameIndex = 0
-                            random.shuffle(self.randomCustomerNames)
-                            self.randomAmount = random.randint(100, 700)
-                            self.generatedFakeAmounts = False
-                            self.notEnoughIngredients = False
-                            self.editedItemsAlready = False
-                            self.previousScene = self.currentScene
-                            self.currentScene = "interior"
-
             elif showDialogue:
                 # Position the dialogue box in the top-right corner
                 dialogue_width = self.dialougeMaxWidth
@@ -324,6 +279,37 @@ class InteractionsUI:
                 icon_x = dialogue_x + (dialogue_width - 40) // 2  # Centered below the dialogue box
                 icon_y = dialogue_y + dialogue_height + 10  # 10px padding below the dialogue box
                 self.screen.blit(iconImage, (icon_x, icon_y))
+                
+                # Status icons and indicators with consistent positioning
+                if (self.orderAccepted and not self.closed):
+                    # Money icon - positioned relative to dialogue box
+                    moneyImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/money.png")
+                    moneyImage = pygame.transform.scale(moneyImage, (45, 45))
+                    self.screen.blit(moneyImage, (dialogue_x + dialogue_width + 20, dialogue_y))
+
+                    # Gain icon and amount - bottom left, aligned properly
+                    gainImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/gain.png")
+                    gainImage = pygame.transform.scale(gainImage, (50, 50))
+                    self.screen.blit(gainImage, (30, self.HEIGHT - 80))
+
+                    amountLabel = self.bodyText.render("+" + str(self.randomAmount), True, self.BROWN)
+                    self.screen.blit(amountLabel, (90, self.HEIGHT - 70))
+
+                    if not self.editedItemsAlready:
+                        self.game.gold += self.randomAmount
+                        self.editedItemsAlready = True
+                elif (not self.closed):
+                    # Loss icon and amount - bottom left, aligned properly
+                    lossImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/loss.png")
+                    lossImage = pygame.transform.scale(lossImage, (50, 50))
+                    self.screen.blit(lossImage, (30, self.HEIGHT - 80))
+
+                    amountLabel = self.bodyText.render("-" + str(self.randomAmount), True, self.BROWN)
+                    self.screen.blit(amountLabel, (90, self.HEIGHT - 70))
+
+                    if not self.editedItemsAlready:
+                        self.game.gold -= self.randomAmount
+                        self.editedItemsAlready = True
 
             # Event Handling
             mouse_pos = pygame.mouse.get_pos()
