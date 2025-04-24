@@ -4,12 +4,12 @@ import settingsdata
 from pygame import mixer
 
 class Recipes:
-    def __init__(self,path_back_to_cafe):
+    def __init__(self, cafe_instance):
         # Initialize pygame
         pygame.init()
         mixer.init()
 
-        self.pathbacktocafe = path_back_to_cafe 
+        self.cafe = cafe_instance  # Store the cafe instance
 
         # Screen dimensions
         self.WIDTH, self.HEIGHT = 800, 600
@@ -114,9 +114,10 @@ class Recipes:
                         running = False
                 
                     if self.backButton.collidepoint(event.pos):
-                      print("Returning to cafe...")
-                      running = False
-                      self.pathbacktocafe.run()
+                        print("Returning to cafe...")
+                        running = False
+                        self.cafe.run()  # Call the `run` method of the cafe instance
+                            
             # Draw background and UI elements
             self.screen.blit(self.kitchen, (0, 0))
             self.screen.blit(self.recipes, (225, 25))
