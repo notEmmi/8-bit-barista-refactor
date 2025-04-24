@@ -29,7 +29,7 @@ class InteractionsUI:
         # State variables
         self.currentScene = "interior"  # Skip the first page by starting at "interior"
         self.previousScene = "NONE"
-        self.waitingResponse = "I'm still waiting..."
+        self.waitingResponse = None  # Removed "I'm still waiting..."
         self.acceptedResponse = "Thanks! You've got talent."
         self.rejectedResponse = "That sucks. I'll head out."
         self.orderAccepted = False
@@ -54,7 +54,6 @@ class InteractionsUI:
             "Enter Shop": ("exterior", "interior", "PROBABLY_ILLEGAL_ASSETS/shop.png"),
             "Exit Shop": ("interior", "exterior", "PROBABLY_ILLEGAL_ASSETS/exit.png"),
             "Complete Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/check_button.png"),
-            "Close": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/exit.png"),
             "Reject Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/x_button.png"),
             "Protagonist": ("interior", "", os.path.join(game_instance.SPRITE_PATH, game_instance.selected_character, "down_idle.png")),
             "Recipes": ("interior", "", "PROBABLY_ILLEGAL_ASSETS/recipe.png"),
@@ -147,9 +146,6 @@ class InteractionsUI:
         elif name == "Reject Order":
             # Position at bottom left corner
             buttonRect = pygame.Rect((self.WIDTH - 60) // 2 + 40, self.HEIGHT - 130, 60, 60)
-        elif name == "Close":
-            # Position at top left corner
-            buttonRect = pygame.Rect(80, 80, 50, 50)
         elif name == "Protagonist":
             buttonRect = pygame.Rect(330, 150, 14 * 3, 29 * 3)
         elif name == "Recipes":
@@ -371,10 +367,7 @@ class InteractionsUI:
                 # Dialogue text
                 dialogue_name = self.previousCustomerName if (self.orderAccepted or not self.closed) else self.currentCustomerName
                 text = dialogue_name + ":\n\""
-                if self.closed:
-                    text = text + self.waitingResponse
-                else:
-                    text = text + (self.acceptedResponse if self.orderAccepted else self.rejectedResponse)
+                text = text + (self.acceptedResponse if self.orderAccepted else self.rejectedResponse)
                 text = text + "\""
 
                 dialogueLabel = self.dialougeText.render(text, True, self.BROWN)
@@ -535,11 +528,6 @@ class InteractionsUI:
                                 self.notEnoughIngredients = False
                                 self.editedItemsAlready = False
                             
-                            # If it's the Close button, keep the same customer
-                            if name == "Close":
-                                # Don't change customer when just closing the order screen
-                                pass
-                                
                             self.previousScene = self.currentScene
                             self.currentScene = info[2]
                             break
