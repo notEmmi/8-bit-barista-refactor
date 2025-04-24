@@ -16,22 +16,17 @@ def process_sprite(image_path):
 			sprite_width = cropped_img.width // 2
 			sprite_height = cropped_img.height // 2
 			
-			# Create a new image to hold the processed sprites
-			new_img = Image.new("RGBA", (sprite_width * 2, sprite_height * 2))
+			# Coordinates for the last sprite (bottom-right)
+			left = sprite_width
+			upper = sprite_height
+			right = left + sprite_width
+			lower = upper + sprite_height
 			
-			# Cut and paste each sprite into the new image
-			for row in range(2):
-				for col in range(2):
-					left = col * sprite_width
-					upper = row * sprite_height
-					right = left + sprite_width
-					lower = upper + sprite_height
-					
-					sprite = cropped_img.crop((left, upper, right, lower))
-					new_img.paste(sprite, (left, upper))
+			# Crop the last sprite
+			last_sprite = cropped_img.crop((left, upper, right, lower))
 			
 			# Save the processed image, replacing the original
-			new_img.save(image_path)
+			last_sprite.save(image_path)
 
 def main():
 	# Get the directory of the current script
