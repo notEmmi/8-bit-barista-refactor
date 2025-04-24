@@ -79,9 +79,9 @@ def run_fishing_minigame():
 
     # Load fish images
     fish_images = [
-        pygame.transform.scale(pygame.image.load('fish_images/Orange.png').convert_alpha(), (25, 25)),
-        pygame.transform.scale(pygame.image.load('fish_images/pink.png').convert_alpha(), (25, 25)),
-        pygame.transform.scale(pygame.image.load('fish_images/Blue.png').convert_alpha(), (25, 25))
+        pygame.transform.scale(pygame.image.load('fish_images/Orange.png').convert_alpha(), (40, 40)),
+        pygame.transform.scale(pygame.image.load('fish_images/pink.png').convert_alpha(), (40, 40)),
+        pygame.transform.scale(pygame.image.load('fish_images/Blue.png').convert_alpha(), (40, 40))
     ]
 
     #WASD
@@ -105,8 +105,8 @@ def run_fishing_minigame():
     # current_tile_fish_index = random.randint(0, 2)
     # Generate multiple fishing tiles
 
-    NUM_TILES = 4
-    TILE_SIZE = 50
+    NUM_TILES = 6
+    TILE_SIZE = 25
     # fishing_tiles = []
     # tile_fish_indices = []
 
