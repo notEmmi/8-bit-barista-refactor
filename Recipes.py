@@ -121,16 +121,16 @@ class Recipes:
             self.screen.blit(self.teacake, (80, 250))
 
             self.draw_text(self.screen, "Honey Cornbread", self.description_box4, self.font, self.BLACK)
-            self.screen.blit(self.honeycornbread, (80, 350))
+            self.screen.blit(self.honeycornbread, (75, 350))
 
             self.draw_text(self.screen, "Tomato Jam", self.description_box5, self.font, self.BLACK)
             self.screen.blit(self.tomatojam, (80, 450))
 
-            self.draw_text(self.screen, "Ingredients: Cocoa/Milk/Sugar", self.ingredients_box1, self.font2, self.BLACK)
-            self.draw_text(self.screen, "Ingredients: Coffee Beans/Milk/Sugar", self.ingredients_box2, self.font2, self.BLACK)
-            self.draw_text(self.screen, "Ingredients: Wheat/TeaLeaves/Milk/Sugar", self.ingredients_box3, self.font2, self.BLACK)
-            self.draw_text(self.screen, "Ingredients: Corn/Milk/Honey", self.ingredients_box4, self.font2, self.BLACK)
-            self.draw_text(self.screen, "Ingredients: Tomato/Sugar", self.ingredients_box5, self.font2, self.BLACK)
+            self.draw_text(self.screen, "Ingredients:Cocoa/Milk/Sugar", self.ingredients_box1, self.font2, self.BLACK)
+            self.draw_text(self.screen, "Ingredients:Coffee Beans/Milk/Sugar", self.ingredients_box2, self.font2, self.BLACK)
+            self.draw_text(self.screen, "Ingredients:Wheat/TeaLeaves/Milk/Sugar", self.ingredients_box3, self.font2, self.BLACK)
+            self.draw_text(self.screen, "Ingredients:Corn/Milk/Honey", self.ingredients_box4, self.font2, self.BLACK)
+            self.draw_text(self.screen, "Ingredients:Tomato/Sugar", self.ingredients_box5, self.font2, self.BLACK)
             
 
             
