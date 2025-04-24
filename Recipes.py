@@ -106,12 +106,7 @@ class Recipes:
                 
                 # Check for click event
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.topLeftRect.collidepoint(event.pos):
-                        from Popular import Popular
-                        popularPage = Popular(self)
-                        popularPage.run()
-
-                        running = False
+                    
                 
                     if self.backButton.collidepoint(event.pos):
                         print("Returning to cafe...")
