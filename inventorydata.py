@@ -102,16 +102,24 @@ def hasEnoughOfItem(item) -> bool:
     return False
 
 def quantityForItem(item) -> int:
-    if item is None: return 0
-    for row in range(len(theInventory)):
-        for column in range(len(theInventory[row])):
-            itemAt = theInventory[row][column]
-            if itemAt is None: continue
-            elif isinstance(itemAt, str) and isinstance(item, str) and itemAt == item: return 1
-            elif isinstance(itemAt, tuple) and isinstance(item, tuple) and itemAt[0] == item[0]:
-                if isinstance(item[1], int) and isinstance(itemAt[1], int): return itemAt[1]
-                else: return 1
-    return 0
+    """Calculate the total quantity of an item in the inventory."""
+    if item is None:
+        return 0
+
+    total_quantity = 0
+    normalized_item_name = normalize_item_name(item[0]) if isinstance(item, tuple) else normalize_item_name(item)
+
+    for row in theInventory:
+        for slot in row:
+            if slot is None:
+                continue
+            if isinstance(slot, tuple) and normalize_item_name(slot[0]) == normalized_item_name:
+                if isinstance(slot[1], int):
+                    total_quantity += slot[1]
+            elif isinstance(slot, str) and normalize_item_name(slot) == normalized_item_name:
+                total_quantity += 1  # Non-stackable items count as 1
+
+    return total_quantity
 
 def insertItemIntoSpareSlot(item):
     for row in range(len(theInventory)):

@@ -53,9 +53,9 @@ class InteractionsUI:
         self.mainButtons = {
             "Enter Shop": ("exterior", "interior", "PROBABLY_ILLEGAL_ASSETS/shop.png"),
             "Exit Shop": ("interior", "exterior", "PROBABLY_ILLEGAL_ASSETS/exit.png"),
-            "Complete Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/complete.png"),
+            "Complete Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/check_button.png"),
             "Close": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/exit.png"),
-            "Reject Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/reject.png"),
+            "Reject Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/x_button.png"),
             "Protagonist": ("interior", "", os.path.join(game_instance.SPRITE_PATH, game_instance.selected_character, "down_idle.png")),
             "Recipes": ("interior", "", "PROBABLY_ILLEGAL_ASSETS/recipe.png"),
         }
@@ -143,10 +143,10 @@ class InteractionsUI:
             buttonRect = buttonRect.scale_by(.5).move(-125, -95)
         elif name == "Complete Order" and not self.notEnoughIngredients:
             # Position at bottom right corner
-            buttonRect = pygame.Rect(self.WIDTH - 130, self.HEIGHT - 130, 60, 60)
+            buttonRect = pygame.Rect((self.WIDTH - 60) // 2 - 40, self.HEIGHT - 130, 60, 60)
         elif name == "Reject Order":
             # Position at bottom left corner
-            buttonRect = pygame.Rect(400, self.HEIGHT - 130, 60, 60)
+            buttonRect = pygame.Rect((self.WIDTH - 60) // 2 + 40, self.HEIGHT - 130, 60, 60)
         elif name == "Close":
             # Position at top left corner
             buttonRect = pygame.Rect(80, 80, 50, 50)
@@ -172,7 +172,7 @@ class InteractionsUI:
         lost_money_y = 0  # Track the current y position of the animation
         waiting_for_click = False  # Track if waiting for user to dismiss dialogue
 
-        while self.running:
+        while True:
             if self.currentScene == "customerOrder":
                 if not self.currentOrder:  # Only set the order if it's not already set
                     self.currentOrder = random.choice(self.listOfRecipes)
@@ -195,6 +195,93 @@ class InteractionsUI:
                 
                 # Hide Take Order button in order screen
                 self.take_order_button_visible = False
+
+                # Ensure bootlegIngredients is initialized before use
+                if not self.generatedFakeAmounts:
+                    bootlegIngredients = []
+                    self.notEnoughIngredients = False
+                    for ingredient in recipedata.theRecipes.get(self.currentOrder):
+                        have_quantity = inventorydata.quantityForItem(ingredient)
+                        bootlegIngredients.append((ingredient[0], have_quantity))
+                        if have_quantity < ingredient[1]:
+                            self.notEnoughIngredients = True
+                    self.generatedFakeAmounts = True
+
+                # Header - centered properly
+                headerLabel = self.headerText.render(self.currentOrder, True, self.WHITE)
+                header_x = self.center_x(headerLabel.get_width())
+                self.screen.blit(headerLabel, (header_x, 80))
+
+                ingredients = recipedata.theRecipes.get(self.currentOrder)
+
+                # Recipe image - positioned on left side
+                recipeImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + str.lower(self.currentOrder.replace(" ", "")) + ".png")
+                recipeImage = pygame.transform.scale(recipeImage, (200, 200))
+                recipe_x = 130
+                recipe_y = self.center_y(200)
+                self.screen.blit(recipeImage, (recipe_x, recipe_y))
+
+                # Ingredients section - table layout
+                ingredients_section_x = 380
+                ingredients_section_y = 180
+                
+                # Ingredients header
+                ingredients_header = self.bodyText.render("Ingredients:", True, self.WHITE)
+                self.screen.blit(ingredients_header, (ingredients_section_x, ingredients_section_y))
+                
+                # Column headers
+                need_x = ingredients_section_x + 180
+                have_x = need_x + 80
+                
+                need_header = self.bodyText.render("Need", True, self.WHITE)
+                have_header = self.bodyText.render("Have", True, self.WHITE)
+                
+                self.screen.blit(need_header, (need_x + 20, ingredients_section_y + 30))
+                self.screen.blit(have_header, (have_x + 20, ingredients_section_y + 30))
+                
+                # Draw ingredients in rows
+                row_height = 60
+                img_size = 40
+                
+                for i, ingredient in enumerate(recipedata.theRecipes.get(self.currentOrder)):
+                    row_y = ingredients_section_y + 70 + (i * row_height)
+                    
+                    # Load and display ingredient image
+                    try:
+                        img_path = "PROBABLY_ILLEGAL_ASSETS/" + str.lower(ingredient[0]).replace(" ", "") + ".png"
+                        ingredient_img = pygame.image.load(img_path)
+                        ingredient_img = pygame.transform.scale(ingredient_img, (img_size, img_size))
+                        self.screen.blit(ingredient_img, (ingredients_section_x, row_y))
+                    except:
+                        # Fallback if image not found
+                        placeholder = self.bodyText.render("?", True, self.WHITE)
+                        self.screen.blit(placeholder, (ingredients_section_x + 15, row_y + 10))
+                    
+                    # Ingredient name
+                    name_label = self.bodyText.render(ingredient[0], True, self.WHITE)
+                    self.screen.blit(name_label, (ingredients_section_x + img_size + 10, row_y + 10))
+                    
+                    # Need amount
+                    need_amount = self.bodyText.render(str(ingredient[1]), True, self.WHITE)
+                    self.screen.blit(need_amount, (need_x + 20, row_y + 10))
+                    
+                    # Have amount
+                    have_amount = inventorydata.quantityForItem(ingredient)
+                    have_label = self.bodyText.render(str(have_amount), True, self.WHITE)
+                    self.screen.blit(have_label, (have_x + 20, row_y + 10))
+
+                # Render "Complete Order" button only if ingredients are sufficient
+                if not self.notEnoughIngredients:
+                    complete_order_button = pygame.Rect((self.WIDTH - 60) // 2 - 40, self.HEIGHT - 130, 60, 60)
+                    pygame.draw.rect(self.screen, self.BRIGHT_BROWN, complete_order_button, border_radius=5)
+                    pygame.draw.rect(self.screen, self.DARK_BROWN, complete_order_button, 2, border_radius=5)
+                    complete_order_text = self.buttonText.render("✔", True, self.WHITE)
+                    text_rect = complete_order_text.get_rect(center=complete_order_button.center)
+                    self.screen.blit(complete_order_text, text_rect)
+                    self.renderedButtons["Complete Order"] = (complete_order_button, "customerOrder", "interior")
+                else:
+                    self.renderedButtons.pop("Complete Order", None)
+
             else:
                 # Reset the order when leaving the customerOrder scene
                 if self.previousScene == "customerOrder" and not waiting_for_click:
@@ -265,87 +352,6 @@ class InteractionsUI:
                 # Store current customer name before potentially changing it
                 self.previousCustomerName = self.currentCustomerName
 
-                # Header - centered properly
-                headerLabel = self.headerText.render(self.currentOrder, True, self.WHITE)
-                header_x = self.center_x(headerLabel.get_width())
-                self.screen.blit(headerLabel, (header_x, 80))
-
-                ingredients = recipedata.theRecipes.get(self.currentOrder)
-
-                # Recipe image - positioned on left side
-                recipeImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + str.lower(self.currentOrder.replace(" ", "")) + ".png")
-                recipeImage = pygame.transform.scale(recipeImage, (200, 200))
-                recipe_x = 130
-                recipe_y = self.center_y(200)
-                self.screen.blit(recipeImage, (recipe_x, recipe_y))
-
-                # Ensure bootlegIngredients is initialized before use
-                if not self.generatedFakeAmounts:
-                    bootlegIngredients = []
-                    self.notEnoughIngredients = False
-                    for i in range(len(ingredients)):
-                        if not inventorydata.hasEnoughOfItem(ingredients[i]) and not self.notEnoughIngredients:
-                            self.notEnoughIngredients = True
-                            print(f"there was not enough of {ingredients[i]}")
-                        bootlegIngredients.append((ingredients[i][0], inventorydata.quantityForItem(ingredients[i])))
-                    self.generatedFakeAmounts = True
-                else:
-                    bootlegIngredients = []
-
-                # Ingredients section - table layout
-                ingredients_section_x = 380
-                ingredients_section_y = 180
-                
-                # Ingredients header
-                ingredients_header = self.bodyText.render("Ingredients:", True, self.WHITE)
-                self.screen.blit(ingredients_header, (ingredients_section_x, ingredients_section_y))
-                
-                # Column headers
-                need_x = ingredients_section_x + 180
-                have_x = need_x + 80
-                
-                need_header = self.bodyText.render("Need", True, self.WHITE)
-                have_header = self.bodyText.render("Have", True, self.WHITE)
-                
-                self.screen.blit(need_header, (need_x, ingredients_section_y + 30))
-                self.screen.blit(have_header, (have_x, ingredients_section_y + 30))
-                
-                # Draw ingredients in rows
-                row_height = 60
-                img_size = 40
-                
-                for i, ingredient in enumerate(ingredients):
-                    row_y = ingredients_section_y + 70 + (i * row_height)
-                    
-                    # Load and display ingredient image
-                    try:
-                        img_path = "PROBABLY_ILLEGAL_ASSETS/" + str.lower(ingredient[0]).replace(" ", "") + ".png"
-                        ingredient_img = pygame.image.load(img_path)
-                        ingredient_img = pygame.transform.scale(ingredient_img, (img_size, img_size))
-                        self.screen.blit(ingredient_img, (ingredients_section_x, row_y))
-                    except:
-                        # Fallback if image not found
-                        placeholder = self.bodyText.render("?", True, self.WHITE)
-                        self.screen.blit(placeholder, (ingredients_section_x + 15, row_y + 10))
-                    
-                    # Ingredient name
-                    name_label = self.bodyText.render(ingredient[0], True, self.WHITE)
-                    self.screen.blit(name_label, (ingredients_section_x + img_size + 10, row_y + 10))
-                    
-                    # Need amount
-                    need_amount = self.bodyText.render(str(ingredient[1]), True, self.WHITE)
-                    self.screen.blit(need_amount, (need_x + 20, row_y + 10))
-                    
-                    # Have amount (from bootlegIngredients)
-                    have_amount = "0"
-                    for bootleg in bootlegIngredients:
-                        if bootleg[0] == ingredient[0]:
-                            have_amount = str(bootleg[1])
-                            break
-                    
-                    have_label = self.bodyText.render(have_amount, True, self.WHITE)
-                    self.screen.blit(have_label, (have_x + 20, row_y + 10))
-
             elif showDialogue:
                 # Widen the dialogue box
                 dialogue_width = self.dialougeMaxWidth + 150  # Increase width by 150
@@ -375,6 +381,24 @@ class InteractionsUI:
                 else:
                     text = text + (self.acceptedResponse if self.orderAccepted else self.rejectedResponse)
                 text = text + "\""
+
+                dialogueLabel = self.dialougeText.render(text, True, self.BROWN)
+                text_x = dialogue_x + (padding * 2) + 90  # Adjust for portrait
+                text_y = dialogue_y + (padding * 2)
+                self.screen.blit(dialogueLabel, (text_x, text_y))
+
+                # Portrait remains inside the dialogue box
+                portrait = self.load_customer_portrait(dialogue_name)
+                portrait_x = dialogue_x + padding + 10
+                portrait_y = dialogue_y + padding + 5
+                self.screen.blit(portrait, (portrait_x, portrait_y))
+
+                # Happy or Sad icon - repositioned to align with the end of the dialogue text
+                iconImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/happy.png" if self.orderAccepted else "PROBABLY_ILLEGAL_ASSETS/sad.png")
+                iconImage = pygame.transform.scale(iconImage, (40, 40))
+                icon_x = text_x + dialogueLabel.get_width() + 10  # Position to the right of the text
+                icon_y = dialogue_y + (dialogue_height - 40) // 2  # Centered vertically
+                self.screen.blit(iconImage, (icon_x, icon_y))
 
                 dialogueLabel = self.dialougeText.render(text, True, self.BROWN)
                 text_x = dialogue_x + (padding * 2) + 90  # Adjust for portrait
