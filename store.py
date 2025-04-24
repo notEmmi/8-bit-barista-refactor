@@ -58,8 +58,8 @@ class ShopUI:
         
         self.shop_items_items = [  # New tab items
             {"name": "Sugar", "price": 3, "rect": pygame.Rect(120, 120, 120, 140)},
-            {"name": "Coffee", "price": 15, "rect": pygame.Rect(250, 120, 120, 140)},
-            {"name": "Tea", "price": 10, "rect": pygame.Rect(380, 120, 120, 140)},
+            {"name": "Coffee Beans", "price": 15, "rect": pygame.Rect(250, 120, 120, 140)},
+            {"name": "Tea Leaves", "price": 10, "rect": pygame.Rect(380, 120, 120, 140)},
             {"name": "Milk", "price": 5, "rect": pygame.Rect(120, 270, 120, 140)},
             {"name": "Honey", "price": 20, "rect": pygame.Rect(250, 270, 120, 140)},
             {"name": "Cocoa", "price": 12, "rect": pygame.Rect(380, 270, 120, 140)},
@@ -82,12 +82,15 @@ class ShopUI:
         # Load item images
         self.item_images = {}
         for item in self.shop_items_crops + self.shop_items_items:
-            name = item["name"].lower()
+            # Normalize the name for the image file path
+            name = item["name"].replace(" ", "").lower()
             image_path = os.path.join("assets", "images", "items", f"{name}.png")
             if os.path.exists(image_path):
                 image = pygame.image.load(image_path).convert_alpha()
                 image = pygame.transform.smoothscale(image, (40, 40))  # Resize to circular size
                 self.item_images[name] = image
+            else:
+                print(f"Image not found: {image_path}")  # Debugging
 
         self.warning_message = None
         self.warning_timer = 0
@@ -167,7 +170,7 @@ class ShopUI:
         image_y_pos = item["rect"].y + int(card_height * 0.25)
         
         # Create a circular area for the image
-        name = item["name"].lower()
+        name = item["name"].replace(" ", "").lower()
         if name in self.item_images:
             # Draw circular background and border for the image
             pygame.draw.circle(self.screen, self.DARK_BROWN, (item["rect"].centerx, image_y_pos), image_size // 2 + 2)  # Border
@@ -316,18 +319,20 @@ class ShopUI:
                             if self.game.gold >= total_cost:
                                 self.game.gold -= total_cost
                                 name = self.cart["name"]
+                                normalized_name = inventorydata.normalize_item_name(name)  # Normalize name
                                 self.inventory[name] = self.inventory.get(name, 0) + self.cart_quantity
-                                inventorydata.insertItemIntoSpareSlot((str.capitalize(name), self.cart_quantity))
+                                inventorydata.insertItemIntoSpareSlot((normalized_name, self.cart_quantity))
                             else:
                                 self.display_warning("Not enough gold!")
                         elif self.sell_button.collidepoint(mouse_pos) and self.cart:
                             name = self.cart["name"]
+                            normalized_name = inventorydata.normalize_item_name(name)  # Normalize name
                             if self.inventory.get(name, 0) >= self.cart_quantity:
                                 self.game.gold += self.cart["price"] * self.cart_quantity
                                 self.inventory[name] -= self.cart_quantity
                                 if self.inventory[name] == 0:
                                     del self.inventory[name]
-                                inventorydata.insertItemIntoSpareSlot((str.capitalize(name), -1 * self.cart_quantity))
+                                inventorydata.insertItemIntoSpareSlot((normalized_name, -1 * self.cart_quantity))
                             else:
                                 self.display_warning("Not enough items to sell!")
                         for item in self.current_shop_items:
@@ -499,6 +504,6 @@ class ShopUI:
 
         pygame.quit()
 
-if __name__ == "__main__":
-    shop = ShopUI()
-    shop.run()
+# if __name__ == "__main__":
+#     shop = ShopUI()
+#     shop.run()

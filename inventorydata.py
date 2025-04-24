@@ -5,12 +5,23 @@ three types of items:
 - multi-tier tools (wood axe, copper hoe)
 - non-stackables (ex: filled/empty buckets, fishing rod)
 """
+
+# Initialize the inventory with empty slots
 theInventory = [
-    [None, ("Banana", 6), None, None],
-    [None, None, None, ("Milk", 1)],
-    [None, ("Water", 34), None, ("Butter", 14)],
-    [("Tea Leaves", 6), None, None, ("Wheat", 34)],
+    [None, None, None, None],
+    [None, None, None, None],
+    [None, None, None, None],
+    [None, None, None, None],
 ]
+
+def normalize_item_name(name: str) -> str:
+    """Normalize item names by removing spaces and capitalizing."""
+    return name.replace(" ", "").capitalize()
+
+# Normalize item names in allowed shop items
+allowed_shop_items = {normalize_item_name(item) for item in [
+    "Wheat", "Corn", "Tomato", "Sugar", "CoffeeBeans", "TeaLeaves", "Milk", "Honey", "Cocoa"
+]}
 
 def baseItemString(item) -> str:
     if isinstance(item, tuple): return item[0]
@@ -53,16 +64,28 @@ def isInvalidName(item) -> bool:
         return False
     return True
 
+def isAllowedItem(item) -> bool:
+    """Check if the item is allowed in the inventory."""
+    if isinstance(item, tuple) and normalize_item_name(item[0]) in allowed_shop_items:
+        return True
+    elif isinstance(item, str) and normalize_item_name(item) in allowed_shop_items:
+        return True
+    return False
+
 def putInSlot(item, row: int, column: int):
+    """Place an item in a specific inventory slot if it is allowed."""
     if item is not None:
-        if not isTupleOrString(item): return None
-        elif isinstance(item, tuple) and not isValidTuple(item): return None
-        elif isinstance(item, str) and not isInvalidName(item): return None
-        elif not theInventory[row][column] == None:
-            print(f"the inventory at row {row} and column {column} is not empty!")
+        if not isAllowedItem(item):
+            print(f"Item {item} is not allowed in the inventory!")
+            return None
+        if not isTupleOrString(item):
+            return None
+        elif isinstance(item, tuple) and not isValidTuple(item):
+            return None
+        elif isinstance(item, str) and not isInvalidName(item):
             return None
     theInventory[row][column] = item
-    print(f"item {item} was placed in row {row} and column {column} of the inventory")
+    print(f"Item {item} was placed in row {row} and column {column} of the inventory")
 
 def hasEnoughOfItem(item) -> bool:
     if item is None: return False
@@ -79,16 +102,24 @@ def hasEnoughOfItem(item) -> bool:
     return False
 
 def quantityForItem(item) -> int:
-    if item is None or not hasEnoughOfItem(item): return 0
-    for row in range(len(theInventory)):
-        for column in range(len(theInventory[row])):
-            itemAt = theInventory[row][column]
-            if itemAt is None: continue
-            elif isinstance(itemAt, str) and isinstance(item, str) and itemAt == item: return 1
-            elif isinstance(itemAt, tuple) and isinstance(item, tuple) and itemAt[0] == item[0]:
-                if isinstance(item[1], int) and isinstance(itemAt[1], int): return itemAt[1]
-                else: return 1
-    return 0
+    """Calculate the total quantity of an item in the inventory."""
+    if item is None:
+        return 0
+
+    total_quantity = 0
+    normalized_item_name = normalize_item_name(item[0]) if isinstance(item, tuple) else normalize_item_name(item)
+
+    for row in theInventory:
+        for slot in row:
+            if slot is None:
+                continue
+            if isinstance(slot, tuple) and normalize_item_name(slot[0]) == normalized_item_name:
+                if isinstance(slot[1], int):
+                    total_quantity += slot[1]
+            elif isinstance(slot, str) and normalize_item_name(slot) == normalized_item_name:
+                total_quantity += 1  # Non-stackable items count as 1
+
+    return total_quantity
 
 def insertItemIntoSpareSlot(item):
     for row in range(len(theInventory)):

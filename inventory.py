@@ -126,12 +126,20 @@ def run(gameInstance):
                         return gameInstance.run()
                     if name == "DELETE":
                         if itemSelected is not None:
+                            # Lower the owned count for the item in the store
+                            itemName = inventorydata.baseItemString(itemSelected)
+                            normalizedName = inventorydata.normalize_item_name(itemName)
+                            if normalizedName in gameInstance.shop.inventory:
+                                gameInstance.shop.inventory[normalizedName] = 0
+                                print(f"Set owned count for {itemName} to 0 in the store.")
+                            # Delete the item from the inventory
                             inventorydata.putInSlot(None, itemSelectedOriginalX, itemSelectedOriginalY)
                             print(f"deleted {itemSelected}!")
                             itemSelected = None
                             itemSelectedOriginalX = -1
                             itemSelectedOriginalY = -1
-                        else: print("tried deleting items from an already empty slot.")
+                        else:
+                            print("tried deleting items from an already empty slot.")
                     break
                 # rect for collisionpoint, itemName for display, (row/column inven slot location), rawData
                 # renderedInventorySlots[str(xPos) + str(yPos)] = (buttonRect, itemName, (rowInt, columnInt), rawData)
