@@ -29,7 +29,6 @@ class InteractionsUI:
         # State variables
         self.currentScene = "interior"  # Skip the first page by starting at "interior"
         self.previousScene = "NONE"
-        self.waitingResponse = "I'm still waiting..."
         self.acceptedResponse = "Thanks! You've got talent."
         self.rejectedResponse = "That sucks. I'll head out."
         self.orderAccepted = False
@@ -54,7 +53,6 @@ class InteractionsUI:
             "Enter Shop": ("exterior", "interior", "PROBABLY_ILLEGAL_ASSETS/shop.png"),
             "Exit Shop": ("interior", "exterior", "PROBABLY_ILLEGAL_ASSETS/exit.png"),
             "Complete Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/check_button.png"),
-            "Close": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/exit.png"),
             "Reject Order": ("customerOrder", "interior", "PROBABLY_ILLEGAL_ASSETS/x_button.png"),
             "Protagonist": ("interior", "", os.path.join(game_instance.SPRITE_PATH, game_instance.selected_character, "down_idle.png")),
             "Recipes": ("interior", "", "PROBABLY_ILLEGAL_ASSETS/recipe.png"),
@@ -147,9 +145,6 @@ class InteractionsUI:
         elif name == "Reject Order":
             # Position at bottom left corner
             buttonRect = pygame.Rect((self.WIDTH - 60) // 2 + 40, self.HEIGHT - 130, 60, 60)
-        elif name == "Close":
-            # Position at top left corner
-            buttonRect = pygame.Rect(80, 80, 50, 50)
         elif name == "Protagonist":
             buttonRect = pygame.Rect(330, 150, 14 * 3, 29 * 3)
         elif name == "Recipes":
@@ -170,9 +165,12 @@ class InteractionsUI:
         lost_money_animation = None  # Track the animation state for losing money
         lost_money_start_time = 0  # Track when the animation starts
         lost_money_y = 0  # Track the current y position of the animation
+        earned_money_animation = None  # Track the animation state for earning money
+        earned_money_start_time = 0  # Track when the animation starts
+        earned_money_y = 0  # Track the current y position of the animation
         waiting_for_click = False  # Track if waiting for user to dismiss dialogue
 
-        while True:
+        while self.running:
             if self.currentScene == "customerOrder":
                 if not self.currentOrder:  # Only set the order if it's not already set
                     self.currentOrder = random.choice(self.listOfRecipes)
@@ -273,11 +271,6 @@ class InteractionsUI:
                 # Render "Complete Order" button only if ingredients are sufficient
                 if not self.notEnoughIngredients:
                     complete_order_button = pygame.Rect((self.WIDTH - 60) // 2 - 40, self.HEIGHT - 130, 60, 60)
-                    pygame.draw.rect(self.screen, self.BRIGHT_BROWN, complete_order_button, border_radius=5)
-                    pygame.draw.rect(self.screen, self.DARK_BROWN, complete_order_button, 2, border_radius=5)
-                    complete_order_text = self.buttonText.render("✔", True, self.WHITE)
-                    text_rect = complete_order_text.get_rect(center=complete_order_button.center)
-                    self.screen.blit(complete_order_text, text_rect)
                     self.renderedButtons["Complete Order"] = (complete_order_button, "customerOrder", "interior")
                 else:
                     self.renderedButtons.pop("Complete Order", None)
@@ -374,52 +367,45 @@ class InteractionsUI:
                 pygame.draw.rect(self.screen, self.WHITE, dialougeWhiteRect, border_radius=3)
 
                 # Dialogue text
-                dialogue_name = self.previousCustomerName if (self.orderAccepted or not self.closed) else self.currentCustomerName
-                text = dialogue_name + ":\n\""
-                if self.closed:
-                    text = text + self.waitingResponse
-                else:
-                    text = text + (self.acceptedResponse if self.orderAccepted else self.rejectedResponse)
-                text = text + "\""
-
-                dialogueLabel = self.dialougeText.render(text, True, self.BROWN)
-                text_x = dialogue_x + (padding * 2) + 90  # Adjust for portrait
-                text_y = dialogue_y + (padding * 2)
-                self.screen.blit(dialogueLabel, (text_x, text_y))
-
-                # Portrait remains inside the dialogue box
-                portrait = self.load_customer_portrait(dialogue_name)
-                portrait_x = dialogue_x + padding + 10
-                portrait_y = dialogue_y + padding + 5
-                self.screen.blit(portrait, (portrait_x, portrait_y))
-
-                # Happy or Sad icon - repositioned to align with the end of the dialogue text
-                iconImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/happy.png" if self.orderAccepted else "PROBABLY_ILLEGAL_ASSETS/sad.png")
-                iconImage = pygame.transform.scale(iconImage, (40, 40))
-                icon_x = text_x + dialogueLabel.get_width() + 10  # Position to the right of the text
-                icon_y = dialogue_y + (dialogue_height - 40) // 2  # Centered vertically
-                self.screen.blit(iconImage, (icon_x, icon_y))
-
-                dialogueLabel = self.dialougeText.render(text, True, self.BROWN)
-                text_x = dialogue_x + (padding * 2) + 90  # Adjust for portrait
-                text_y = dialogue_y + (padding * 2)
-                self.screen.blit(dialogueLabel, (text_x, text_y))
-
-                # Portrait remains inside the dialogue box
-                portrait = self.load_customer_portrait(dialogue_name)
-                portrait_x = dialogue_x + padding + 10
-                portrait_y = dialogue_y + padding + 5
-                self.screen.blit(portrait, (portrait_x, portrait_y))
-
-                # Happy or Sad icon - repositioned to align with the end of the dialogue text
-                iconImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/happy.png" if self.orderAccepted else "PROBABLY_ILLEGAL_ASSETS/sad.png")
-                iconImage = pygame.transform.scale(iconImage, (40, 40))
-                icon_x = text_x + dialogueLabel.get_width() + 10  # Position to the right of the text
-                icon_y = dialogue_y + (dialogue_height - 40) // 2  # Centered vertically
-                self.screen.blit(iconImage, (icon_x, icon_y))
-
-                # Add "Click to Continue" text for accepted/rejected dialogue
+                dialogue_name = self.previousCustomerName if self.orderAccepted else self.currentCustomerName
                 if not self.closed:
+                    # Show happy/sad message
+                    text = dialogue_name + ":\n\""
+                    text = text + (self.acceptedResponse if self.orderAccepted else self.rejectedResponse)
+                    text = text + "\""
+                elif not self.editedItemsAlready:
+                    # Show customer leaving action (stealing or paying)
+                    if self.orderAccepted:
+                        text = f"*{dialogue_name} paid you and\nleft the cafe in a good mood...*"
+                    else:
+                        text = f"*{dialogue_name} stole some money\nwhile you were not looking...*"
+                else:
+                    # Remove dialogue for the next customer
+                    text = ""
+
+                if text:
+                    dialogueLabel = self.dialougeText.render(text, True, self.BROWN)
+                    text_x = dialogue_x + (padding * 2) + 90  # Adjust for portrait
+                    text_y = dialogue_y + (padding * 2)
+                    self.screen.blit(dialogueLabel, (text_x, text_y))
+
+                # Portrait remains inside the dialogue box
+                if text:
+                    portrait = self.load_customer_portrait(dialogue_name)
+                    portrait_x = dialogue_x + padding + 10
+                    portrait_y = dialogue_y + padding + 5
+                    self.screen.blit(portrait, (portrait_x, portrait_y))
+
+                # Happy or Sad icon - repositioned to align with the end of the dialogue text
+                if not self.closed:
+                    iconImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/happy.png" if self.orderAccepted else "PROBABLY_ILLEGAL_ASSETS/sad.png")
+                    iconImage = pygame.transform.scale(iconImage, (40, 40))
+                    icon_x = text_x + dialogueLabel.get_width() + 10  # Position to the right of the text
+                    icon_y = dialogue_y + (dialogue_height - 40) // 2  # Centered vertically
+                    self.screen.blit(iconImage, (icon_x, icon_y))
+
+                # Add "Click to Continue" text
+                if not self.editedItemsAlready or text:
                     click_to_continue = self.bodyText.render("Click to Continue", True, self.BROWN)
                     click_x = dialogue_x + dialogue_width - click_to_continue.get_width() - 20
                     click_y = dialogue_y + dialogue_height - click_to_continue.get_height() - 10
@@ -427,44 +413,27 @@ class InteractionsUI:
                     waiting_for_click = True
 
                 # Display money indicators below the gold UI
-                if self.gold_bg and not self.closed:
+                if self.gold_bg and self.editedItemsAlready:
                     if self.orderAccepted:
-                        # Show gain amount below gold UI
-                        gain_y = self.gold_bg.bottom + 10
-                        gain_text = self.bodyText.render("+" + str(self.randomAmount), True, self.GOLD)
-                        self.screen.blit(gain_text, (self.gold_bg.x + 15, gain_y))
-                        
-                        # Draw small coin icon
-                        small_coin = pygame.Surface((20, 20), pygame.SRCALPHA)
-                        pygame.draw.circle(small_coin, self.GOLD, (10, 10), 10)
-                        pygame.draw.circle(small_coin, self.DARK_BROWN, (10, 10), 10, 1)
-                        self.screen.blit(small_coin, (self.gold_bg.right - 30, gain_y))
-                        
-                        if not self.editedItemsAlready:
-                            self.game.gold += self.randomAmount
-                            self.editedItemsAlready = True
+                        # Show earned money animation
+                        if earned_money_animation:
+                            elapsed_time = pygame.time.get_ticks() - earned_money_start_time
+                            if elapsed_time < 2000:  # Show for 2 seconds
+                                earned_money_y -= 0.5  # Gradually move upward
+                                earn_text = self.bodyText.render(earned_money_animation, True, (0, 200, 0))  # Green for gain
+                                self.screen.blit(earn_text, (self.gold_bg.x + 15, earned_money_y))
+                            else:
+                                earned_money_animation = None  # Clear animation
                     else:
-                        # Show loss amount below gold UI
-                        if not self.editedItemsAlready:
-                            lost_money_animation = f"-{self.randomAmount}"  # Set the animation text
-                            lost_money_start_time = pygame.time.get_ticks()  # Start the animation timer
-                            lost_money_y = self.gold_bg.bottom + 10  # Initial y position
-                            self.game.gold -= self.randomAmount
-                            self.editedItemsAlready = True
-
-                        # Handle the animation
+                        # Show lost money animation
                         if lost_money_animation:
                             elapsed_time = pygame.time.get_ticks() - lost_money_start_time
                             if elapsed_time < 2000:  # Show for 2 seconds
-                                # Gradually move the text upward
-                                lost_money_y -= 0.5  # Adjust the speed of upward movement
+                                lost_money_y -= 0.5  # Gradually move upward
                                 loss_text = self.bodyText.render(lost_money_animation, True, (200, 0, 0))  # Red for loss
-                                loss_text_bold = pygame.font.Font(pygame.font.match_font('courier', bold=True), 20)
-                                bold_loss_text = loss_text_bold.render(lost_money_animation, True, (200, 0, 0))
-                                self.screen.blit(bold_loss_text, (self.gold_bg.x + 15, lost_money_y))
+                                self.screen.blit(loss_text, (self.gold_bg.x + 15, lost_money_y))
                             else:
-                                lost_money_animation = None  # Clear the animation after 2 seconds
-
+                                lost_money_animation = None  # Clear animation
 
             # Event Handling
             mouse_pos = pygame.mouse.get_pos()
@@ -480,25 +449,42 @@ class InteractionsUI:
                         continue
                         
                     # Handle click to dismiss dialogue
-                    if waiting_for_click and not self.closed:
+                    if waiting_for_click:
                         waiting_for_click = False
-                        # Change to next customer
-                        self.nameIndex += 1
-                        if self.nameIndex >= len(self.randomCustomerNames):
-                            self.nameIndex = 0
-                            random.shuffle(self.randomCustomerNames)
-                        self.currentCustomerName = self.randomCustomerNames[self.nameIndex]
+                        if not self.closed:
+                            # Transition to customer leaving action
+                            self.closed = True
+                            if self.orderAccepted:
+                                earned_money_animation = f"+{self.randomAmount}"  # Set earned money animation
+                                earned_money_start_time = pygame.time.get_ticks()
+                                earned_money_y = self.gold_bg.bottom + 10
+                                self.game.gold += self.randomAmount
+                            else:
+                                lost_money_animation = f"-{self.randomAmount}"  # Set lost money animation
+                                lost_money_start_time = pygame.time.get_ticks()
+                                lost_money_y = self.gold_bg.bottom + 10
+                                self.game.gold -= self.randomAmount
+                        elif not self.editedItemsAlready:
+                            # Mark customer leaving action as completed
+                            self.editedItemsAlready = True
+                        else:
+                            # Move to the next customer
+                            self.nameIndex += 1
+                            if self.nameIndex >= len(self.randomCustomerNames):
+                                self.nameIndex = 0
+                                random.shuffle(self.randomCustomerNames)
+                            self.currentCustomerName = self.randomCustomerNames[self.nameIndex]
 
-                        # Reset for next order
-                        self.currentOrder = random.choice(self.listOfRecipes)
-                        self.randomAmount = random.randint(100, 700)
-                        self.generatedFakeAmounts = False
-                        self.notEnoughIngredients = False
-                        self.editedItemsAlready = False
-                        self.previousScene = self.currentScene
-                        self.currentScene = "interior"
+                            # Reset for next order
+                            self.currentOrder = random.choice(self.listOfRecipes)
+                            self.randomAmount = random.randint(100, 700)
+                            self.generatedFakeAmounts = False
+                            self.notEnoughIngredients = False
+                            self.editedItemsAlready = False
+                            self.previousScene = self.currentScene
+                            self.currentScene = "interior"
                         continue
-                        
+                    
                     # Handle other button clicks
                     for name, info in self.renderedButtons.items():
                         if not (info[0].collidepoint(mouse_pos) and self.currentScene == info[1]): continue
@@ -540,16 +526,12 @@ class InteractionsUI:
                                 self.notEnoughIngredients = False
                                 self.editedItemsAlready = False
                             
-                            # If it's the Close button, keep the same customer
-                            if name == "Close":
-                                # Don't change customer when just closing the order screen
-                                pass
-                                
                             self.previousScene = self.currentScene
                             self.currentScene = info[2]
                             break
 
             pygame.display.flip()
+            
 
         pygame.quit()
         sys.exit()
