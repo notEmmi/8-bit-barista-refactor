@@ -93,6 +93,21 @@ class InteractionsUI:
         # Gold UI position
         self.gold_bg = None
 
+    def load_customer_portrait(self, customer_name):
+        """Load a customer's portrait image"""
+        try:
+            portrait_path = os.path.join("PROBABLY_ILLEGAL_ASSETS", f"{customer_name.lower()}_portrait.png")
+            portrait = pygame.image.load(portrait_path)
+            # Scale to appropriate size for dialogue box
+            portrait = pygame.transform.scale(portrait, (80, 80))
+            return portrait
+        except:
+            # Fallback if portrait can't be loaded
+            placeholder = pygame.Surface((80, 80), pygame.SRCALPHA)
+            pygame.draw.circle(placeholder, self.BRIGHT_BROWN, (40, 40), 40)
+            pygame.draw.circle(placeholder, self.DARK_BROWN, (40, 40), 40, 2)
+            return placeholder
+
     def center_x(self, width):
         """Return x coordinate to center an element with given width"""
         return (self.WIDTH - width) // 2
@@ -152,6 +167,10 @@ class InteractionsUI:
         self.screen.blit(buttonImage, (buttonRect.x, buttonRect.y))
 
     def run(self):
+        lost_money_animation = None  # Track the animation state for losing money
+        lost_money_start_time = 0  # Track when the animation starts
+        lost_money_y = 0  # Track the current y position of the animation
+
         while self.running:
             if self.currentScene == "customerOrder":
                 if not self.currentOrder:  # Only set the order if it's not already set
@@ -191,7 +210,7 @@ class InteractionsUI:
                     # Draw customer name above their head
                     customer_name_surface = self.buttonText.render(self.currentCustomerName, True, self.WHITE)
                     name_x = 400 - customer_name_surface.get_width() // 2  # Center above customer
-                    name_y = 280  # Position further down
+                    name_y = 290  # Position above customer
                     
                     # Draw name background for better visibility
                     name_bg = pygame.Rect(name_x - 5, name_y - 5, 
@@ -208,7 +227,7 @@ class InteractionsUI:
                         # Match protagonist size (14*3 x 29*3)
                         customer_img = pygame.transform.scale(customer_img, (14 * 3, 29 * 3))
                         customer_x = 400 - (14 * 3) // 2  # Center horizontally
-                        customer_y = 320  # Position further down
+                        customer_y = 330  # Position lower down
                         self.screen.blit(customer_img, (customer_x, customer_y))
                     except:
                         # Fallback if image can't be loaded
@@ -218,7 +237,7 @@ class InteractionsUI:
                         self.screen.blit(placeholder, (customer_x, customer_y))
                     
                     # Position and draw Take Order button below customer image - wider button
-                    self.take_order_button = pygame.Rect(320, 410, 160, 40)  # Position further down
+                    self.take_order_button = pygame.Rect(320, 420, 160, 40)  # Wider button
                     pygame.draw.rect(self.screen, self.BRIGHT_BROWN, self.take_order_button, border_radius=5)
                     pygame.draw.rect(self.screen, self.DARK_BROWN, self.take_order_button, 2, border_radius=5)  # Border
                     
@@ -327,16 +346,16 @@ class InteractionsUI:
                     self.screen.blit(have_label, (have_x + 20, row_y + 10))
 
             elif showDialogue:
-                # Move dialogue to the left bottom corner
-                dialogue_width = self.dialougeMaxWidth
+                # Widen the dialogue box
+                dialogue_width = self.dialougeMaxWidth + 150  # Increase width by 150
                 dialogue_height = self.dialougeMaxHeight
                 dialogue_x = 20  # Left side
                 dialogue_y = self.HEIGHT - dialogue_height - 20  # Bottom
-                
-                # Draw dialogue box
+
+                # Draw dialogue box with smaller border
                 dialougeBrownRectPseudoOutline = pygame.Rect(dialogue_x, dialogue_y, dialogue_width, dialogue_height)
-                pygame.draw.rect(self.screen, self.BROWN, dialougeBrownRectPseudoOutline, border_radius=5)
-                
+                pygame.draw.rect(self.screen, self.BROWN, dialougeBrownRectPseudoOutline, border_radius=3)
+
                 # Inner white rectangle with consistent padding
                 padding = 10
                 dialougeWhiteRect = pygame.Rect(
@@ -345,31 +364,35 @@ class InteractionsUI:
                     dialogue_width - (padding * 2), 
                     dialogue_height - (padding * 2)
                 )
-                pygame.draw.rect(self.screen, self.WHITE, dialougeWhiteRect, border_radius=5)
-                
-                # Dialogue text - use previous customer name for accepted/rejected orders
-                # If the back button was clicked, use current customer name
+                pygame.draw.rect(self.screen, self.WHITE, dialougeWhiteRect, border_radius=3)
+
+                # Dialogue text
                 dialogue_name = self.previousCustomerName if (self.orderAccepted or not self.closed) else self.currentCustomerName
-                
                 text = dialogue_name + ":\n\""
                 if self.closed:
                     text = text + self.waitingResponse
                 else:
                     text = text + (self.acceptedResponse if self.orderAccepted else self.rejectedResponse)
                 text = text + "\""
-                
+
                 dialogueLabel = self.dialougeText.render(text, True, self.BROWN)
-                text_x = dialogue_x + (padding * 2)
+                text_x = dialogue_x + (padding * 2) + 90  # Adjust for portrait
                 text_y = dialogue_y + (padding * 2)
                 self.screen.blit(dialogueLabel, (text_x, text_y))
-                
-                # Happy or Sad icon - positioned to the right of the dialogue box
+
+                # Portrait remains inside the dialogue box
+                portrait = self.load_customer_portrait(dialogue_name)
+                portrait_x = dialogue_x + padding + 10
+                portrait_y = dialogue_y + padding + 5
+                self.screen.blit(portrait, (portrait_x, portrait_y))
+
+                # Happy or Sad icon - repositioned to align with the end of the dialogue text
                 iconImage = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/happy.png" if self.orderAccepted else "PROBABLY_ILLEGAL_ASSETS/sad.png")
                 iconImage = pygame.transform.scale(iconImage, (40, 40))
-                icon_x = dialogue_x + dialogue_width + 10  # Right of dialogue box
+                icon_x = text_x + dialogueLabel.get_width() + 10  # Position to the right of the text
                 icon_y = dialogue_y + (dialogue_height - 40) // 2  # Centered vertically
                 self.screen.blit(iconImage, (icon_x, icon_y))
-                
+
                 # Display money indicators below the gold UI
                 if self.gold_bg and not self.closed:
                     if self.orderAccepted:
@@ -389,19 +412,26 @@ class InteractionsUI:
                             self.editedItemsAlready = True
                     else:
                         # Show loss amount below gold UI
-                        loss_y = self.gold_bg.bottom + 10
-                        loss_text = self.bodyText.render("-" + str(self.randomAmount), True, (200, 0, 0))  # Red for loss
-                        self.screen.blit(loss_text, (self.gold_bg.x + 15, loss_y))
-                        
-                        # Draw small coin icon with red tint
-                        small_coin = pygame.Surface((20, 20), pygame.SRCALPHA)
-                        pygame.draw.circle(small_coin, (200, 150, 0), (10, 10), 10)  # Darker gold for loss
-                        pygame.draw.circle(small_coin, self.DARK_BROWN, (10, 10), 10, 1)
-                        self.screen.blit(small_coin, (self.gold_bg.right - 30, loss_y))
-                        
                         if not self.editedItemsAlready:
+                            lost_money_animation = f"-{self.randomAmount}"  # Set the animation text
+                            lost_money_start_time = pygame.time.get_ticks()  # Start the animation timer
+                            lost_money_y = self.gold_bg.bottom + 10  # Initial y position
                             self.game.gold -= self.randomAmount
                             self.editedItemsAlready = True
+
+                        # Handle the animation
+                        if lost_money_animation:
+                            elapsed_time = pygame.time.get_ticks() - lost_money_start_time
+                            if elapsed_time < 2000:  # Show for 2 seconds
+                                # Gradually move the text upward
+                                lost_money_y -= 0.5  # Adjust the speed of upward movement
+                                loss_text = self.bodyText.render(lost_money_animation, True, (200, 0, 0))  # Red for loss
+                                loss_text_bold = pygame.font.Font(pygame.font.match_font('courier', bold=True), 20)
+                                bold_loss_text = loss_text_bold.render(lost_money_animation, True, (200, 0, 0))
+                                self.screen.blit(bold_loss_text, (self.gold_bg.x + 15, lost_money_y))
+                            else:
+                                lost_money_animation = None  # Clear the animation after 2 seconds
+
 
             # Event Handling
             mouse_pos = pygame.mouse.get_pos()
