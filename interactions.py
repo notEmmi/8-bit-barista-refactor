@@ -470,6 +470,8 @@ class InteractionsUI:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+                    pygame.quit()  # Ensure pygame.quit() is called only when exiting the program
+                    sys.exit()  # Exit the program safely
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     # Handle Take Order button click
                     if self.take_order_button_visible and self.take_order_button.collidepoint(mouse_pos):
@@ -501,7 +503,8 @@ class InteractionsUI:
                     # Handle other button clicks
                     for name, info in self.renderedButtons.items():
                         if not (info[0].collidepoint(mouse_pos) and self.currentScene == info[1]): continue
-                        if name == "Recipes": Recipes.Recipes().run()
+                        if name == "Recipes": 
+                            Recipes.Recipes(cafe_instance=self).run()  # Pass the current instance as the cafe
                         elif name == "Exit Shop":
                                 print("Returning to game...")
                                 self.running = False  # You can swap this to a callback to your Game instance
@@ -545,5 +548,4 @@ class InteractionsUI:
 
             pygame.display.flip()
 
-        pygame.quit()
         sys.exit()
