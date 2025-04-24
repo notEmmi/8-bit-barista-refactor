@@ -1,4 +1,4 @@
-import pygame, inventorydata # type: ignore [this is so vscode doesn't yell at me]
+import pygame, inventorydata, os # type: ignore [this is so vscode doesn't yell at me]
 
 def run(gameInstance):
     # Initialize Pygame
@@ -19,6 +19,7 @@ def run(gameInstance):
 
     # Fonts
     titleText = pygame.font.Font(pygame.font.match_font('courier'), 45)
+    stackSizeText = pygame.font.Font(pygame.font.match_font('courier'), 24)
     buttonText = pygame.font.Font(pygame.font.match_font('courier'), 18)
     smallText = pygame.font.Font(pygame.font.match_font('courier'), 18)
 
@@ -40,9 +41,14 @@ def run(gameInstance):
         # rect for collisionpoint, itemName for display, (row/column inven slot location), rawData
         renderedInventorySlots[str(xPos) + str(yPos)] = (buttonRect, itemName, (rowInt, columnInt), rawData)
         if (rawData == None): return
-        itemImage = pygame.image.load("assets/images/tools/" + str.lower(str.replace(inventorydata.baseItemString(item), " ", "")) + ".png")
+        filePath = "assets/images/tools/" + str.lower(str.replace(inventorydata.baseItemString(item), " ", "")) + ".png"
+        if not os.path.isfile(filePath):
+            filePath = "PROBABLY_ILLEGAL_ASSETS/" + str.lower(str.replace(inventorydata.baseItemString(item), " ", "")) + ".png"
+        itemImage = pygame.image.load(filePath)
         itemImage = pygame.transform.scale(itemImage, (height, height))
         screen.blit(itemImage, (buttonRect.x + length // 4, buttonRect.y))
+        stackSizeLabel = stackSizeText.render(str(rawData[1]), True, WHITE)
+        screen.blit(stackSizeLabel, (xPos + (length // 2) + 15, yPos + (height - 20)))
 
     # Main Loop
     running = True
@@ -74,7 +80,7 @@ def run(gameInstance):
         screen.blit(titleLabel, (WIDTH // 2 - titleLabel.get_width() // 2, 68.5))
         # Draw Current Selected
         chosenString = "None"
-        if (itemSelected is not None): chosenString = inventorydata.parseInventoryItem(itemSelected)
+        if (itemSelected is not None): chosenString = inventorydata.parseStacklessInventoryItem(itemSelected)
         smallLabel = smallText.render(("Currently Selected: " + chosenString), True, WHITE)
         screen.blit(smallLabel, (WIDTH // 2 - smallLabel.get_width() // 2, 108.5))
         
@@ -142,8 +148,6 @@ def run(gameInstance):
                         itemSelectedOriginalY = clickedItemInvenY
                         print(f"selected {clickedItemName}!")
                         break
-                    elif clickedItemInvenX == itemSelectedOriginalX and clickedItemInvenY == itemSelectedOriginalY:
-                        break
                     elif itemSelected is not None:
                         # clear both inventory slots so no data loss happens
                         inventorydata.putInSlot(None, clickedItemInvenX, clickedItemInvenY)
@@ -159,12 +163,8 @@ def run(gameInstance):
 
 def drawBundle(screen) -> pygame.Rect:
     backpackImage = pygame.image.load("assets/buttons/backpack.png").convert_alpha()
-    backpackImage = pygame.transform.scale(backpackImage, (80, 80))
+    backpackImage = pygame.transform.scale(backpackImage, (70, 70))
     backpackImage.set_colorkey((0, 0, 0))
-    
-    #backpackImage = pygame.image.load("assets/" + "buttons/" + "backpack" + ".png").convert_alpha()
-    #backpackImage = pygame.transform.scale(backpackImage, (64, 64))
-    
-    rect = pygame.Rect(25, 485, 90, 90)
+    rect = pygame.Rect(25, 505, 70, 70)
     screen.blit(backpackImage, rect)
     return rect

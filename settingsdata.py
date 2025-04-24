@@ -2,7 +2,7 @@ from enum import Enum
 from pygame import mixer
 
 # master, music, sfx
-volumes = [.5, .5, .5]
+volumes = [.5, 1, 1]
 
 # rain, shaders, shake
 booleanSettings = [True, True, False]
@@ -27,11 +27,14 @@ def updateMasterVolume(value):
         print(f"updated SFX to {volumes[0] * volumes[2]} (volumes[0] * volumes[2])")
 
 def updateSFXVolume(value):
+    pass
+    """
     if not isinstance(value, float) and not isinstance(value, int): return
     volumes[2] = value
     for i in range(mixer.get_num_channels()):
         mixer.Channel(i).set_volume(volumes[0] * volumes[2])
         print(f"updated SFX to {volumes[0] * volumes[2]} (volumes[0] * volumes[2])")
+    """
 
 def updateMusicVolume(value):
     if not isinstance(value, float) and not isinstance(value, int): return

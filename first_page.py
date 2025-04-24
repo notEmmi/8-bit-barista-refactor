@@ -19,6 +19,7 @@ from music_selector import MusicSelector
 import sqlite3
 from GameState import GameState
 from fish import run_fishing_minigame
+import inventorydata
 
 class Game:
     def __init__(self, chosen_building, petChoice, name, selected_character=None, current_day = 1, current_weather="sunny", time_hour=None, time_minute=None, fromPriorMenu = False, gameData = None, username=None):
@@ -198,6 +199,7 @@ class Game:
         pygame.mixer.music.play(-1)  # Play on repeat
 
         self.toolbox = Toolbox()
+        self.toolbox.selected_tool = -1  # Ensure no tool is selected initially
 
         self.pauseButton = pygame.Rect(0, 0, 0, 0)
 
@@ -597,7 +599,7 @@ class Game:
                     print(f"Cloudy Weather Enabled: {self.cloudy_weather}")
                 if self.show_new_day_prompt and event.key == pygame.K_RETURN:  # Confirm new day
                     self.time_multiplier, self.confirm_new_day, self.show_new_day_prompt, self.is_paused = 1, True, False, False
-                if pygame.K_1 <= event.key <= pygame.K_5:  # Tool or seed selection
+                if pygame.K_1 <= event.key <= pygame.K_4:  # Tool or seed selection
                     if self.toolbox.seed_inventory_open:
                         selected_seed_index = event.key - pygame.K_1
                         if self.toolbox.selected_seed == selected_seed_index:
@@ -702,10 +704,7 @@ class Game:
             self.place_tile("Dirt", tile_x, tile_y, dirt_id)
             print(f"Tilled soil at ({tile_x}, {tile_y})")
 
-        elif self.toolbox.selected_tool == 1:  # Placeholder for another tool
-            print("Using another tool")
-
-        elif self.toolbox.selected_tool == 2:  # Seed pouch
+        elif self.toolbox.selected_tool == 1:  # Seed pouch
             if self.toolbox.selected_seed is not None:
                 seed_name = self.toolbox.seed_slots[self.toolbox.selected_seed]
                 dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
@@ -718,13 +717,13 @@ class Game:
                     else:
                         print(f"Tile ({tile_x}, {tile_y}) is already occupied.")
 
-        elif self.toolbox.selected_tool == 3:  # Watering can
+        elif self.toolbox.selected_tool == 2:  # Watering can
             dirt_layer = self.tmx_data.get_layer_by_name("Dirt")
             dirt_id, watered_id = self.get_gid("Tilled_Dirt", 12), self.get_gid("Tilled_Dirt", 56)
             if dirt_layer and dirt_layer.data[tile_y][tile_x] == dirt_id:  # Check if tile is tilled
                 self.place_tile("Watered", tile_x, tile_y, watered_id)
 
-        elif self.toolbox.selected_tool == 4:  # Harvesting tool
+        elif self.toolbox.selected_tool == 3:  # Harvesting tool
             plant_layer = self.tmx_data.get_layer_by_name("Plants")
             watered_layer = self.tmx_data.get_layer_by_name("Watered")
             if plant_layer:
@@ -743,6 +742,18 @@ class Game:
                         
                         # Indicate the item was added to inventory
                         print("+++ Added to inventory +++")
+                        source = tile_properties.get("source", "Unknown")
+                        if (source != "Unknown"):
+                            name = str.split(source, '/')[-1]
+                            name = str.replace(name, ".png", "")
+                            name = str.replace(name, "1", "")
+                            name = str.replace(name, "2", "")
+                            name = str.replace(name, "3", "")
+                            name = str.replace(name, "4", "")
+                            name = str.replace(name, "5", "")
+                            name = str.replace(name, "6", "")
+                            name = str.capitalize(name)
+                            inventorydata.insertItemIntoSpareSlot((name, 1))
 
     def get_seed_gid(self, seed_name):
         # Map seed names to their initial GID in the tileset using get_gid
@@ -802,13 +813,13 @@ class Game:
 
     def drawPause(self) -> pygame.Rect:
         pauseButtonImage = pygame.image.load("assets/buttons/pause.png").convert_alpha()
-        pauseButtonImage = pygame.transform.scale(pauseButtonImage, (75, 75))
+        pauseButtonImage = pygame.transform.scale(pauseButtonImage, (65, 65))
         pauseButtonImage.set_colorkey((0, 0, 0))
 
         #pauseButtonImage = pygame.image.load("assets/buttons/pause.png").convert_alpha()
         #pauseButtonImage = pygame.transform.scale(pauseButtonImage, (64, 64))
         
-        rect = pygame.Rect(16, 16, 90, 90)
+        rect = pygame.Rect(16, 16, 65, 65)
         self.screen.blit(pauseButtonImage, rect)
         return rect
         
@@ -1058,7 +1069,6 @@ class Game:
                 # Now, overlay is always defined before blitting
                 zoomed_surface.blit(overlay, (0, 0))  
                 
-
                 # Update & Draw Rain (Only if raining)
                 if self.raining:
                     self.rain.update(self.camera_x, self.camera_y)

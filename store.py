@@ -1,6 +1,7 @@
 import pygame
 import first_page
 import os  # Add import for handling file paths
+import inventorydata
 
 class ShopUI:
     def __init__(self, game_instance=None):
@@ -316,6 +317,7 @@ class ShopUI:
                                 self.game.gold -= total_cost
                                 name = self.cart["name"]
                                 self.inventory[name] = self.inventory.get(name, 0) + self.cart_quantity
+                                inventorydata.insertItemIntoSpareSlot((str.capitalize(name), self.cart_quantity))
                             else:
                                 self.display_warning("Not enough gold!")
                         elif self.sell_button.collidepoint(mouse_pos) and self.cart:
@@ -325,6 +327,7 @@ class ShopUI:
                                 self.inventory[name] -= self.cart_quantity
                                 if self.inventory[name] == 0:
                                     del self.inventory[name]
+                                inventorydata.insertItemIntoSpareSlot((str.capitalize(name), -1 * self.cart_quantity))
                             else:
                                 self.display_warning("Not enough items to sell!")
                         for item in self.current_shop_items:
