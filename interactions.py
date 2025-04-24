@@ -170,6 +170,7 @@ class InteractionsUI:
         lost_money_animation = None  # Track the animation state for losing money
         lost_money_start_time = 0  # Track when the animation starts
         lost_money_y = 0  # Track the current y position of the animation
+        waiting_for_click = False  # Track if waiting for user to dismiss dialogue
 
         while self.running:
             if self.currentScene == "customerOrder":
@@ -196,7 +197,7 @@ class InteractionsUI:
                 self.take_order_button_visible = False
             else:
                 # Reset the order when leaving the customerOrder scene
-                if self.previousScene == "customerOrder":
+                if self.previousScene == "customerOrder" and not waiting_for_click:
                     self.currentOrder = ""
                 self.screen.fill(self.WHITE)
                 bg = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/" + str.lower(self.currentScene) + ".png")
@@ -204,7 +205,7 @@ class InteractionsUI:
                 self.screen.blit(bg, (0, 0))
                 
                 # Show customer and Take Order button in interior scene
-                if self.currentScene == "interior":
+                if self.currentScene == "interior" and not waiting_for_click:
                     self.take_order_button_visible = True
                     
                     # Draw customer name above their head
@@ -393,6 +394,14 @@ class InteractionsUI:
                 icon_y = dialogue_y + (dialogue_height - 40) // 2  # Centered vertically
                 self.screen.blit(iconImage, (icon_x, icon_y))
 
+                # Add "Click to Continue" text for accepted/rejected dialogue
+                if not self.closed:
+                    click_to_continue = self.bodyText.render("Click to Continue", True, self.BROWN)
+                    click_x = dialogue_x + dialogue_width - click_to_continue.get_width() - 20
+                    click_y = dialogue_y + dialogue_height - click_to_continue.get_height() - 10
+                    self.screen.blit(click_to_continue, (click_x, click_y))
+                    waiting_for_click = True
+
                 # Display money indicators below the gold UI
                 if self.gold_bg and not self.closed:
                     if self.orderAccepted:
@@ -444,6 +453,26 @@ class InteractionsUI:
                         print("Take Order button clicked!")
                         self.previousScene = self.currentScene
                         self.currentScene = "customerOrder"
+                        continue
+                        
+                    # Handle click to dismiss dialogue
+                    if waiting_for_click and not self.closed:
+                        waiting_for_click = False
+                        # Change to next customer
+                        self.nameIndex += 1
+                        if self.nameIndex >= len(self.randomCustomerNames):
+                            self.nameIndex = 0
+                            random.shuffle(self.randomCustomerNames)
+                        self.currentCustomerName = self.randomCustomerNames[self.nameIndex]
+
+                        # Reset for next order
+                        self.currentOrder = random.choice(self.listOfRecipes)
+                        self.randomAmount = random.randint(100, 700)
+                        self.generatedFakeAmounts = False
+                        self.notEnoughIngredients = False
+                        self.editedItemsAlready = False
+                        self.previousScene = self.currentScene
+                        self.currentScene = "interior"
                         continue
                         
                     # Handle other button clicks
