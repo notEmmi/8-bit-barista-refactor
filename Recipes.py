@@ -17,11 +17,29 @@ class Recipes:
         pygame.display.set_caption("Recipes")
         
         # Load images
-        self.recipes = pygame.image.load("images/recipes.png")
-        self.recipes = pygame.transform.scale(self.recipes, (350, 150))
+       
         
-        self.kitchen = pygame.image.load("images/kitchen.png")
-        self.kitchen = pygame.transform.scale(self.kitchen, (self.WIDTH, self.HEIGHT))
+        self.background = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/recipebook.png")
+        self.background = pygame.transform.scale(self.background, (self.WIDTH, self.HEIGHT))
+
+
+        self.hotcocoa = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/hotchocolate.png")
+        self.hotcocoa = pygame.transform.scale(self.hotcocoa, (100, 100))
+        self.sweetcoffee = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/sweetcoffee.png")
+        self.sweetcoffee = pygame.transform.scale(self.sweetcoffee, (100, 100))
+        self.teacake = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/teacake.png")
+        self.teacake = pygame.transform.scale(self.teacake, (100, 100))
+        self.honeycornbread = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/honeycornbread.png")
+        self.honeycornbread = pygame.transform.scale(self.honeycornbread, (100, 100))
+        self.tomatojam = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/tomatojam.png")
+        self.tomatojam = pygame.transform.scale(self.tomatojam, (100, 100))
+
+        self.description_box1 = pygame.Rect(200, 50, 150, 100)
+        self.description_box2 = pygame.Rect(200, 150, 150, 100)
+        self.description_box3 = pygame.Rect(200, 250, 150, 100)
+        self.description_box4 = pygame.Rect(200, 350, 150, 100)
+        self.description_box5 = pygame.Rect(200, 450, 150, 100)
+        
         
         # Colors
         self.WHITE = (255, 255, 255)
@@ -38,20 +56,9 @@ class Recipes:
         center_x, center_y = self.WIDTH // 2, self.HEIGHT // 2
         
         # Define rectangles
-        self.topLeftRect = pygame.Rect(center_x - self.RECT_WIDTH - self.SPACING // 2, center_y - self.RECT_HEIGHT - self.SPACING // 2, self.RECT_WIDTH, self.RECT_HEIGHT)
-        self.topRightRect = pygame.Rect(center_x + self.SPACING // 2, center_y - self.RECT_HEIGHT - self.SPACING // 2, self.RECT_WIDTH, self.RECT_HEIGHT)
-        self.bottomLeftRect = pygame.Rect(center_x - self.RECT_WIDTH - self.SPACING // 2, center_y + self.SPACING // 2, self.RECT_WIDTH, self.RECT_HEIGHT)
-        self.bottomRightRect = pygame.Rect(center_x + self.SPACING // 2, center_y + self.SPACING // 2, self.RECT_WIDTH, self.RECT_HEIGHT)
         
         # Create surfaces for rectangles
-        self.topLeftRect_Surface = pygame.Surface((self.RECT_WIDTH, self.RECT_HEIGHT))
-        self.topLeftRect_Surface.fill(self.LIGHTBROWN)
-        self.topRightRect_Surface = pygame.Surface((self.RECT_WIDTH, self.RECT_HEIGHT))
-        self.topRightRect_Surface.fill(self.LIGHTBROWN)
-        self.bottomLeftRect_Surface = pygame.Surface((self.RECT_WIDTH, self.RECT_HEIGHT))
-        self.bottomLeftRect_Surface.fill(self.LIGHTBROWN)
-        self.bottomRightRect_Surface = pygame.Surface((self.RECT_WIDTH, self.RECT_HEIGHT))
-        self.bottomRightRect_Surface.fill(self.LIGHTBROWN)
+       
 
 
         self.backButton = pygame.Rect(self.WIDTH // 2 - 100, self.HEIGHT - 60, 200, 40)
@@ -69,15 +76,7 @@ class Recipes:
         text_rect = text_surface.get_rect(center=rect.center)
         surface.blit(text_surface, text_rect.topleft)
 
-    def draw_button_with_depth(self, surface, rect, button_color, shadow_offset=4, shadow_alpha=100):
-    # Shadow
-     shadow_surf = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
-     shadow_color = (0, 0, 0, shadow_alpha)  # translucent black
-     pygame.draw.rect(shadow_surf, shadow_color, shadow_surf.get_rect(), border_radius=10)
-     surface.blit(shadow_surf, (rect.x + shadow_offset, rect.y + shadow_offset))
-
-    # Button
-     pygame.draw.rect(surface, button_color, rect, border_radius=10)
+    
     
     def run(self):
         running = True
@@ -90,19 +89,7 @@ class Recipes:
                     running = False
                 
                 # Check for hover effect
-                if self.topLeftRect.collidepoint(mouse_pos):
-                    self.topLeftRect_Surface.fill(self.SADDLEBROWN)
-                elif self.topRightRect.collidepoint(mouse_pos):
-                    self.topRightRect_Surface.fill(self.SADDLEBROWN)
-                elif self.bottomLeftRect.collidepoint(mouse_pos):
-                    self.bottomLeftRect_Surface.fill(self.SADDLEBROWN)
-                elif self.bottomRightRect.collidepoint(mouse_pos):
-                    self.bottomRightRect_Surface.fill(self.SADDLEBROWN)
-                else:
-                    self.topLeftRect_Surface.fill(self.LIGHTBROWN)
-                    self.topRightRect_Surface.fill(self.LIGHTBROWN)
-                    self.bottomLeftRect_Surface.fill(self.LIGHTBROWN)
-                    self.bottomRightRect_Surface.fill(self.LIGHTBROWN)
+                
                 
                 # Check for click event
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -114,19 +101,26 @@ class Recipes:
                         self.cafe.run()  # Call the `run` method of the cafe instance
                             
             # Draw background and UI elements
-            self.screen.blit(self.kitchen, (0, 0))
-            self.screen.blit(self.recipes, (225, 25))
-            self.draw_button_with_depth(self.screen, self.topLeftRect, self.topLeftRect_Surface.get_at((0, 0)))
-            self.draw_button_with_depth(self.screen, self.topRightRect, self.topRightRect_Surface.get_at((0, 0)))
-            self.draw_button_with_depth(self.screen, self.bottomLeftRect, self.bottomLeftRect_Surface.get_at((0, 0)))
-            self.draw_button_with_depth(self.screen, self.bottomRightRect, self.bottomRightRect_Surface.get_at((0, 0)))
+            self.screen.blit(self.background, (0, 0))
             
-            # Draw text on rectangles
-            self.draw_text(self.screen, "Popular", self.topLeftRect, self.font, self.BLACK)
-            self.draw_text(self.screen, "Coffee", self.topRightRect, self.font, self.BLACK)
-            self.draw_text(self.screen, "Tea", self.bottomLeftRect, self.font, self.BLACK)
-            self.draw_text(self.screen, "Desserts", self.bottomRightRect, self.font, self.BLACK)
-            pygame.draw.rect(self.screen, self.SADDLEBROWN, self.backButton.inflate(4, 4), border_radius=12)
+            
+            self.draw_text(self.screen, "Hot Chocolate", self.description_box1, self.font, self.BLACK)
+            self.screen.blit(self.hotcocoa, (80, 50))
+
+            self.draw_text(self.screen, "Sweet Coffee", self.description_box2, self.font, self.BLACK)
+            self.screen.blit(self.sweetcoffee, (80, 150))
+
+            self.draw_text(self.screen, "Tea Cake", self.description_box3, self.font, self.BLACK)
+            self.screen.blit(self.teacake, (80, 250))
+
+            self.draw_text(self.screen, "Honey Cornbread", self.description_box4, self.font, self.BLACK)
+            self.screen.blit(self.honeycornbread, (80, 350))
+
+            self.draw_text(self.screen, "Tomato Jam", self.description_box5, self.font, self.BLACK)
+            self.screen.blit(self.tomatojam, (80, 450))
+
+            
+           
             pygame.draw.rect(self.screen, self.LIGHTBROWN, self.backButton, border_radius=12)
             self.draw_text(self.screen, "Back to Cafe", self.backButton, self.font, self.BLACK)
             
