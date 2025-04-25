@@ -170,7 +170,6 @@ def run(gameInstance):
                         break
         pygame.display.flip()
 
-
 def drawBundle(screen) -> pygame.Rect:
     backpackImage = pygame.image.load("assets/buttons/backpack.png").convert_alpha()
     backpackImage = pygame.transform.scale(backpackImage, (70, 70))
