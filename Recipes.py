@@ -17,11 +17,8 @@ class Recipes:
         pygame.display.set_caption("Recipes")
         
         # Load images
-       
-        
         self.background = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/recipebook.png")
         self.background = pygame.transform.scale(self.background, (self.WIDTH, self.HEIGHT))
-
 
         self.hotcocoa = pygame.image.load("PROBABLY_ILLEGAL_ASSETS/hotchocolate.png")
         self.hotcocoa = pygame.transform.scale(self.hotcocoa, (100, 100))
@@ -45,8 +42,7 @@ class Recipes:
         self.ingredients_box3 = pygame.Rect(500, 250, 150, 100)
         self.ingredients_box4 = pygame.Rect(500, 350, 150, 100)
         self.ingredients_box5 = pygame.Rect(500, 450, 150, 100)
-        
-        
+
         # Colors
         self.WHITE = (255, 255, 255)
         self.LIGHTBROWN = (254, 195, 117)
@@ -57,60 +53,51 @@ class Recipes:
         # Rectangle dimensions
         self.RECT_WIDTH, self.RECT_HEIGHT = 200, 100
         self.SPACING = 20
-        
+
         # Calculate center positions
         center_x, center_y = self.WIDTH // 2, self.HEIGHT // 2
-        
+
         # Define rectangles
-        
+
         # Create surfaces for rectangles
-       
-
-
         self.backButton = pygame.Rect(self.WIDTH // 2 - 100, self.HEIGHT - 60, 200, 40)
-        
+
         # Load font
         self.font = pygame.font.Font(pygame.font.match_font("courier"), 24)
         self.font2 = pygame.font.Font(pygame.font.match_font("courier"), 14)
-        
+
         # Load and play background music
         mixer.music.load("tracks/08 - Shop.mp3")
         mixer.music.set_volume(settingsdata.volumes[0] * settingsdata.volumes[1])
         mixer.music.play()
-        
+
     def draw_text(self, surface, text, rect, font, color):
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect(center=rect.center)
         surface.blit(text_surface, text_rect.topleft)
 
-    
-    
     def run(self):
         running = True
         while running:
             self.screen.fill(self.WHITE)
             mouse_pos = pygame.mouse.get_pos()
-            
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                
+
                 # Check for hover effect
-                
-                
+
                 # Check for click event
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    
-                
                     if self.backButton.collidepoint(event.pos):
                         print("Returning to cafe...")
                         running = False
                         self.cafe.run()  # Call the `run` method of the cafe instance
-                            
+
             # Draw background and UI elements
             self.screen.blit(self.background, (0, 0))
-            
-            
+
             self.draw_text(self.screen, "Hot Chocolate", self.description_box1, self.font, self.BLACK)
             self.screen.blit(self.hotcocoa, (80, 50))
 
@@ -131,19 +118,16 @@ class Recipes:
             self.draw_text(self.screen, "Ingredients:Wheat/TeaLeaves/Milk/Sugar", self.ingredients_box3, self.font2, self.BLACK)
             self.draw_text(self.screen, "Ingredients:Corn/Milk/Honey", self.ingredients_box4, self.font2, self.BLACK)
             self.draw_text(self.screen, "Ingredients:Tomato/Sugar", self.ingredients_box5, self.font2, self.BLACK)
-            
 
-            
-           
             pygame.draw.rect(self.screen, self.LIGHTBROWN, self.backButton, border_radius=12)
             self.draw_text(self.screen, "Back to Cafe", self.backButton, self.font, self.BLACK)
-            
+
             pygame.display.flip()
-        
+
         pygame.quit()
 
 # Create an instance of RecipeScreen and run it
 if __name__ == "__main__":
-     app = Recipes()
-     app.run()
+    app = Recipes()
+    app.run()
 
