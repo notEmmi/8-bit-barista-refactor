@@ -164,35 +164,39 @@ class StartMenu:
                                     conn.close()
 
                                     if loaded_game_state:
-                                        print(
-                                            loaded_game_state.house,
-                                            loaded_game_state.pet,
-                                            loaded_game_state.name,
-                                            loaded_game_state.selected_character,
-                                            loaded_game_state.current_day,
-                                            loaded_game_state.current_weather,
-                                            loaded_game_state.time_hour,
-                                            loaded_game_state.time_minute,
-                                            loaded_game_state.GameData,
-                                            self.username
-                                        )
+                                        if loaded_game_state.selected_character is None:
+                                            print("No character found. Redirecting to character selection.")
+                                            self.current_screen = self.CHARACTER_SELECTION
+                                        else:
+                                            print(
+                                                loaded_game_state.house,
+                                                loaded_game_state.pet,
+                                                loaded_game_state.name,
+                                                loaded_game_state.selected_character,
+                                                loaded_game_state.current_day,
+                                                loaded_game_state.current_weather,
+                                                loaded_game_state.time_hour,
+                                                loaded_game_state.time_minute,
+                                                loaded_game_state.GameData,
+                                                self.username
+                                            )
 
-                                        from first_page import Game
-                                        loadSave = Game(
-                                            chosen_building=loaded_game_state.house,
-                                            petChoice=loaded_game_state.pet,
-                                            name=loaded_game_state.name,
-                                            selected_character=loaded_game_state.selected_character,
-                                            current_day=loaded_game_state.current_day,
-                                            current_weather=loaded_game_state.current_weather,
-                                            time_hour=loaded_game_state.time_hour,
-                                            time_minute=loaded_game_state.time_minute,
-                                            fromPriorMenu=loaded_game_state.fromPriorMenu,
-                                            gameData=loaded_game_state.GameData,
-                                            username=self.username
-                                        )
-                                        loadSave.run()
-                                        running = False
+                                            from first_page import Game
+                                            loadSave = Game(
+                                                chosen_building=loaded_game_state.house,
+                                                petChoice=loaded_game_state.pet,
+                                                name=loaded_game_state.name,
+                                                selected_character=loaded_game_state.selected_character,
+                                                current_day=loaded_game_state.current_day,
+                                                current_weather=loaded_game_state.current_weather,
+                                                time_hour=loaded_game_state.time_hour,
+                                                time_minute=loaded_game_state.time_minute,
+                                                fromPriorMenu=loaded_game_state.fromPriorMenu,
+                                                gameData=loaded_game_state.GameData,
+                                                username=self.username
+                                            )
+                                            loadSave.run()
+                                            running = False
                                     else:
                                         print("No save data found for this user.")
 

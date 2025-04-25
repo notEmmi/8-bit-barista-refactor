@@ -22,7 +22,7 @@ from fish import run_fishing_minigame
 import inventorydata
 
 class Game:
-    def __init__(self, chosen_building, petChoice, name, selected_character=None, current_day = 1, current_weather="sunny", time_hour=None, time_minute=None, fromPriorMenu = False, gameData = None, username=None):
+    def __init__(self, chosen_building, petChoice, name, selected_character="boy1", current_day = 1, current_weather="sunny", time_hour=None, time_minute=None, fromPriorMenu = False, gameData = None, username=None):
         # Initialize Pygame
         pygame.init()
         pygame.font.init()
