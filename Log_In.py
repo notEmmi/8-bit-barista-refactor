@@ -7,7 +7,7 @@ from Loading import LoadingScreen
 from start_menu import StartMenu
 import bcrypt
 from registration import RegistrationApp
-import settingsdata
+
 
 
 
@@ -65,7 +65,6 @@ class LoginScreen:
 
     def play_music(self):
         mixer.music.load("assets/sounds/LogInTrack.mp3")
-        mixer.music.set_volume(settingsdata.volumes[0] * settingsdata.volumes[1])
         mixer.music.play()
 
     def check_username(self, username):

@@ -1,4 +1,5 @@
 import pygame
+import pygame
 from pygame import mixer
 import settingsdata
 from pet_selector import PetSelector
