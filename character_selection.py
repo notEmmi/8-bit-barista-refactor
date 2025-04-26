@@ -2,8 +2,9 @@ import pygame  # Import the pygame module
 import sys  # Import the sys module
 import os  # Import the os module
 from first_page import Game
-from Building_Selection_Screen import runBuildingSelectionScreen  # Import the building selection screen function
-from character_utils import save_selected_character, load_selected_character
+from Building_Selection_Screen import BuildingSelectionScreen  # Import the building selection screen function
+import sqlite3
+from GameState import GameState
 
 # Initialize Pygame
 pygame.init()
@@ -30,13 +31,15 @@ BUTTON_HEIGHT = 40
 ASSET_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'assets/images/character-selection'))
 
 class CharacterSelector:
-    def __init__(self):
+    def __init__(self, username):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))  # Create the game window
         pygame.display.set_caption("Character Selection")  # Set the window title
 
-        self.selected_character = load_selected_character()
+        self.username = username
+        self.selected_character = self.load_selected_character_from_db()
         # List of characters
         self.characters = ["boy1", "boy2", "boy3", "girl1", "girl2", "girl3"]
+        self.player_name = None
         
         # Load and scale character avatars
         self.character_images = {}
@@ -116,7 +119,28 @@ class CharacterSelector:
                         if x < mouse_x < x + AVATAR_SIZE and y < mouse_y < y + AVATAR_SIZE:
                             # Update the selected character correctly
                             self.selected_character = character
-                            save_selected_character(character)  # Save the correct character
+                            print(f"Selected Characer: {self.selected_character}")
+                            self.save_selected_character_to_db(character)  # Save the correct character
+
+    def save_selected_character_to_db(self, character):
+        """Save the selected character to the database."""
+        # Create or update GameState with selected character and save to DB
+        conn = sqlite3.connect('mydatabase.db')  # Connect to your SQLite database
+        game_state = GameState(name=self.player_name, selected_character=character)
+        game_state.save_to_db(conn, self.username)  # Save the state with the selected character
+        conn.close()
+
+    def load_selected_character_from_db(self):
+        conn = sqlite3.connect("mydatabase.db")
+        game_state = GameState.load_from_db(conn, self.username)
+        conn.close()
+
+        if game_state is None:
+            print(f"[DEBUG] No save found for user: {self.username}")
+            return "boy1"
+
+        print(f"Loaded character from DB: {game_state.selected_character}")
+        return game_state.selected_character
 
     def draw_preview(self):
         # Draw large character preview
@@ -183,8 +207,10 @@ class CharacterSelector:
                     self.error_message = "Name required."
                 else:
                     self.error_message = ""  # Clear the error message
-                    runBuildingSelectionScreen()  # Navigate to the building selection screen
-
+                    self.player_name = self.name_input.strip()
+                    print(self.player_name)
+                    building_select = BuildingSelectionScreen(self.player_name, self.selected_character, self.username)  # Navigate to the building selection screen
+                    building_select.run()
     def handle_key_press(self, event):
         # Handle key press events
         if event.key == pygame.K_RETURN:  # If enter is pressed, submit the name

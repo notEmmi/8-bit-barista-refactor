@@ -5,9 +5,11 @@ from options import OptionsMenu
 from credits import CreditsScreen
 from advanced import AdvancedMenu
 from keybinds import ControlsMenu
+from GameState import GameState
+import sqlite3
 
 class StartMenu:
-    def __init__(self, gameInstance = None):
+    def __init__(self, username, gameInstance = None):
         # Initialize Pygame
         pygame.init()
 
@@ -35,6 +37,7 @@ class StartMenu:
         self.CONTROLS = "controls"
         self.ADVANCED = "advanced"
         self.current_screen = self.MENU  # Start at the menu
+        self.username = username
 
         self.isFromGame = False
 
@@ -46,7 +49,8 @@ class StartMenu:
         button_spacing = 90
         button_start_y = 220
         self.buttons = [
-            self.Button("START", button_x, button_start_y, button_width, button_height, self.CHARACTER_SELECTION),
+            self.Button("NEW GAME", button_x -120, button_start_y, button_width, button_height, self.CHARACTER_SELECTION),
+            self.Button("CONTINUE", button_x + 120, button_start_y, button_width, button_height, self.CHARACTER_SELECTION),
             self.Button("OPTIONS", button_x, button_start_y + button_spacing, button_width, button_height, self.OPTIONS),
             self.Button("CREDITS", button_x, button_start_y + 2 * button_spacing, button_width, button_height, self.CREDITS),
             self.Button("EXIT", (self.WIDTH - 150) // 2, button_start_y + 3 * button_spacing, 150, 55, None)
@@ -67,6 +71,14 @@ class StartMenu:
         shadow_rect = pygame.Rect(offset_x, offset_y, rect.width, rect.height)
         pygame.draw.rect(shadow_surface, self.SHADOW_COLOR, shadow_rect, border_radius=border_radius)
         surface.blit(shadow_surface, (rect.x, rect.y))
+
+    def load_user_save(username):
+        conn = sqlite3.connect("mydatabase.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT character, building, pet, day, weather, hour, minute FROM saves WHERE username = ?", (username,))
+        save = cursor.fetchone()
+        conn.close()
+        return save
 
     class Button:
         """UI Button with hover effects and shadows."""
@@ -115,12 +127,12 @@ class StartMenu:
 
     def run(self):
         running = True
-        options_menu = OptionsMenu(self.currentGameInstance)  # Create an instance of OptionsMenu
+        options_menu = OptionsMenu(gameInstance=self.currentGameInstance)  # Create an instance of OptionsMenu
         advanced_menu = AdvancedMenu()
         controls_menu = ControlsMenu()
         credits = CreditsScreen()  # Create an instance of CreditsScreen
         from character_selection import CharacterSelector  # Import CharacterSelector
-        character_selector = CharacterSelector()  # Create an instance of CharacterSelector
+        character_selector = CharacterSelector(self.username)  # Create an instance of CharacterSelector
         while running:
             events = pygame.event.get()
             self.screen.fill(self.LIGHT_BROWN)
@@ -141,6 +153,52 @@ class StartMenu:
                                 if button.text == "EXIT":
                                     running = False
                                 print(f"{button.text} button clicked!")
+                    
+                                if button.text == "CONTINUE":
+                                    print(f"{button.text} button clicked!")
+
+                                    conn = sqlite3.connect('mydatabase.db')
+
+                                    # Use account username to load correct save
+                                    loaded_game_state = GameState.load_from_db(conn, self.username)
+                                    conn.close()
+
+                                    if loaded_game_state:
+                                        if loaded_game_state.selected_character is None:
+                                            print("No character found. Redirecting to character selection.")
+                                            self.current_screen = self.CHARACTER_SELECTION
+                                        else:
+                                            print(
+                                                loaded_game_state.house,
+                                                loaded_game_state.pet,
+                                                loaded_game_state.name,
+                                                loaded_game_state.selected_character,
+                                                loaded_game_state.current_day,
+                                                loaded_game_state.current_weather,
+                                                loaded_game_state.time_hour,
+                                                loaded_game_state.time_minute,
+                                                loaded_game_state.GameData,
+                                                self.username
+                                            )
+
+                                            from first_page import Game
+                                            loadSave = Game(
+                                                chosen_building=loaded_game_state.house,
+                                                petChoice=loaded_game_state.pet,
+                                                name=loaded_game_state.name,
+                                                selected_character=loaded_game_state.selected_character,
+                                                current_day=loaded_game_state.current_day,
+                                                current_weather=loaded_game_state.current_weather,
+                                                time_hour=loaded_game_state.time_hour,
+                                                time_minute=loaded_game_state.time_minute,
+                                                fromPriorMenu=loaded_game_state.fromPriorMenu,
+                                                gameData=loaded_game_state.GameData,
+                                                username=self.username
+                                            )
+                                            loadSave.run()
+                                            running = False
+                                    else:
+                                        print("No save data found for this user.")
 
             elif self.current_screen == self.OPTIONS:
                 new_screen = options_menu.show_options(events)
@@ -173,6 +231,6 @@ class StartMenu:
         pygame.quit()
         sys.exit()
 
-# Example usage
-# start_menu = StartMenu()
-# start_menu.run()
+if __name__ == "__main__":
+ start_menu = StartMenu()
+ start_menu.run()

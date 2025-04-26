@@ -1,16 +1,19 @@
 # items
+# Updated recipes with reduced ingredient quantities
 theRecipes = {
-    "Bagel": [("Wheat", 3)],
-    "Croissant": [("Wheat", 2), ("Butter", 1)],
-    "Muffin": [("Wheat", 3), ("Sugar", 3), ("Milk", 1)],
-    "Coffee": [("Beans", 4), ("Milk", 1), ("Sugar", 1), ("Cream", 1)],
-    "Tea": [("Water", 1), ("Tea Leaves", 3)],
-    "Smoothie": [("Water", 1), ("Banana", 1), ("Melon", 2)],
+    "Sweet Coffee": [("Coffee Beans", 3), ("Sugar", 2), ("Milk", 4)],
+    "Tea Cake": [("Wheat", 1), ("Tea Leaves", 3), ("Sugar", 2), ("Milk", 4)],
+    "Honey Cornbread": [("Corn", 1), ("Honey", 4), ("Milk", 4)],
+    "Tomato Jam": [("Tomato", 2), ("Sugar", 2)],
+    "Hot Chocolate": [("Cocoa", 5), ("Milk", 4), ("Sugar", 2)],
 }
 
-def parseIngredients(ingredients: list):
+def parseIngredients(ingredients: list) -> str:
     ingredientString = ""
     for ingredientAndAmount in ingredients:
-        ingredientString = ingredientString + " " + str(ingredientAndAmount[1]) + " " + ingredientAndAmount[0] + ","
-    if (len(ingredientString) > 1): ingredientString = ingredientString[:-1] # remove trailing comma
-    return ingredientString
+        ingredientString = ingredientString + " " + str(ingredientAndAmount[1]) + "x " + ingredientAndAmount[0]
+    return ingredientString[1:]
+
+def getFirstTwoIngredients(ingredients: list) -> list:
+    if (len(ingredients) < 2): return ingredients[0]
+    return ingredients[0:2]

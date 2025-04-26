@@ -53,6 +53,13 @@ class RegistrationApp:
 
         encrypted_password = self.hash_password(password)
         self.cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, encrypted_password))
+
+        # Add initial save entry
+        self.cursor.execute("""
+            INSERT INTO saves (username, character, building, pet, day, weather, hour, minute)
+            VALUES (?, ?, ?, ?, 1, 'sunny', 6, 0)
+        """, (username, None, None, None))
+
         self.conn.commit()
         self.message = f"User '{username}' registered!"
         self.username = ""
@@ -113,6 +120,10 @@ class RegistrationApp:
                         self.active_box = "password"
                     elif self.register_button.collidepoint(event.pos):
                         self.register_user()
+                        from Log_In import LoginScreen  # Local import to avoid circular import
+                        login_screen = LoginScreen()
+                        login_screen.run()
+                        self.running = False
                     elif self.back_button.collidepoint(event.pos):
                         from Log_In import LoginScreen  # Local import to avoid circular import
                         login_screen = LoginScreen()
@@ -134,6 +145,10 @@ class RegistrationApp:
                             self.password = self.password[:-1]
                         elif event.key == pygame.K_RETURN:
                             self.register_user()
+                            from Log_In import LoginScreen  # Local import to avoid circular import
+                            login_screen = LoginScreen()
+                            login_screen.run()
+                            self.running = False
                         else:
                             self.password += event.unicode
 

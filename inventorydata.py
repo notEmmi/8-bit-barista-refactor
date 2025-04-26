@@ -1,15 +1,3 @@
-from enum import Enum
-
-class ToolsTiers(Enum):
-    Wood = 0,
-    Stone = 1,
-    Copper = 2,
-    Iron = 3
-
-class BucketStates(Enum):
-    Empty = 0,
-    Filled = 1,
-
 # inventory
 """
 three types of items:
@@ -17,12 +5,23 @@ three types of items:
 - multi-tier tools (wood axe, copper hoe)
 - non-stackables (ex: filled/empty buckets, fishing rod)
 """
+
+# Initialize the inventory with empty slots
 theInventory = [
-    [("Axe", ToolsTiers.Wood), "Fishing Rod", None, None],
-    [None, ("Hoe", ToolsTiers.Copper), None, ("Milk Bucket", BucketStates.Filled)],
-    [None, "Mallet", "Watering Can", None],
-    ["Seed Pouch", None, None, ("Wheat", 34)],
+    [None, None, None, None],
+    [None, None, None, None],
+    [None, None, None, None],
+    [None, None, None, None],
 ]
+
+def normalize_item_name(name: str) -> str:
+    """Normalize item names by removing spaces and capitalizing."""
+    return name.replace(" ", "").capitalize()
+
+# Normalize item names in allowed shop items
+allowed_shop_items = {normalize_item_name(item) for item in [
+    "Wheat", "Corn", "Tomato", "Sugar", "CoffeeBeans", "TeaLeaves", "Milk", "Honey", "Cocoa"
+]}
 
 def baseItemString(item) -> str:
     if isinstance(item, tuple): return item[0]
@@ -35,9 +34,7 @@ def itemStateString(item) -> str:
     # else return unknown
     if isinstance(item, tuple):
         secondPart = item[1]
-        if (isinstance(secondPart, ToolsTiers)): return ToolsTiers(secondPart).name
-        elif (isinstance(secondPart, BucketStates)): return BucketStates(secondPart).name
-        elif (isinstance(secondPart, int)): return "x" + str(secondPart)
+        if (isinstance(secondPart, int)): return "x" + str(secondPart)
         else: return "Unknown"
     else: return "Empty"
 
@@ -46,9 +43,10 @@ def parseInventoryItem(item) -> str:
     elif isinstance(item, str): return item
     else: return "None"
 
-def getExtraItemData(item: tuple):
-    if (isinstance(item[1], Enum)): return Enum(item[1]).name
-    else: return "Unknown"
+def parseStacklessInventoryItem(item) -> str:
+    if isinstance(item, tuple):
+        if isinstance(item[1], int): return baseItemString(item)
+    return parseInventoryItem(item)
 
 def isTupleOrString(item) -> bool:
     if (not isinstance(item, tuple) and not isinstance(item, str)):
@@ -57,9 +55,7 @@ def isTupleOrString(item) -> bool:
     return True
 
 def isValidTuple(item) -> bool:
-    if (not isinstance(item[1], ToolsTiers) and not isinstance(item[1], BucketStates) and not isinstance(item[1], int)):
-        print(f"{item} is an enum, but it does not contain information from both ToolsTiers and BucketStates enums *AND* is not stackable")
-        return False
+    if (not isinstance(item[1], int)): return False
     return True
 
 def isInvalidName(item) -> bool:
@@ -68,13 +64,74 @@ def isInvalidName(item) -> bool:
         return False
     return True
 
+def isAllowedItem(item) -> bool:
+    """Check if the item is allowed in the inventory."""
+    if isinstance(item, tuple) and normalize_item_name(item[0]) in allowed_shop_items:
+        return True
+    elif isinstance(item, str) and normalize_item_name(item) in allowed_shop_items:
+        return True
+    return False
+
 def putInSlot(item, row: int, column: int):
+    """Place an item in a specific inventory slot if it is allowed."""
     if item is not None:
-        if not isTupleOrString(item): return None
-        elif isinstance(item, tuple) and not isValidTuple(item): return None
-        elif isinstance(item, str) and not isInvalidName(item): return None
-        elif not theInventory[row][column] == None:
-            print(f"the inventory at row {row} and column {column} is not empty!")
+        if not isAllowedItem(item):
+            print(f"Item {item} is not allowed in the inventory!")
+            return None
+        if not isTupleOrString(item):
+            return None
+        elif isinstance(item, tuple) and not isValidTuple(item):
+            return None
+        elif isinstance(item, str) and not isInvalidName(item):
             return None
     theInventory[row][column] = item
-    print(f"item {item} was placed in row {row} and column {column} of the inventory")
+    print(f"Item {item} was placed in row {row} and column {column} of the inventory")
+
+def hasEnoughOfItem(item) -> bool:
+    if item is None: return False
+    for row in range(len(theInventory)):
+        for column in range(len(theInventory[row])):
+            itemAt = theInventory[row][column]
+            if itemAt is None: continue
+            elif not isinstance(itemAt, tuple): continue
+            elif not isinstance(itemAt[0], str): continue
+            elif itemAt[0] != item[0]: continue
+            elif isinstance(itemAt[1], int) and isinstance(item[1], int):
+                if item[1] > itemAt[1]: return False
+                else: return True
+    return False
+
+def quantityForItem(item) -> int:
+    """Calculate the total quantity of an item in the inventory."""
+    if item is None:
+        return 0
+
+    total_quantity = 0
+    normalized_item_name = normalize_item_name(item[0]) if isinstance(item, tuple) else normalize_item_name(item)
+
+    for row in theInventory:
+        for slot in row:
+            if slot is None:
+                continue
+            if isinstance(slot, tuple) and normalize_item_name(slot[0]) == normalized_item_name:
+                if isinstance(slot[1], int):
+                    total_quantity += slot[1]
+            elif isinstance(slot, str) and normalize_item_name(slot) == normalized_item_name:
+                total_quantity += 1  # Non-stackable items count as 1
+
+    return total_quantity
+
+def insertItemIntoSpareSlot(item):
+    for row in range(len(theInventory)):
+        for column in range(len(theInventory[row])):
+            itemAt = theInventory[row][column]
+            if itemAt is not None:
+                if isinstance(item, tuple) and item[0] == itemAt[0] and isinstance(itemAt[1], int) and isinstance(item[1], int):
+                    updatedQuantity = itemAt[1] + item[1]
+                    putInSlot(None, row, column)
+                    if (updatedQuantity > 0): putInSlot((item[0], updatedQuantity), row, column)
+                    return
+                else: continue
+            elif quantityForItem(item) == 0:
+                putInSlot(item, row, column)
+                return
