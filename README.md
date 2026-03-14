@@ -57,8 +57,8 @@ As the project transitioned from a group prototype to a portfolio-ready product,
 ## ⚙️ Installation & Execution
 1. **Clone & Navigate:**
    ```bash
-   git clone https://github.com/notEmmi/8BitBarista
-   cd 8BitBarista
+   git clone https://github.com/notEmmi/8-bit-barista-refactor
+   cd 8-bit-barista-refactor
 
 2. **Install & Run:**
    ```bash
